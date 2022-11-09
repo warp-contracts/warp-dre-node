@@ -145,8 +145,12 @@ async function deleteOldActiveJobs(queue) {
 }
 
 async function isProcessingContract(queue, contractTxId) {
-  const activeJobs = await queue.getJobs(['active', 'waiting']);
+  const activeJobs = await queue.getJobs(['active', 'delayed', 'waiting', 'waiting-children', 'paused', 'repeat', 'wait']);
   return activeJobs.some((job) => {
+    console.log('checking', {
+      contractTxId,
+      job: job.data.contractTxId
+    })
     return job.data.contractTxId === contractTxId;
   });
 }
