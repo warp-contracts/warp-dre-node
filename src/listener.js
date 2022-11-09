@@ -22,14 +22,10 @@ let allowUnsafe = false;
 let port = 8080;
 
 let jobIdSuffix = 0;
-const sameContractEvaluationTimeout = 2; //seconds
 
 (async () => {
   const args = process.argv.slice(2);
   logger.info('🚀🚀🚀 Starting execution node with params:', args);
-  setInterval(() => {
-    jobIdSuffix++;
-  }, sameContractEvaluationTimeout * 1000);
 
   if (args.length) {
     if (args.some(a => a === 'test')) {
@@ -44,15 +40,6 @@ const sameContractEvaluationTimeout = 2; //seconds
     connection: {
       enableOfflineQueue: false,
     }
-    /*defaultJobOptions: {
-      removeOnComplete: {
-        age: sameContractEvaluationTimeout
-      },
-      removeOnFail: {
-        age: 30
-      },
-      jobId: `${msgObj.contractTxId}_${jobIdSuffix}`
-    }*/
   });
 
   await deleteOldActiveJobs(evaluationQueue);
