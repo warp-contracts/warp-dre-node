@@ -21,9 +21,15 @@ let isTestInstance = false;
 let allowUnsafe = false;
 let port = 8080;
 
+let jobIdSuffix = 0;
+const sameContractEvaluationTimeout = 2; //seconds
+
 (async () => {
   const args = process.argv.slice(2);
   logger.info('🚀🚀🚀 Starting execution node with params:', args);
+  setInterval(() => {
+    jobIdSuffix++;
+  }, sameContractEvaluationTimeout * 1000);
 
   if (args.length) {
     if (args.some(a => a === 'test')) {
@@ -38,6 +44,15 @@ let port = 8080;
     connection: {
       enableOfflineQueue: false,
     }
+    /*defaultJobOptions: {
+      removeOnComplete: {
+        age: sameContractEvaluationTimeout
+      },
+      removeOnFail: {
+        age: 30
+      },
+      jobId: `${msgObj.contractTxId}_${jobIdSuffix}`
+    }*/
   });
 
   await deleteOldActiveJobs(evaluationQueue);
@@ -123,21 +138,30 @@ async function subscribeToGatewayNotifications(evaluationQueue) {
       return;
     }
 
-    isProcessingContract(evaluationQueue, msgObj.contractTxId)
+    const jobId = msgObj.sortKey
+      ? `${msgObj.contractTxId}_${msgObj.sortKey}`
+      : `${msgObj.contractTxId}_${jobIdSuffix}`;
+
+    logger.info("jobId", jobId);
+
+    evaluationQueue.add('evaluateContract', {
+      contractTxId: msgObj.contractTxId,
+      allowUnsafeClient: msgObj.isUnsafe
+    }, {
+      jobId
+    });
+
+    logger.info('Published on evaluation queue', msgObj.contractTxId);
+
+    /*isProcessingContract(evaluationQueue, msgObj.contractTxId)
       .then(alreadyProcessing => {
-        logger.info('alreadyProcessing', alreadyProcessing);
         if (alreadyProcessing) {
           logger.warn(`Not publishing, contract ${msgObj.contractTxId} is being processed, skipping`);
           return;
         } else {
-          evaluationQueue.add('evaluateContract', {
-            contractTxId: msgObj.contractTxId,
-            allowUnsafeClient: msgObj.isUnsafe
-          });
 
-          logger.info('Published on evaluation queue', msgObj.contractTxId);
         }
-      })
+      })*/
   });
 }
 
