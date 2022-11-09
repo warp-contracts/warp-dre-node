@@ -99,7 +99,7 @@ async function subscribeToGatewayNotifications(evaluationQueue) {
     }
   });
 
-  subscriber.on("message", async (channel, message) => {
+  subscriber.on("message", (channel, message) => {
     logger.info(`Received '${message}' from channel '${channel}'`);
 
     const msgObj = JSON.parse(message);
@@ -123,18 +123,20 @@ async function subscribeToGatewayNotifications(evaluationQueue) {
       return;
     }
 
-    const alreadyProcessing = await isProcessingContract(evaluationQueue, msgObj.contractTxId)
-    if (alreadyProcessing) {
-      logger.warn(`Contract ${msgObj.contractTxId} is being processed, skipping`);
-      return;
-    }
+    isProcessingContract(evaluationQueue, msgObj.contractTxId)
+      .then(alreadyProcessing => {
+        if (alreadyProcessing) {
+          logger.warn(`Not publishing, contract ${msgObj.contractTxId} is being processed, skipping`);
+          return;
+        } else {
+          evaluationQueue.add('evaluateContract', {
+            contractTxId: msgObj.contractTxId,
+            allowUnsafeClient: msgObj.isUnsafe
+          });
 
-    await evaluationQueue.add('evaluateContract', {
-      contractTxId: msgObj.contractTxId,
-      allowUnsafeClient: msgObj.isUnsafe
-    });
-
-    logger.info('Published on evaluation queue', msgObj.contractTxId);
+          logger.info('Published on evaluation queue', msgObj.contractTxId);
+        }
+      })
   });
 }
 
