@@ -17,16 +17,8 @@ const logger = LoggerFactory.INST.create('listener');
 LoggerFactory.INST.logLevel('info', 'listener');
 LoggerFactory.INST.logLevel('info', 'processor');
 
-let jobIdSuffix = 0;
-const sameContractEvaluationTimeout = 5; //seconds
-
-
 (async () => {
-  logger.info('🚀🚀🚀 Starting execution node');
-
-  setInterval(() => {
-    jobIdSuffix++;
-  }, sameContractEvaluationTimeout * 1000);
+  logger.info('🚀🚀🚀 Starting execution node.');
 
   const evaluationQueue = new Queue('evaluate', {
     connection: {
@@ -71,6 +63,7 @@ const sameContractEvaluationTimeout = 5; //seconds
   app.use(bodyParser());
   app.use(router.routes());
   app.use(router.allowedMethods());
+  app.context.queue = evaluationQueue;
   app.listen(8080);
   //console.log(app);
 })();
@@ -113,14 +106,6 @@ async function subscribeToGatewayNotifications(evaluationQueue) {
     await evaluationQueue.add('evaluateContract', {
       contractTxId: msgObj.contractTxId,
       allowUnsafeClient: msgObj.isUnsafe
-    }, {
-      removeOnComplete: {
-        age: sameContractEvaluationTimeout
-      },
-      removeOnFail: {
-        age: 30
-      },
-      jobId: `${msgObj.contractTxId}_${jobIdSuffix}`
     });
 
     logger.info('Published on evaluation queue');
@@ -134,7 +119,7 @@ async function deleteOldActiveJobs(queue) {
 }
 
 async function isProcessingContract(queue, contractTxId) {
-  const activeJobs = await queue.getJobs(['active']);
+  const activeJobs = await queue.getJobs(['active', 'waiting']);
   return activeJobs.some((job) => job.id.startsWith(contractTxId));
 }
 

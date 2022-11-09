@@ -7,7 +7,7 @@ Messages sent via this channel contain fields:
    1. `contractTxId` - self-explanatory
    2. `isUnsafe` - set to `true` if the contract is unsafe 
 2. `warp-cache-node` is subscribing for messages on the `contracts` channel.
-3. `warp-cache-node` is creating its own `evaluation` queue - using [BullMQ](https://github.com/taskforcesh/bullmq#readme) (which is using local Redis instance
+3. `warp-cache-node` is creating its own `evaluation` queue - using [BullMQ](https://github.com/taskforcesh/bullmq#readme) (which is using local Redis instance)
 4. Each time a new message comes to the `contract` channel - `warp-cache-node` is verifying whether
    1. the contractTxId is valid - if not, it returns
    2. the contract is unsafe - if it is, it returns (some nodes might decide to evaluate unsafe contracts)
