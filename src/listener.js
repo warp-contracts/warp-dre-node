@@ -17,8 +17,22 @@ const logger = LoggerFactory.INST.create('listener');
 LoggerFactory.INST.logLevel('info', 'listener');
 LoggerFactory.INST.logLevel('info', 'processor');
 
+let isTestInstance = false;
+let allowUnsafe = false;
+let port = 8080;
+
 (async () => {
-  logger.info('🚀🚀🚀 Starting execution node.');
+  const args = process.argv.slice(2);
+  logger.info('🚀🚀🚀 Starting execution node with params:', args);
+
+  if (args.length) {
+    if (args.some(a => a === 'test')) {
+      isTestInstance = true;
+    }
+    if (args.some(a => a === 'allowUnsafe')) {
+      allowUnsafe = true;
+    }
+  }
 
   const evaluationQueue = new Queue('evaluate', {
     connection: {
@@ -31,7 +45,7 @@ LoggerFactory.INST.logLevel('info', 'processor');
 
   const processorFile = path.join(__dirname, 'processor');
   const worker = new Worker('evaluate', processorFile, {
-    concurrency: 2,
+    concurrency: os.cpus().length,
     metrics: {
       maxDataPoints: MetricsTime.ONE_WEEK * 2,
     },
@@ -64,8 +78,9 @@ LoggerFactory.INST.logLevel('info', 'processor');
   app.use(router.routes());
   app.use(router.allowedMethods());
   app.context.queue = evaluationQueue;
-  app.listen(8080);
-  //console.log(app);
+  app.listen(port);
+
+  logger.info(`Listening on port ${port}`);
 })();
 
 async function subscribeToGatewayNotifications(evaluationQueue) {
@@ -93,10 +108,21 @@ async function subscribeToGatewayNotifications(evaluationQueue) {
       return;
     }
 
-    if (msgObj.isUnsafe) {
+    if (msgObj.isUnsafe && !allowUnsafe) {
       logger.warn('Skipping unsafe contract');
       return;
     }
+
+    if (msgObj.test && !isTestInstance) {
+      logger.warn('Skipping test instance message');
+      return;
+    }
+
+    if (!msgObj.test && isTestInstance) {
+      logger.warn('Skipping non-test instance message');
+      return;
+    }
+
 
     if ((await isProcessingContract(evaluationQueue, msgObj.contractTxId))) {
       logger.warn(`Contract ${msgObj.contractTxId} is being processed, skipping`);

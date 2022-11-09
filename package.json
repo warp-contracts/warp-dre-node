@@ -5,6 +5,15 @@
   "main": "index.mjs",
   "author": "just_ppe",
   "license": "MIT",
+  "scripts": {
+    "start:prod": "docker-compose up -d && node src/listener.js",
+    "start:prod:unsafe": "docker-compose up -d && node src/listener.js allowUnsafe",
+    "start:test": "docker-compose up -d && node src/listener.js test",
+    "start:test:unsafe": "docker-compose up -d && node src/listener.js test allowUnsafe"
+  },
+  "engines": {
+    "node": ">=16.5"
+  },
   "dependencies": {
     "@koa/cors": "4.0.0",
     "@koa/router": "12.0.0",
