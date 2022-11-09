@@ -152,16 +152,6 @@ async function subscribeToGatewayNotifications(evaluationQueue) {
     });
 
     logger.info('Published on evaluation queue', msgObj.contractTxId);
-
-    /*isProcessingContract(evaluationQueue, msgObj.contractTxId)
-      .then(alreadyProcessing => {
-        if (alreadyProcessing) {
-          logger.warn(`Not publishing, contract ${msgObj.contractTxId} is being processed, skipping`);
-          return;
-        } else {
-
-        }
-      })*/
   });
 }
 
@@ -169,27 +159,6 @@ async function subscribeToGatewayNotifications(evaluationQueue) {
 async function deleteOldActiveJobs(queue) {
   const oldActiveJobs = await queue.getJobs(['active']);
   await Promise.allSettled(oldActiveJobs.map((job) => job.remove()));
-}
-
-async function isProcessingContract(queue, contractTxId) {
-  const activeJobs = await queue.getJobs(['active', 'delayed', 'waiting', 'waiting-children', 'paused', 'repeat', 'wait']);
-  logger.info('All active jobs count:', activeJobs.length);
-  let isProcessing = false;
-  for (let i = 0; i < activeJobs.length - 1; i++) {
-    const job = activeJobs[i];
-    logger.info('checking', {
-      contractTxId,
-      job: job.data.contractTxId,
-      result: job.data.contractTxId === contractTxId,
-      result2: job.data.contractTxId.localeCompare(contractTxId) === 0
-    })
-    if (job.data.contractTxId.localeCompare(contractTxId) === 0) {
-      isProcessing = true;
-      break;
-    }
-  }
-  logger.info('Check result', isProcessing);
-  return isProcessing;
 }
 
 function readGwPubSubConfig() {
