@@ -1,0 +1,21 @@
+{
+  "name": "warp-cache-node",
+  "version": "1.0.0",
+  "description": "A cache node for Warp Contracts",
+  "main": "index.mjs",
+  "author": "just_ppe",
+  "license": "MIT",
+  "dependencies": {
+    "@koa/cors": "4.0.0",
+    "@koa/router": "12.0.0",
+    "arweave": "1.11.6",
+    "better-sqlite3": "7.6.2",
+    "bullmq": "^3.2.0",
+    "ioredis": "^5.2.4",
+    "koa": "^2.13.4",
+    "koa-bodyparser": "4.3.0",
+    "koa-compress": "^5.1.0",
+    "warp-contracts": "1.2.14-lambda.8",
+    "warp-contracts-lmdb": "^1.0.5"
+  }
+}
