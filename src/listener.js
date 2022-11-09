@@ -125,7 +125,7 @@ async function subscribeToGatewayNotifications(evaluationQueue) {
 
     isProcessingContract(evaluationQueue, msgObj.contractTxId)
       .then(alreadyProcessing => {
-        logger.info()
+        logger.info('alreadyProcessing', alreadyProcessing);
         if (alreadyProcessing) {
           logger.warn(`Not publishing, contract ${msgObj.contractTxId} is being processed, skipping`);
           return;
