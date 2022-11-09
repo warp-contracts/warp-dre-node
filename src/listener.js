@@ -20,12 +20,21 @@ LoggerFactory.INST.logLevel('info', 'processor');
 let isTestInstance = false;
 let allowUnsafe = false;
 let port = 8080;
-
 let jobIdSuffix = 0;
+let blacklisted = {};
 
-(async () => {
+async function runListener() {
   const args = process.argv.slice(2);
   logger.info('🚀🚀🚀 Starting execution node with params:', args);
+
+  if (fs.existsSync('blacklisted.json')) {
+    blacklisted = JSON.parse(fs.readFileSync('blacklisted.json', "utf-8"));
+  }
+
+  process.on('SIGINT', function () {
+    fs.writeFileSync('blacklisted.json', JSON.stringify(blacklisted), {encoding: 'utf8', flag: 'w'});
+    process.exit();
+  });
 
   if (args.length) {
     if (args.some(a => a === 'test')) {
@@ -39,6 +48,26 @@ let jobIdSuffix = 0;
   const evaluationQueue = new Queue('evaluate', {
     connection: {
       enableOfflineQueue: false,
+    },
+    defaultJobOptions: {
+      removeOnComplete: true,
+      removeOnFail: {
+        age: 24 * 3600
+      },
+    }
+  });
+
+  const queueEvents = new QueueEvents('evaluate');
+  queueEvents.on('completed', ({jobId}) => {
+    logger.info('Job completed', jobId);
+  });
+  queueEvents.on('failed', ({jobId}) => {
+    const contractTxId = jobId.split('|')[0];
+    logger.info('Job failed', {jobId, contractTxId});
+    if (!blacklisted[contractTxId]) {
+      blacklisted[contractTxId] = 1;
+    } else {
+      blacklisted[contractTxId] += 1;
     }
   });
 
@@ -54,11 +83,6 @@ let jobIdSuffix = 0;
   });
 
   await subscribeToGatewayNotifications(evaluationQueue);
-
-  const queueEvents = new QueueEvents('evaluate');
-  queueEvents.on('completed', ({jobId}) => {
-    logger.info('Job completed', jobId);
-  });
 
   const app = new Koa();
   app.use(cors({
@@ -83,7 +107,11 @@ let jobIdSuffix = 0;
   app.listen(port);
 
   logger.info(`Listening on port ${port}`);
-})();
+}
+
+runListener().catch((e) => {
+  logger.error(e);
+})
 
 async function subscribeToGatewayNotifications(evaluationQueue) {
   const connectionOptions = readGwPubSubConfig();
@@ -125,9 +153,16 @@ async function subscribeToGatewayNotifications(evaluationQueue) {
       return;
     }
 
+    if (blacklisted[msgObj.contractTxId]) {
+      if (blacklisted[msgObj.contractTxId] > 3) {
+        logger.warn('Contract blacklisted', msgObj.contractTxId);
+        return;
+      }
+    }
+
     const jobId = msgObj.sortKey
-      ? `${msgObj.contractTxId}_${msgObj.sortKey}`
-      : `${msgObj.contractTxId}_${jobIdSuffix}`;
+      ? `${msgObj.contractTxId}|${msgObj.sortKey}`
+      : `${msgObj.contractTxId}|${jobIdSuffix}`;
 
     logger.info("jobId", jobId);
 
