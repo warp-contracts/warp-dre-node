@@ -149,9 +149,11 @@ async function isProcessingContract(queue, contractTxId) {
   return activeJobs.some((job) => {
     console.log('checking', {
       contractTxId,
-      job: job.data.contractTxId
+      job: job.data.contractTxId,
+      result: job.data.contractTxId === contractTxId,
+      result2: job.data.contractTxId.localeCompare(contractTxId) === 0
     })
-    return job.data.contractTxId === contractTxId;
+    return job.data.contractTxId.localeCompare(contractTxId) === 0;
   });
 }
 
