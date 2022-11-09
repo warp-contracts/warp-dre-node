@@ -146,7 +146,9 @@ async function deleteOldActiveJobs(queue) {
 
 async function isProcessingContract(queue, contractTxId) {
   const activeJobs = await queue.getJobs(['active', 'waiting']);
-  return activeJobs.some((job) => job.id.startsWith(contractTxId));
+  return activeJobs.some((job) => {
+    return job.data.contractTxId === contractTxId;
+  });
 }
 
 function readGwPubSubConfig() {
