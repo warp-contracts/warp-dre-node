@@ -1,5 +1,5 @@
 const Arweave = require("arweave");
-const {LoggerFactory, defaultCacheOptions, WarpFactory, defaultWarpGwOptions} = require("warp-contracts");
+const {defaultCacheOptions, WarpFactory} = require("warp-contracts");
 const {LmdbCache} = require("warp-contracts-lmdb");
 
 const arweave = Arweave.init({
@@ -10,18 +10,12 @@ const arweave = Arweave.init({
   logging: false // Enable network request logging
 });
 
-const cacheOptions = {
-  ...defaultCacheOptions,
-  dbLocation: `./cache/warp/state`
-}
-
-module.exports = WarpFactory
-  .custom(arweave, cacheOptions, 'mainnet', new LmdbCache({
-    ...cacheOptions,
-    dbLocation: `./cache/warp/contracts`
-  }))
-  .useWarpGateway(defaultWarpGwOptions, defaultCacheOptions, new LmdbCache({
+module.exports = WarpFactory.forMainnet()
+  .useStateCache(new LmdbCache({
     ...defaultCacheOptions,
-    dbLocation: `./cache/warp/contracts`
+    dbLocation: `./cache/warp/state`
   }))
-  .build();
+  .useContractCache(new LmdbCache({
+    ...defaultCacheOptions,
+    dbLocation: `./cache/warp/contract`
+  }));

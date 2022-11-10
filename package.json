@@ -24,7 +24,7 @@
     "koa": "^2.13.4",
     "koa-bodyparser": "4.3.0",
     "koa-compress": "^5.1.0",
-    "warp-contracts": "1.2.14-lambda.8",
-    "warp-contracts-lmdb": "^1.0.5"
+    "warp-contracts": "1.2.17",
+    "warp-contracts-lmdb": "1.1.1"
   }
 }
