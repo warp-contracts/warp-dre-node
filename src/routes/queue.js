@@ -1,12 +1,23 @@
+const warp = require('../warp');
+
+let allContracts = null;
+
+setInterval(async () => {
+  allContracts = await warp.stateEvaluator.allCachedContracts();
+}, 30 * 1000);
+
 module.exports = async (ctx) => {
   const {queue} = ctx;
   const response = {};
 
   try {
-    const metricsCompleted = await queue.getMetrics('completed');
-    const metricsFailed = await queue.getMetrics('failed');
-    response.completedMetrics = metricsCompleted;
-    response.failedMetrics = metricsFailed;
+    if (allContracts == null) {
+      allContracts = await warp.stateEvaluator.allCachedContracts();
+    }
+
+    // const metricsCompleted = await queue.getMetrics('completed');
+    // const metricsFailed = await queue.getMetrics('failed');
+    response.cacheContracts = allContracts;
     response.active = await queue.getJobs(['active']);
     response.waiting = await queue.getJobs(['waiting']);
     response.failed = await queue.getJobs(['failed']);
