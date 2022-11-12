@@ -168,7 +168,8 @@ async function subscribeToGatewayNotifications(evaluationQueue) {
     evaluationQueue.add('evaluateContract', {
       contractTxId: msgObj.contractTxId,
       allowUnsafeClient: msgObj.isUnsafe,
-      appSyncKey: apiKeys.appsync
+      appSyncKey: apiKeys.appsync,
+      test: isTestInstance
     }, {
       jobId
     });

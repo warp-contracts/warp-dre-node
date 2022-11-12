@@ -11,6 +11,7 @@ initPubSub();
 module.exports = async (job) => {
   const contractTxId = job.data.contractTxId;
   const allowUnsafeClient = job.data.allowUnsafeClient === true;
+  const isTest = job.data.test;
   logger.info('Evaluating', contractTxId);
   const result = await warp.contract(contractTxId)
     .setEvaluationOptions({
@@ -25,12 +26,17 @@ module.exports = async (job) => {
     .readState();
   logger.info(`Evaluated ${contractTxId} @ ${result.sortKey}`);
 
-  logger.info('Publishing to app sync');
-  publish(contractTxId, JSON.stringify({sortKey: result.sortKey, state: result.cachedValue.state}), job.data.appSyncKey)
-    .then(r => {
-      logger.info(`Published ${contractTxId}`);
-    }).catch(e => {
-    logger.error('Error while publishing message', e);
-  });
+  if (!isTest) {
+    logger.info('Publishing to app sync');
+    publish(contractTxId, JSON.stringify({
+      sortKey: result.sortKey,
+      state: result.cachedValue.state
+    }), job.data.appSyncKey)
+      .then(r => {
+        logger.info(`Published ${contractTxId}`);
+      }).catch(e => {
+      logger.error('Error while publishing message', e);
+    });
+  }
 
 };
