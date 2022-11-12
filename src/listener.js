@@ -23,6 +23,8 @@ let port = 8080;
 let jobIdSuffix = 0;
 let blacklisted = {};
 
+const apiKeys = readApiKeysConfig();
+
 async function runListener() {
   const args = process.argv.slice(2);
   logger.info('🚀🚀🚀 Starting execution node with params:', args);
@@ -58,9 +60,6 @@ async function runListener() {
   });
 
   const queueEvents = new QueueEvents('evaluate');
-  queueEvents.on('completed', ({jobId}) => {
-    logger.info('Job completed', jobId);
-  });
   queueEvents.on('failed', ({jobId}) => {
     const contractTxId = jobId.split('|')[0];
     logger.info('Job failed', {jobId, contractTxId});
@@ -168,7 +167,8 @@ async function subscribeToGatewayNotifications(evaluationQueue) {
 
     evaluationQueue.add('evaluateContract', {
       contractTxId: msgObj.contractTxId,
-      allowUnsafeClient: msgObj.isUnsafe
+      allowUnsafeClient: msgObj.isUnsafe,
+      appSyncKey: apiKeys.appsync
     }, {
       jobId
     });
@@ -184,7 +184,15 @@ async function deleteOldActiveJobs(queue) {
 }
 
 function readGwPubSubConfig() {
-  const json = fs.readFileSync(path.join('.secrets', 'gw-pubsub.json'), "utf-8");
+  return readConfig('gw-pubsub.json');
+}
+
+function readApiKeysConfig() {
+  return readConfig('api-keys.json');
+}
+
+function readConfig(file) {
+  const json = fs.readFileSync(path.join('.secrets', file), "utf-8");
   return JSON.parse(json);
 }
 

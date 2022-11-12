@@ -21,5 +21,5 @@ const path = require("path");
 
     publisher.publish(channel, JSON.stringify(message));
     console.log("Published %s to %s", message, channel);
-  }, 1000);
+  }, 2000);
 })();
