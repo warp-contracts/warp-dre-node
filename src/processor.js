@@ -28,7 +28,7 @@ module.exports = async (job) => {
   logger.info('Publishing to app sync');
   publish(contractTxId, JSON.stringify({sortKey: result.sortKey, state: result.cachedValue.state}), job.data.appSyncKey)
     .then(r => {
-      logger.info(`Published ${contractTxId}`, r);
+      logger.info(`Published ${contractTxId}`);
     }).catch(e => {
     logger.error('Error while publishing message', e);
   });
