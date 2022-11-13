@@ -1,14 +1,16 @@
-const Arweave = require("arweave");
 const {defaultCacheOptions, WarpFactory} = require("warp-contracts");
 const {LmdbCache} = require("warp-contracts-lmdb");
+const {NlpManager} = require("node-nlp");
 
-const arweave = Arweave.init({
-  host: 'arweave.net',
-  port: 443, // Port
-  protocol: 'https', // Network protocol http or https
-  timeout: 60000, // Network request timeouts in milliseconds
-  logging: false // Enable network request logging
-});
+class NlpExtension {
+  process(input) {
+    input.NlpManager = NlpManager;
+  }
+
+  type() {
+    return 'smartweave-extension';
+  }
+}
 
 module.exports = WarpFactory.forMainnet()
   .useStateCache(new LmdbCache({
@@ -18,4 +20,5 @@ module.exports = WarpFactory.forMainnet()
   .useContractCache(new LmdbCache({
     ...defaultCacheOptions,
     dbLocation: `./cache/warp/contract`
-  }));
+  }))
+  .use(new NlpExtension());

@@ -16,7 +16,7 @@ const path = require("path");
   console.log(publisher.status)
 
   setInterval(() => {
-    const message = { contractTxId: 'FnaxqvRN5neyArFpVs33uxjJLaaZ2yU0_rrRyD03ry0', test: true };
+    const message = { contractTxId: 'wwcnd-QINqZubXkjNu4Y8VqYUEOXDu3pgxi9wdboCwc', test: true };
     const channel = `contracts`;
 
     publisher.publish(channel, JSON.stringify(message));
