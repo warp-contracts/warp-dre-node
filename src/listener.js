@@ -10,6 +10,7 @@ const compress = require("koa-compress");
 const zlib = require("zlib");
 const router = require("./router");
 const fs = require("fs");
+const {readGwPubSubConfig, readApiKeysConfig} = require("./config");
 
 LoggerFactory.INST.logLevel('none');
 
@@ -182,19 +183,6 @@ async function subscribeToGatewayNotifications(evaluationQueue) {
 async function deleteOldActiveJobs(queue) {
   const oldActiveJobs = await queue.getJobs(['active']);
   await Promise.allSettled(oldActiveJobs.map((job) => job.remove()));
-}
-
-function readGwPubSubConfig() {
-  return readConfig('gw-pubsub.json');
-}
-
-function readApiKeysConfig() {
-  return readConfig('api-keys.json');
-}
-
-function readConfig(file) {
-  const json = fs.readFileSync(path.join('.secrets', file), "utf-8");
-  return JSON.parse(json);
 }
 
 function isTxIdValid(txId) {

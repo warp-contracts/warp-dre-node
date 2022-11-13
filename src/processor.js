@@ -1,12 +1,17 @@
 const warp = require('./warp');
 const {LoggerFactory} = require("warp-contracts");
-const {publish, initPubSub} = require("warp-contracts-pubsub");
+const {publish: appSyncPublish, initPubSub: initAppSyncPublish} = require("warp-contracts-pubsub");
+const Redis = require("ioredis");
+const {readGwPubSubConfig} = require("./config");
 
 LoggerFactory.INST.logLevel('none');
 LoggerFactory.INST.logLevel('info', 'processor');
 const logger = LoggerFactory.INST.create('processor');
 
-initPubSub();
+initAppSyncPublish();
+
+const connectionOptions = readGwPubSubConfig();
+const redisPublisher = new Redis(connectionOptions);
 
 module.exports = async (job) => {
   const contractTxId = job.data.contractTxId;
@@ -16,7 +21,7 @@ module.exports = async (job) => {
   const result = await warp.contract(contractTxId)
     .setEvaluationOptions({
       useVM2: true,
-      ignoreExceptions: true,
+      ignoreExceptions: false,
       maxCallDepth: 5,
       maxInteractionEvaluationTimeSeconds: 10,
       allowBigInt: true,
@@ -28,7 +33,7 @@ module.exports = async (job) => {
 
   if (!isTest) {
     logger.info('Publishing to app sync');
-    publish(contractTxId, JSON.stringify({
+    appSyncPublish(contractTxId, JSON.stringify({
       sortKey: result.sortKey,
       state: result.cachedValue.state
     }), job.data.appSyncKey)
@@ -36,6 +41,16 @@ module.exports = async (job) => {
         logger.info(`Published ${contractTxId}`);
       }).catch(e => {
       logger.error('Error while publishing message', e);
+    });
+
+    logger.info('Publishing to aggregating node');
+    redisPublisher.connect().then(() => {
+      redisPublisher.publish('states', JSON.stringify({
+          contractTxId: contractTxId,
+          sortKey: result.sortKey,
+          state: result.cachedValue.state
+        }
+      ));
     });
   }
 
