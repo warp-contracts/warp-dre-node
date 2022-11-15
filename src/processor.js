@@ -51,6 +51,8 @@ module.exports = async (job) => {
           state: result.cachedValue.state
         }
       ));
+    }).catch(e => {
+      logger.error('Error while connecting to Redis', e);
     });
   }
 
