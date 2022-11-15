@@ -11,7 +11,6 @@ const logger = LoggerFactory.INST.create('processor');
 initAppSyncPublish();
 
 const connectionOptions = readGwPubSubConfig();
-const redisPublisher = new Redis(connectionOptions);
 
 module.exports = async (job) => {
   const contractTxId = job.data.contractTxId;
@@ -44,6 +43,7 @@ module.exports = async (job) => {
     });
 
     logger.info('Publishing to aggregating node');
+    const redisPublisher = new Redis(connectionOptions);
     redisPublisher.connect().then(() => {
       redisPublisher.publish('states', JSON.stringify({
           contractTxId: contractTxId,
