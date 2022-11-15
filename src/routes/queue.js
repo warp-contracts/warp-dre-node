@@ -18,9 +18,27 @@ module.exports = async (ctx) => {
     // const metricsCompleted = await queue.getMetrics('completed');
     // const metricsFailed = await queue.getMetrics('failed');
     response.cachedContracts = allContracts;
-    response.active = await queue.getJobs(['active']);
-    response.waiting = await queue.getJobs(['waiting']);
-    response.failed = await queue.getJobs(['failed']);
+    response.active = (await queue.getJobs(['active'])).map(j => {
+      return {
+        id: j.id,
+        name: j.name,
+        stacktrace: j.stacktrace
+      }
+    });
+    response.waiting = (await queue.getJobs(['waiting'])).map(j => {
+      return {
+        id: j.id,
+        name: j.name,
+      }
+    });
+    response.failed = (await queue.getJobs(['failed'])).map(j => {
+      return {
+        id: j.id,
+        name: j.name,
+        failedReason: j.failedReason,
+        stacktrace: j.stacktrace
+      }
+    });
 
     ctx.body = response;
     ctx.status = 200;
