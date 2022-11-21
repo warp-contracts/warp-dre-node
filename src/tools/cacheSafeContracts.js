@@ -4,6 +4,9 @@ const path = require("path");
 
 (async () => {
 
+  const rawContracts = fs.readFileSync(path.join('safeContracts.json'), "utf-8");
+  let contracts =  JSON.parse(rawContracts);
+
   function readGwPubSubConfig() {
     const json = fs.readFileSync(path.join('.secrets', 'gw-pubsub.json'), "utf-8");
     return JSON.parse(json);
@@ -14,13 +17,16 @@ const path = require("path");
   const publisher = new Redis(connectionOptions);
   await publisher.connect();
   console.log(publisher.status)
+  const channel = `contracts`;
 
+  contracts = contracts.slice(0, 10);
 
-    //const message = { contractTxId: 'Daj-MNSnH55TDfxqC7v4eq0lKzVIwh98srUaWqyuZtY', test: true, interaction: {} };
-    // const message = { contractTxId: '5Yt1IujBmOm1LSux9KDUTjCE7rJqepzP7gZKf_DyzWI', test: true, interaction: {} };
-    const message = { contractTxId: '5Yt1IujBmOm1LSux9KDUTjCE7rJqepzP7gZKf_DyzAA', test: true, initialState: {"kupa": "gowna"} };
-    const channel = `contracts`;
-
+  for (let contract of contracts) {
+    console.log('Publishing', contract);
+    const message = {contractTxId: contract.contract_id, test: true, interaction: {}};
     publisher.publish(channel, JSON.stringify(message));
     console.log("Published %s to %s", message, channel);
+  }
+
+
 })();

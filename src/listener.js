@@ -1,6 +1,5 @@
 const {Queue, Worker, MetricsTime, QueueEvents} = require("bullmq");
 const path = require("path");
-const os = require("os");
 const Redis = require("ioredis");
 const {LoggerFactory} = require("warp-contracts");
 const Koa = require('koa');
@@ -9,102 +8,120 @@ const bodyParser = require("koa-bodyparser");
 const compress = require("koa-compress");
 const zlib = require("zlib");
 const router = require("./router");
-const fs = require("fs");
-const {readGwPubSubConfig, readApiKeysConfig} = require("./config");
+const {readGwPubSubConfig, readApiKeysConfig, getEvaluationOptions, getWarpSdkConfig, readWorkersConfig} = require("./config");
+const {attachPaginate} = require('knex-paginate');
+const {createNodeDbTables, insertFailure, upsertBlacklist, getFailures, connect} = require("./db/nodeDb");
 
-LoggerFactory.INST.logLevel('none');
+LoggerFactory.INST.logLevel('info');
 
 const logger = LoggerFactory.INST.create('listener');
 LoggerFactory.INST.logLevel('info', 'listener');
-LoggerFactory.INST.logLevel('info', 'processor');
+LoggerFactory.INST.logLevel('info', 'interactionsProcessor');
+LoggerFactory.INST.logLevel('info', 'contractsProcessor');
 
 let isTestInstance = false;
 let allowUnsafe = false;
-let port = 8080;
-let jobIdSuffix = 0;
-let blacklisted = {};
+let port = 8081;
+
+// the amount of failures before contract is considered as blacklisted
+let maxFailures = 3;
+
+let timestamp = Date.now();
 
 const apiKeys = readApiKeysConfig();
+const workersConfig = readWorkersConfig();
 
 async function runListener() {
   const args = process.argv.slice(2);
   logger.info('🚀🚀🚀 Starting execution node with params:', args);
 
-  if (fs.existsSync('blacklisted.json')) {
-    blacklisted = JSON.parse(fs.readFileSync('blacklisted.json', "utf-8"));
-  }
+  const nodeDb = connect();
+  attachPaginate();
 
-  process.on('SIGINT', function () {
-    fs.writeFileSync('blacklisted.json', JSON.stringify(blacklisted), {encoding: 'utf8', flag: 'w'});
-    process.exit();
-  });
+  await createNodeDbTables(nodeDb);
+  setFlags(args);
 
-  if (args.length) {
-    if (args.some(a => a === 'test')) {
-      isTestInstance = true;
-    }
-    if (args.some(a => a === 'allowUnsafe')) {
-      allowUnsafe = true;
-    }
-  }
+  logger.info('Workers config', workersConfig);
 
-  const evaluationQueue = new Queue('evaluate', {
+  let timestamp = Date.now();
+  setInterval(() => {
+    timestamp = Date.now();
+  }, workersConfig.jobIdRefreshSeconds * 1000);
+
+
+  const interactionsQueue = new Queue('interactions', {
     connection: {
       enableOfflineQueue: false,
     },
     defaultJobOptions: {
-      removeOnComplete: true,
-      removeOnFail: {
-        age: 24 * 3600
+      removeOnComplete: {
+        age: workersConfig.jobIdRefreshSeconds
       },
+      removeOnFail: true,
+    }
+  });
+  const contractsQueue = new Queue('contracts', {
+    connection: {
+      enableOfflineQueue: false,
+    },
+    defaultJobOptions: {
+      removeOnComplete: {
+        age: 3600
+      },
+      removeOnFail: true,
     }
   });
 
-  const queueEvents = new QueueEvents('evaluate');
-  queueEvents.on('failed', ({jobId}) => {
+  const interactionsEvents = new QueueEvents('interactions');
+  interactionsEvents.on('failed', async ({jobId, failedReason}) => {
+    logger.error('Job failed', {jobId, failedReason});
     const contractTxId = jobId.split('|')[0];
-    logger.info('Job failed', {jobId, contractTxId});
-    if (!blacklisted[contractTxId]) {
-      blacklisted[contractTxId] = 1;
-    } else {
-      blacklisted[contractTxId] += 1;
-    }
+    await insertFailure(nodeDb, {
+      contract_tx_id: contractTxId,
+      evaluation_options: getEvaluationOptions(),
+      sdk_config: getWarpSdkConfig(),
+      job_id: jobId,
+      failure: failedReason
+    });
+    await upsertBlacklist(nodeDb, contractTxId);
+  });
+  interactionsEvents.on('added', async ({jobId}) => {
+    logger.error('Job added to interactions queue', jobId);
   });
 
-  await deleteOldActiveJobs(evaluationQueue);
-  await evaluationQueue.obliterate();
 
-  const processorFile = path.join(__dirname, 'processor');
-  const worker = new Worker('evaluate', processorFile, {
-    concurrency: os.cpus().length,
+  await clearQueue(interactionsQueue);
+  await clearQueue(contractsQueue);
+
+  const interactionProcessor = path.join(__dirname, 'workers', 'interactionProcessor');
+  new Worker('interactions', interactionProcessor, {
+    concurrency: workersConfig.interactions,
     metrics: {
-      maxDataPoints: MetricsTime.ONE_WEEK * 2,
+      maxDataPoints: MetricsTime.ONE_WEEK,
     },
   });
 
-  await subscribeToGatewayNotifications(evaluationQueue);
+  const contractsProcessor = path.join(__dirname, 'workers', 'contractsProcessor');
+  new Worker('contracts', contractsProcessor, {
+    concurrency: workersConfig.contracts,
+    metrics: {
+      maxDataPoints: MetricsTime.ONE_WEEK,
+    },
+  });
 
   const app = new Koa();
-  app.use(cors({
-    async origin() {
-      return '*';
-    },
-  }));
-  app.use(compress({
-    threshold: 2048,
-    deflate: false,
-    br: {
-      params: {
-        [zlib.constants.BROTLI_PARAM_QUALITY]: 4
-      }
-    }
-  }));
-
-  app.use(bodyParser());
-  app.use(router.routes());
-  app.use(router.allowedMethods());
-  app.context.queue = evaluationQueue;
+  app
+    .use(corsConfig())
+    .use(compress(compressionSettings))
+    .use(bodyParser())
+    .use(router.routes())
+    .use(router.allowedMethods());
+  app.context.interactionsQueue = interactionsQueue;
+  app.context.contractsQueue = contractsQueue;
+  app.context.nodeDb = nodeDb;
   app.listen(port);
+
+  await subscribeToGatewayNotifications(nodeDb, interactionsQueue, contractsQueue);
 
   logger.info(`Listening on port ${port}`);
 }
@@ -113,11 +130,11 @@ runListener().catch((e) => {
   logger.error(e);
 })
 
-async function subscribeToGatewayNotifications(evaluationQueue) {
+async function subscribeToGatewayNotifications(nodeDb, interactionsQueue, contractsQueue) {
   const connectionOptions = readGwPubSubConfig();
   const subscriber = new Redis(connectionOptions);
   await subscriber.connect();
-  logger.info("Connected to gateway notifications", subscriber.status);
+  logger.info("Connected to Warp Gateway notifications", subscriber.status);
 
   subscriber.subscribe("contracts", (err, count) => {
     if (err) {
@@ -129,7 +146,8 @@ async function subscribeToGatewayNotifications(evaluationQueue) {
     }
   });
 
-  subscriber.on("message", (channel, message) => {
+
+  subscriber.on("message", async (channel, message) => {
     logger.info(`Received '${message}' from channel '${channel}'`);
 
     const msgObj = JSON.parse(message);
@@ -138,8 +156,9 @@ async function subscribeToGatewayNotifications(evaluationQueue) {
       return;
     }
 
-    if (msgObj.isUnsafe && !allowUnsafe) {
-      logger.warn('Skipping unsafe contract');
+    if ((!msgObj.initialState && !msgObj.interaction)
+      || (msgObj.initialState && msgObj.interaction)) {
+      logger.warn('Invalid message format');
       return;
     }
 
@@ -153,30 +172,59 @@ async function subscribeToGatewayNotifications(evaluationQueue) {
       return;
     }
 
-    if (blacklisted[msgObj.contractTxId]) {
-      if (blacklisted[msgObj.contractTxId] > 3) {
-        logger.warn('Contract blacklisted', msgObj.contractTxId);
-        return;
-      }
+    const contractFailures = await getFailures(nodeDb, msgObj.contractTxId);
+
+    if (Number.isInteger(contractFailures) && contractFailures > maxFailures - 1) {
+      logger.warn('Contract blacklisted', msgObj.contractTxId);
+      return;
     }
 
-    const jobId = msgObj.sortKey
-      ? `${msgObj.contractTxId}|${msgObj.sortKey}`
-      : `${msgObj.contractTxId}|${jobIdSuffix}`;
-
-    logger.info("jobId", jobId);
-
-    evaluationQueue.add('evaluateContract', {
+    const baseMessage = {
       contractTxId: msgObj.contractTxId,
-      allowUnsafeClient: msgObj.isUnsafe,
       appSyncKey: apiKeys.appsync,
-      test: isTestInstance
-    }, {
-      jobId
-    });
-
-    logger.info('Published on evaluation queue', msgObj.contractTxId);
+      test: isTestInstance,
+    };
+    if (msgObj.initialState) {
+      const jobId = msgObj.contractTxId;
+      await contractsQueue.add('initContract', {
+        ...baseMessage,
+        initialState: msgObj.initialState
+      }, {jobId});
+      logger.info("Published to contracts queue", jobId);
+    } else if (msgObj.interaction) {
+      // manually checking the queue contents
+      // - e.g. using "evaluationQueue.getJobs('active')" - won't work here
+      // - 'getJobs' function is async
+      const jobId = `${msgObj.contractTxId}|${timestamp}`;
+      await interactionsQueue.add('evaluateInteraction', {
+        ...baseMessage,
+        interaction: msgObj.interaction
+      }, {jobId});
+    }
   });
+}
+
+const compressionSettings = {
+  threshold: 2048,
+  deflate: false,
+  br: {
+    params: {
+      [zlib.constants.BROTLI_PARAM_QUALITY]: 4
+    }
+  }
+};
+
+function corsConfig() {
+  return cors({
+    async origin() {
+      return '*';
+    },
+  });
+}
+
+async function clearQueue(queue) {
+  // await deleteOldActiveJobs(queue);
+  await queue.obliterate({force: true});
 }
 
 // https://github.com/taskforcesh/bullmq/issues/1506
@@ -188,4 +236,19 @@ async function deleteOldActiveJobs(queue) {
 function isTxIdValid(txId) {
   const validTxIdRegex = /[a-z0-9_-]{43}/i;
   return validTxIdRegex.test(txId);
+}
+
+setInterval(() => {
+  timestamp = Date.now();
+}, workersConfig.jobIdRefreshSeconds * 1000);
+
+function setFlags(args) {
+  if (args.length) {
+    if (args.some(a => a === 'test')) {
+      isTestInstance = true;
+    }
+    if (args.some(a => a === 'allowUnsafe')) {
+      allowUnsafe = true;
+    }
+  }
 }

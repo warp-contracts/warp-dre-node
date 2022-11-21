@@ -1,24 +1,15 @@
 const {defaultCacheOptions, WarpFactory} = require("warp-contracts");
 const {LmdbCache} = require("warp-contracts-lmdb");
-const {NlpManager} = require("node-nlp");
+const {NlpExtension} = require("warp-contracts-nlp-plugin");
 
-class NlpExtension {
-  process(input) {
-    input.NlpManager = NlpManager;
-  }
-
-  type() {
-    return 'smartweave-extension';
-  }
-}
 
 module.exports = WarpFactory.forMainnet()
   .useStateCache(new LmdbCache({
     ...defaultCacheOptions,
-    dbLocation: `./cache/warp/state`
+    dbLocation: `./cache/warp/lmdb/state`
   }))
   .useContractCache(new LmdbCache({
     ...defaultCacheOptions,
-    dbLocation: `./cache/warp/contract`
+    dbLocation: `./cache/warp/lmdb/contract`
   }))
   .use(new NlpExtension());
