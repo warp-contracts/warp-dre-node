@@ -13,7 +13,7 @@ module.exports = {
       .then(dbResult => {
         logger.info('State stored in sqlite', contractTxId);
 
-        if (isTest) {
+        if (!isTest) {
           const redisPublisher = new Redis(connectionOptions);
           redisPublisher.connect().then(() => {
             redisPublisher.publish('states', JSON.stringify({

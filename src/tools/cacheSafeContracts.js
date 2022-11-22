@@ -23,7 +23,7 @@ const path = require("path");
 
   for (let contract of contracts) {
     console.log('Publishing', contract);
-    const message = {contractTxId: contract.contract_id, test: true, interaction: {}};
+    const message = {contractTxId: contract.contract_id, test: false, interaction: {}};
     publisher.publish(channel, JSON.stringify(message));
     console.log("Published %s to %s", message, channel);
   }
