@@ -148,9 +148,9 @@ async function subscribeToGatewayNotifications(nodeDb, interactionsQueue, contra
 
 
   subscriber.on("message", async (channel, message) => {
-    logger.info(`Received '${message}' from channel '${channel}'`);
-
     const msgObj = JSON.parse(message);
+    logger.info(`Received '${msgObj.contractTxId}' from channel '${channel}'`);
+
     if (!isTxIdValid(msgObj.contractTxId)) {
       logger.warn('Invalid txid format');
       return;
