@@ -21,7 +21,7 @@ LoggerFactory.INST.logLevel('info', 'contractsProcessor');
 
 let isTestInstance = false;
 let allowUnsafe = false;
-let port = 8081;
+let port = 8080;
 
 // the amount of failures before contract is considered as blacklisted
 let maxFailures = 3;
