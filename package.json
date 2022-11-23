@@ -1,7 +1,7 @@
 {
-  "name": "warp-cache-node",
+  "name": "warp-dre-node",
   "version": "1.0.0",
-  "description": "A cache node for Warp Contracts",
+  "description": "A Delegated Resolution Environment (D.R.E.) node for Warp Contracts",
   "author": "just_ppe",
   "license": "MIT",
   "scripts": {
