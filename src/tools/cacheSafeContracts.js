@@ -20,7 +20,7 @@ const path = require("path");
   const channel = `contracts`;
 
 
-  //contracts = contracts.slice(0, 10);
+  contracts = contracts.slice(0, 10);
 
   for (let contract of contracts) {
     console.log('Publishing', contract);
