@@ -10,7 +10,9 @@ const zlib = require("zlib");
 const router = require("./router");
 const {readGwPubSubConfig, readApiKeysConfig, getEvaluationOptions, getWarpSdkConfig, readWorkersConfig} = require("./config");
 const {attachPaginate} = require('knex-paginate');
-const {createNodeDbTables, insertFailure, upsertBlacklist, getFailures, connect} = require("./db/nodeDb");
+const {createNodeDbTables, insertFailure, upsertBlacklist, getFailures, connect, events, hasContract, connectEvents,
+  createNodeDbEventsTables
+} = require("./db/nodeDb");
 
 LoggerFactory.INST.logLevel('info');
 
@@ -23,22 +25,23 @@ let isTestInstance = false;
 let allowUnsafe = false;
 let port = 8080;
 
-// the amount of failures before contract is considered as blacklisted
-let maxFailures = 3;
-
 let timestamp = Date.now();
 
 const apiKeys = readApiKeysConfig();
 const workersConfig = readWorkersConfig();
+
+const updateQueueName = 'update';
+const registerQueueName = 'register';
 
 async function runListener() {
   const args = process.argv.slice(2);
   logger.info('🚀🚀🚀 Starting execution node with params:', args);
 
   const nodeDb = connect();
-  attachPaginate();
+  const nodeDbEvents = connectEvents();
 
   await createNodeDbTables(nodeDb);
+  await createNodeDbEventsTables(nodeDbEvents);
   setFlags(args);
 
   logger.info('Workers config', workersConfig);
@@ -49,7 +52,7 @@ async function runListener() {
   }, workersConfig.jobIdRefreshSeconds * 1000);
 
 
-  const interactionsQueue = new Queue('interactions', {
+  const updateQueue = new Queue(updateQueueName, {
     connection: {
       enableOfflineQueue: false,
     },
@@ -60,7 +63,7 @@ async function runListener() {
       removeOnFail: true,
     }
   });
-  const contractsQueue = new Queue('contracts', {
+  const registerQueue = new Queue(registerQueueName, {
     connection: {
       enableOfflineQueue: false,
     },
@@ -72,9 +75,12 @@ async function runListener() {
     }
   });
 
-  const interactionsEvents = new QueueEvents('interactions');
-  interactionsEvents.on('failed', async ({jobId, failedReason}) => {
-    logger.error('Job failed', {jobId, failedReason});
+  const updateEvents = new QueueEvents(updateQueueName);
+  const registerEvents = new QueueEvents(registerQueueName);
+
+  // TODO: yeah, copy-pastes
+  updateEvents.on('failed', async ({jobId, failedReason}) => {
+    logger.error('Update job failed', {jobId, failedReason});
     const contractTxId = jobId.split('|')[0];
     await insertFailure(nodeDb, {
       contract_tx_id: contractTxId,
@@ -84,26 +90,54 @@ async function runListener() {
       failure: failedReason
     });
     await upsertBlacklist(nodeDb, contractTxId);
+    events.failure(nodeDbEvents, contractTxId, failedReason);
   });
-  interactionsEvents.on('added', async ({jobId}) => {
-    logger.error('Job added to interactions queue', jobId);
+  updateEvents.on('added', async ({jobId}) => {
+    logger.info('Job added to update queue', jobId);
+    const contractTxId = jobId.split("|")[0];
+    events.update(nodeDbEvents, contractTxId);
+  });
+  updateEvents.on('completed', async ({jobId}) => {
+    logger.info('Update job completed', jobId);
+    const contractTxId = jobId.split("|")[0];
+    events.evaluated(nodeDbEvents, contractTxId);
   });
 
+  registerEvents.on('failed', async ({jobId, failedReason}) => {
+    logger.error('Register job failed', {jobId, failedReason});
+    await insertFailure(nodeDb, {
+      contract_tx_id: jobId,
+      evaluation_options: getEvaluationOptions(),
+      sdk_config: getWarpSdkConfig(),
+      job_id: jobId,
+      failure: failedReason
+    });
+    await upsertBlacklist(nodeDb, jobId);
+    events.failure(nodeDbEvents, jobId, failedReason);
+  });
+  registerEvents.on('added', async ({jobId}) => {
+    logger.info('Job added to register queue', jobId);
+    events.register(nodeDbEvents, jobId);
+  });
+  registerEvents.on('completed', async ({jobId}) => {
+    logger.info('Register job completed', jobId);
+    events.evaluated(nodeDbEvents, jobId);
+  });
 
-  await clearQueue(interactionsQueue);
-  await clearQueue(contractsQueue);
+  await clearQueue(updateQueue);
+  await clearQueue(registerQueue);
 
-  const interactionProcessor = path.join(__dirname, 'workers', 'interactionProcessor');
-  new Worker('interactions', interactionProcessor, {
-    concurrency: workersConfig.interactions,
+  const updateProcessor = path.join(__dirname, 'workers', 'updateProcessor');
+  new Worker(updateQueueName, updateProcessor, {
+    concurrency: workersConfig.update,
     metrics: {
       maxDataPoints: MetricsTime.ONE_WEEK,
     },
   });
 
-  const contractsProcessor = path.join(__dirname, 'workers', 'contractsProcessor');
-  new Worker('contracts', contractsProcessor, {
-    concurrency: workersConfig.contracts,
+  const registerProcessor = path.join(__dirname, 'workers', 'registerProcessor');
+  new Worker(registerQueueName, registerProcessor, {
+    concurrency: workersConfig.register,
     metrics: {
       maxDataPoints: MetricsTime.ONE_WEEK,
     },
@@ -116,12 +150,13 @@ async function runListener() {
     .use(bodyParser())
     .use(router.routes())
     .use(router.allowedMethods());
-  app.context.interactionsQueue = interactionsQueue;
-  app.context.contractsQueue = contractsQueue;
+  app.context.updateQueue = updateQueue;
+  app.context.registerQueue = registerQueue;
   app.context.nodeDb = nodeDb;
+  app.context.nodeDbEvents = nodeDbEvents;
   app.listen(port);
 
-  await subscribeToGatewayNotifications(nodeDb, interactionsQueue, contractsQueue);
+  await subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updateQueue, registerQueue);
 
   logger.info(`Listening on port ${port}`);
 }
@@ -130,7 +165,7 @@ runListener().catch((e) => {
   logger.error(e);
 })
 
-async function subscribeToGatewayNotifications(nodeDb, interactionsQueue, contractsQueue) {
+async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueue, registerQueue) {
   const connectionOptions = readGwPubSubConfig();
   const subscriber = new Redis(connectionOptions);
   await subscriber.connect();
@@ -151,55 +186,71 @@ async function subscribeToGatewayNotifications(nodeDb, interactionsQueue, contra
     const msgObj = JSON.parse(message);
     logger.info(`Received '${msgObj.contractTxId}' from channel '${channel}'`);
 
+    let validationMessage = null;
     if (!isTxIdValid(msgObj.contractTxId)) {
-      logger.warn('Invalid txid format');
-      return;
+      validationMessage = 'Invalid tx id format';
     }
 
     if ((!msgObj.initialState && !msgObj.interaction)
       || (msgObj.initialState && msgObj.interaction)) {
-      logger.warn('Invalid message format');
-      return;
+      validationMessage = 'Invalid message format';
     }
 
     if (msgObj.test && !isTestInstance) {
-      logger.warn('Skipping test instance message');
-      return;
+      validationMessage = 'Skipping test instance message';
     }
 
     if (!msgObj.test && isTestInstance) {
-      logger.warn('Skipping non-test instance message');
-      return;
+      validationMessage = 'Skipping non-test instance message';
     }
 
     const contractFailures = await getFailures(nodeDb, msgObj.contractTxId);
 
-    if (Number.isInteger(contractFailures) && contractFailures > maxFailures - 1) {
-      logger.warn('Contract blacklisted', msgObj.contractTxId);
+    if (Number.isInteger(contractFailures) && contractFailures > workersConfig.maxFailures - 1) {
+      validationMessage = 'Contract blacklisted';
+    }
+
+    if (validationMessage !== null) {
+      logger.warn('Message rejected:', validationMessage);
+      events.reject(nodeDbEvents, msgObj.contractTxId, validationMessage);
       return;
     }
 
+    const contractTxId = msgObj.contractTxId;
+    const isRegistered = await hasContract(nodeDb, contractTxId);
+
     const baseMessage = {
-      contractTxId: msgObj.contractTxId,
+      contractTxId,
       appSyncKey: apiKeys.appsync,
       test: isTestInstance,
     };
     if (msgObj.initialState) {
+      if (isRegistered) {
+        validationMessage = 'Contract already registered';
+        logger.warn(validationMessage);
+        events.reject(nodeDbEvents, msgObj.contractTxId, validationMessage);
+        return;
+      }
       const jobId = msgObj.contractTxId;
-      await contractsQueue.add('initContract', {
+      await registerQueue.add('initContract', {
         ...baseMessage,
         initialState: msgObj.initialState
       }, {jobId});
       logger.info("Published to contracts queue", jobId);
     } else if (msgObj.interaction) {
-      // manually checking the queue contents
-      // - e.g. using "evaluationQueue.getJobs('active')" - won't work here
-      // - 'getJobs' function is async
-      const jobId = `${msgObj.contractTxId}|${timestamp}`;
-      await interactionsQueue.add('evaluateInteraction', {
-        ...baseMessage,
-        interaction: msgObj.interaction
-      }, {jobId});
+      if (!isRegistered) {
+        logger.warn('Contract not registered, adding to register queue', contractTxId);
+        await registerQueue.add('initContract', {
+          ...baseMessage,
+          force: true
+        }, {jobId: contractTxId});
+      } else {
+        const jobId = `${msgObj.contractTxId}|${timestamp}`;
+        await updatedQueue.add('evaluateInteraction', {
+          ...baseMessage,
+          interaction: msgObj.interaction
+        }, {jobId});
+      }
     }
   });
 }
@@ -225,12 +276,6 @@ function corsConfig() {
 async function clearQueue(queue) {
   // await deleteOldActiveJobs(queue);
   await queue.obliterate({force: true});
-}
-
-// https://github.com/taskforcesh/bullmq/issues/1506
-async function deleteOldActiveJobs(queue) {
-  const oldActiveJobs = await queue.getJobs(['active']);
-  await Promise.allSettled(oldActiveJobs.map((job) => job.remove()));
 }
 
 function isTxIdValid(txId) {

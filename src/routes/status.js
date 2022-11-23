@@ -1,6 +1,6 @@
 const {getNodeManifest, readWorkersConfig} = require("../config");
 module.exports = async (ctx) => {
-  const {interactionsQueue} = ctx;
+  const {updateQueue, registerQueue} = ctx;
   const response = {};
 
   try {
@@ -9,24 +9,33 @@ module.exports = async (ctx) => {
     // const metricsCompleted = await queue.getMetrics('completed');
     // const metricsFailed = await queue.getMetrics('failed');
 
-    const activeJobs = await interactionsQueue.getJobs(['active']);
-    const waitingJobs = await interactionsQueue.getJobs(['waiting']);
+    const updateActiveJobs = await updateQueue.getJobs(['active']);
+    const updateWaitingJobs = await updateQueue.getJobs(['waiting']);
 
-    response.activeJobsSize = activeJobs?.length;
-    response.waitingJobsSize = waitingJobs?.length;
+    const registerActiveJobs = await registerQueue.getJobs(['active']);
+    const registerWaitingJobs = await registerQueue.getJobs(['waiting']);
 
-    response.activeJobs = activeJobs.map(j => {
-      return {
-        id: j.id,
-        name: j.name,
+    response.queues_totals = {
+      update: {
+        active: updateActiveJobs.length,
+        waiting: updateWaitingJobs.length
+      },
+      register: {
+        active: registerActiveJobs.length,
+        waiting: registerWaitingJobs.length
       }
-    });
-    response.waitingJobs = (await interactionsQueue.getJobs(['waiting'])).map(j => {
-      return {
-        id: j.id,
-        name: j.name,
+    }
+
+    response.queues_details = {
+      update: {
+        active: updateActiveJobs.map(mapJob),
+        waiting: updateWaitingJobs.map(mapJob)
+      },
+      register: {
+        active: registerActiveJobs.map(mapJob),
+        waiting: registerWaitingJobs.map(mapJob)
       }
-    });
+    }
 
     ctx.body = response;
     ctx.status = 200;
@@ -35,5 +44,8 @@ module.exports = async (ctx) => {
     ctx.status = 500;
     throw e;
   }
-
 };
+
+function mapJob(j) {
+  return j.id;
+}

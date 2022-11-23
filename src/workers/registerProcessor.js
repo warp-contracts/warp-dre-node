@@ -1,43 +1,42 @@
 const warp = require('../warp');
 const {LoggerFactory, genesisSortKey, CacheKey, EvalStateResult, Benchmark} = require("warp-contracts");
 const {storeAndPublish} = require("./common");
+const {getEvaluationOptions} = require("../config");
 
 LoggerFactory.INST.logLevel('none');
 LoggerFactory.INST.logLevel('info', 'contractsProcessor');
 const logger = LoggerFactory.INST.create('contractsProcessor');
 
+const evaluationOptions = getEvaluationOptions();
 
 module.exports = async (job) => {
-  const benchmark = Benchmark.measure();
   const contractTxId = job.data.contractTxId;
+  logger.info('Register Processor', contractTxId);
   const isTest = job.data.test;
-  logger.info('Contracts Processor', contractTxId);
 
   const stateCache = warp.stateEvaluator.getCache();
   const lmdb = stateCache.storage();
 
-  await lmdb.transaction(async () => {
-    const lastCached = await stateCache.getLast(contractTxId)
-    if (lastCached !== null) {
-      return;
-    }
-
+  let result;
+  if (job.data.force) {
+    result = await warp.contract(contractTxId)
+      .setEvaluationOptions(evaluationOptions)
+      .readState();
+  } else {
     await stateCache.put(
       new CacheKey(contractTxId, genesisSortKey),
       new EvalStateResult(job.data.initialState, {}, {})
     );
+    result = {
+      sortKey: genesisSortKey,
+      cachedValue: {
+        state: job.data.initialState,
+        validity: {},
+        errorMessages: {}
+      }
+    };
+  }
+
+  storeAndPublish(logger, isTest, contractTxId, result).finally(() => {
   });
-
-  logger.info(`Stored ${contractTxId}`)
-
-  storeAndPublish(logger, isTest, contractTxId, {
-    sortKey: genesisSortKey,
-    cachedValue: {
-      state: job.data.initialState,
-      validity: {},
-      errorMessages: {}
-    }
-  })
-    .finally(() => {
-    });
 };

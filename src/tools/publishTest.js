@@ -15,10 +15,10 @@ const path = require("path");
   await publisher.connect();
   console.log(publisher.status)
 
-
-    //const message = { contractTxId: 'Daj-MNSnH55TDfxqC7v4eq0lKzVIwh98srUaWqyuZtY', test: true, interaction: {} };
+// 5dV4R2zESiRHQjN6xVt7-NGWSbL5aLaDBV52tlRyFbg
+    const message = { contractTxId: 'Daj-MNSnH55TDfxqC7v4eq0lKzVIwh98srUaWqyuZtY', test: true, interaction: {} };
     // const message = { contractTxId: '5Yt1IujBmOm1LSux9KDUTjCE7rJqepzP7gZKf_DyzWI', test: true, interaction: {} };
-    const message = { contractTxId: '5Yt1IujBmOm1LSux9KDUTjCE7rJqepzP7gZKf_DyzAA', test: true, initialState: {"kupa": "gowna"} };
+    // const message = { contractTxId: '5dV4R2zESiRHQjN6xVt7-NGWSbL5aLaDBV52tlRyFbg', test: true, initialState: {"kupa": "gowna"} };
     const channel = `contracts`;
 
     publisher.publish(channel, JSON.stringify(message));

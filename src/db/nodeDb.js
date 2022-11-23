@@ -3,6 +3,18 @@ const {signState} = require("../signature");
 const {getNodeManifest} = require("../config");
 
 module.exports = {
+  createNodeDbEventsTables: async (knex) => {
+    const hasEventsTable = await knex.schema.hasTable('events');
+    if (!hasEventsTable) {
+      await knex.schema.createTable('events', function (t) {
+        t.string('contract_tx_id').notNullable().index();
+        t.string('event').notNullable().index();
+        t.timestamp('timestamp').defaultTo(knex.fn.now()).index();
+        t.string('message');
+      });
+    }
+  },
+
   createNodeDbTables: async (knex) => {
     const hasErrorsTable = await knex.schema.hasTable('errors');
     if (!hasErrorsTable) {
@@ -47,6 +59,26 @@ module.exports = {
       client: 'better-sqlite3',
       connection: {
         filename: `sqlite/node.sqlite`
+      },
+      useNullAsDefault: true
+    });
+  },
+
+  connectEvents: () => {
+    return knex({
+      client: 'better-sqlite3',
+      connection: {
+        filename: `sqlite/node-events.sqlite`
+      },
+      useNullAsDefault: true
+    });
+  },
+
+  connectState: () => {
+    return knex({
+      client: 'better-sqlite3',
+      connection: {
+        filename: `sqlite/node-state.sqlite`
       },
       useNullAsDefault: true
     });
@@ -114,6 +146,15 @@ module.exports = {
     return nodeDb('errors').select('*');
   },
 
+  getContractErrors: async (nodeDb, contractTxId) => {
+    return nodeDb('errors')
+      .where({
+        contract_tx_id: contractTxId
+      })
+      .select('*')
+      .orderBy('timestamp', 'desc');
+  },
+
   getLastState: async (nodeDb, contractTxId) => {
     const result = await nodeDb('states')
       .where({
@@ -129,6 +170,52 @@ module.exports = {
     return nodeDb('states')
       .distinct('contract_tx_id')
       .pluck('contract_tx_id');
-  }
+  },
 
+  hasContract: async (nodeDb, contractTxId) => {
+    return (await nodeDb('states')
+      .where({
+        contract_tx_id: contractTxId
+      }).first()) != null;
+  },
+
+  events: {
+    register: (nodeDb, contractTxId, message) => {
+      insertEvent(nodeDb, 'REQUEST_REGISTER', contractTxId, message).finally(()=>{});
+    },
+    update: (nodeDb, contractTxId, message) => {
+      insertEvent(nodeDb, 'REQUEST_UPDATE', contractTxId, message).finally(()=>{});
+    },
+    reject: (nodeDb, contractTxId, message) => {
+      insertEvent(nodeDb, 'REJECT', contractTxId, message).finally(()=>{});
+    },
+    failure: (nodeDb, contractTxId, message) => {
+      insertEvent(nodeDb, 'FAILURE', contractTxId, message).finally(()=>{});
+    },
+    evaluated: (nodeDb, contractTxId, message) => {
+      insertEvent(nodeDb, 'EVALUATED', contractTxId, message).finally(()=>{});
+    },
+    blacklisted: (nodeDb, contractTxId, message) => {
+      insertEvent(nodeDb, 'BLACKLISTED', contractTxId, message).finally(()=>{});
+    },
+    loadForContract: async (nodeDb, contractTxId) => {
+      return nodeDb('events')
+        .where({
+          contract_tx_id: contractTxId
+        })
+        .select('*')
+        .orderBy('timestamp', 'desc');
+    }
+  }
+}
+
+async function insertEvent(nodeDb, event, contractTxId, message) {
+  nodeDb('events')
+    .insert({
+      'contract_tx_id': contractTxId,
+      'event': event,
+      'message': message
+    }).catch(e => {
+      console.error('Error while storing event', {event, contractTxId, message});
+    });
 }

@@ -12,10 +12,9 @@ const evaluationOptions = getEvaluationOptions();
 
 module.exports = async (job) => {
   const contractTxId = job.data.contractTxId;
+  logger.info('Update Processor', contractTxId);
   const isTest = job.data.test;
   const interaction = job.data.interaction;
-  logger.info('Evaluating', contractTxId);
-
   const stateCache = warp.stateEvaluator.getCache();
   const lmdb = stateCache.storage();
   const contract = warp
@@ -25,7 +24,7 @@ module.exports = async (job) => {
   let result = await lmdb.transaction(async () => {
     const lastCachedKey = (await warp.stateEvaluator.latestAvailableState(contractTxId))?.sortKey;
     if (lastCachedKey?.localeCompare(interaction.lastSortKey) === 0) {
-      logger.info('Safe to use latest interaction');
+      logger.debug('Safe to use latest interaction');
       return await contract.readStateFor([interaction]);
     } else {
       return null;
@@ -33,7 +32,7 @@ module.exports = async (job) => {
   });
 
   if (result == null) {
-    logger.info('Not safe to use latest interaction, reading via Warp GW.');
+    logger.debug('Not safe to use latest interaction, reading via Warp GW.');
     result = await contract.readState();
   }
 
