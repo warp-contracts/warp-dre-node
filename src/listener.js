@@ -149,7 +149,11 @@ async function runListener() {
     .use(compress(compressionSettings))
     .use(bodyParser())
     .use(router.routes())
-    .use(router.allowedMethods());
+    .use(router.allowedMethods())
+    .use(async (ctx, next) => {
+      await next();
+      ctx.redirect("/status");
+    });
   app.context.updateQueue = updateQueue;
   app.context.registerQueue = registerQueue;
   app.context.nodeDb = nodeDb;
