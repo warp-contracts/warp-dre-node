@@ -7,6 +7,12 @@ initAppSyncPublish();
 
 const connectionOptions = readGwPubSubConfig();
 
+const redisPublisher = new Redis(
+  {
+    ...connectionOptions,
+    lazyConnect: false
+  });
+
 module.exports = {
   storeAndPublish: async (logger, isTest, contractTxId, result) => {
     insertState(connect(), contractTxId, result)
@@ -14,21 +20,17 @@ module.exports = {
         logger.info('State stored in sqlite', contractTxId);
 
         if (!isTest) {
-          const redisPublisher = new Redis(connectionOptions);
-          redisPublisher.connect().then(() => {
-            redisPublisher.publish('states', JSON.stringify({
-              contractTxId: dbResult.contract_tx_id,
-              sortKey: dbResult.sort_key,
-              state: dbResult.state,
-              node: dbResult.manifest.walletAddress,
-              signature: dbResult.signature,
-              manifest: dbResult.manifest,
-              stateHash: dbResult.state_hash
-            }));
-            logger.info('Published to Redis', contractTxId);
-          }).catch(e => {
-            logger.error('Error while connecting to Redis', e);
-          });
+          redisPublisher.publish('states', JSON.stringify({
+            contractTxId: dbResult.contract_tx_id,
+            sortKey: dbResult.sort_key,
+            state: dbResult.state,
+            node: dbResult.manifest.walletAddress,
+            signature: dbResult.signature,
+            manifest: dbResult.manifest,
+            stateHash: dbResult.state_hash
+          }));
+          logger.info('Published to Redis', contractTxId);
+
 
           /*logger.info('Publishing to appSync');
           appSyncPublish(`states/${contractTxId}`, JSON.stringify({
