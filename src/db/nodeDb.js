@@ -54,23 +54,34 @@ module.exports = {
     }
   },
 
-  connect: () => {
-    return knex({
+  connect: async () => {
+    const db = knex({
       client: 'better-sqlite3',
       connection: {
         filename: `sqlite/node.sqlite`
       },
       useNullAsDefault: true
     });
+
+    await db.raw('PRAGMA journal_mode = WAL');
+
+    return db;
   },
 
-  connectEvents: () => {
+  connectEvents: async () => {
     return knex({
       client: 'better-sqlite3',
       connection: {
         filename: `sqlite/node-events.sqlite`
       },
-      useNullAsDefault: true
+      useNullAsDefault: true,
+      pool: {
+        afterCreate: (conn, cb) => {
+          // https://github.com/knex/knex/issues/4971#issuecomment-1030701574
+          conn.pragma('journal_mode = WAL');
+          cb();
+        }
+      }
     });
   },
 
@@ -80,7 +91,13 @@ module.exports = {
       connection: {
         filename: `sqlite/node-state.sqlite`
       },
-      useNullAsDefault: true
+      useNullAsDefault: true,
+      pool: {
+        afterCreate: (conn, cb) => {
+          conn.pragma('journal_mode = WAL');
+          cb();
+        }
+      }
     });
   },
 

@@ -37,8 +37,8 @@ async function runListener() {
   const args = process.argv.slice(2);
   logger.info('🚀🚀🚀 Starting execution node with params:', args);
 
-  const nodeDb = connect();
-  const nodeDbEvents = connectEvents();
+  const nodeDb = await connect();
+  const nodeDbEvents = await connectEvents();
 
   await createNodeDbTables(nodeDb);
   await createNodeDbEventsTables(nodeDbEvents);
