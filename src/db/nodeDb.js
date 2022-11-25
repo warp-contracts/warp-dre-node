@@ -2,6 +2,9 @@ const knex = require("knex");
 const {signState} = require("../signature");
 const {getNodeManifest} = require("../config");
 
+let eventsDb = null;
+let stateDb = null;
+
 module.exports = {
   createNodeDbEventsTables: async (knex) => {
     const hasEventsTable = await knex.schema.hasTable('events');
@@ -55,54 +58,44 @@ module.exports = {
   },
 
   connect: () => {
-    return knex({
-      client: 'better-sqlite3',
-      connection: {
-        filename: `sqlite/node.sqlite`
-      },
-      useNullAsDefault: true,
-      pool: {
-        afterCreate: (conn, cb) => {
-          // https://github.com/knex/knex/issues/4971#issuecomment-1030701574
-          conn.pragma('journal_mode = WAL');
-          cb();
+    if (stateDb == null) {
+      stateDb = knex({
+        client: 'better-sqlite3',
+        connection: {
+          filename: `sqlite/node.sqlite`
+        },
+        useNullAsDefault: true,
+        pool: {
+          afterCreate: (conn, cb) => {
+            // https://github.com/knex/knex/issues/4971#issuecomment-1030701574
+            conn.pragma('journal_mode = WAL');
+            cb();
+          }
         }
-      }
-    });
+      });
+    }
+    return stateDb;
   },
 
   connectEvents: () => {
-    return knex({
-      client: 'better-sqlite3',
-      connection: {
-        filename: `sqlite/node-events.sqlite`
-      },
-      useNullAsDefault: true,
-      pool: {
-        afterCreate: (conn, cb) => {
-          // https://github.com/knex/knex/issues/4971#issuecomment-1030701574
-          conn.pragma('journal_mode = WAL');
-          cb();
+    if (eventsDb == null) {
+      eventsDb = knex({
+        client: 'better-sqlite3',
+        connection: {
+          filename: `sqlite/node-events.sqlite`
+        },
+        useNullAsDefault: true,
+        pool: {
+          afterCreate: (conn, cb) => {
+            // https://github.com/knex/knex/issues/4971#issuecomment-1030701574
+            conn.pragma('journal_mode = WAL');
+            cb();
+          }
         }
-      }
-    });
+      });
+    }
+    return eventsDb;
   },
-
-  /*connectState: () => {
-    return knex({
-      client: 'better-sqlite3',
-      connection: {
-        filename: `sqlite/node-state.sqlite`
-      },
-      useNullAsDefault: true,
-      pool: {
-        afterCreate: (conn, cb) => {
-          conn.pragma('journal_mode = WAL');
-          cb();
-        }
-      }
-    });
-  },*/
 
   insertFailure: async (nodeDb, failureInfo) => {
     await nodeDb('errors')
@@ -217,6 +210,9 @@ module.exports = {
     },
     blacklisted: (nodeDb, contractTxId, message) => {
       insertEvent(nodeDb, 'BLACKLISTED', contractTxId, message).finally(()=>{});
+    },
+    progress: (contractTxId, message) => {
+      insertEvent(module.exports.connectEvents(), 'PROGRESS', contractTxId, message).finally(()=>{});
     },
     loadForContract: async (nodeDb, contractTxId) => {
       return nodeDb('events')

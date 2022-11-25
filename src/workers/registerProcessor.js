@@ -6,6 +6,7 @@ const {getEvaluationOptions} = require("../config");
 LoggerFactory.INST.logLevel('none');
 LoggerFactory.INST.logLevel('info', 'contractsProcessor');
 const logger = LoggerFactory.INST.create('contractsProcessor');
+LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
 
 const evaluationOptions = getEvaluationOptions();
 

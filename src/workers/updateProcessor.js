@@ -7,6 +7,7 @@ LoggerFactory.INST.logLevel('none');
 LoggerFactory.INST.logLevel('info', 'interactionsProcessor');
 LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
 const logger = LoggerFactory.INST.create('interactionsProcessor');
+LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
 
 const evaluationOptions = getEvaluationOptions();
 

@@ -3645,6 +3645,11 @@ vm2@3.9.11:
     acorn "^8.7.0"
     acorn-walk "^8.2.0"
 
+warp-contracts-evaluation-progress-plugin@1.0.16:
+  version "1.0.16"
+  resolved "https://registry.yarnpkg.com/warp-contracts-evaluation-progress-plugin/-/warp-contracts-evaluation-progress-plugin-1.0.16.tgz#f52767095baabd865800c3b0bbddbe74a81e93b9"
+  integrity sha512-QSoieVOZ5/5mp2MPOVGY9aHGlEGV1OKZVKnTVPY8YlSJIItEJdMLax4FixaH9IyJMsIemgGtsTXcL8XEgVgQcw==
+
 warp-contracts-ivm-plugin@1.0.11:
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/warp-contracts-ivm-plugin/-/warp-contracts-ivm-plugin-1.0.11.tgz#1a7587482fd5bc15be90f5f4d50f19e018d551ee"
@@ -3675,10 +3680,10 @@ warp-contracts-pubsub@^1.0.3:
     "@aws-amplify/api" "^4.0.61"
     "@aws-amplify/core" "4.7.12"
 
-warp-contracts@1.2.26:
-  version "1.2.26"
-  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.2.26.tgz#9aaefeaa6139c5bf5d203d182d96c4337086ad52"
-  integrity sha512-ElXnd32XksclrHHmw5u0w2U4VVu1UHxyOwcymq15Kw27ijIHjxZXi3UKH5QjgcksxmzqpXtC6duuMYc/0Gzypg==
+warp-contracts@1.2.27:
+  version "1.2.27"
+  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.2.27.tgz#d18e5318fd8f06005415200532f5bd200ed2e6f7"
+  integrity sha512-Wbs4MLP0E0e0F13RRA0MvrGQkuILr1wHYGyj0ba/QPtWs/iy6tuMA4QzGgpTmNydx1XZkTGatCkV0QFkdT2NdA==
   dependencies:
     "@assemblyscript/loader" "^0.19.23"
     "@idena/vrf-js" "^1.0.1"

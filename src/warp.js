@@ -1,8 +1,15 @@
-const {defaultCacheOptions, WarpFactory} = require("warp-contracts");
+const {defaultCacheOptions, WarpFactory, LoggerFactory} = require("warp-contracts");
 const {LmdbCache} = require("warp-contracts-lmdb");
 const {NlpExtension} = require("warp-contracts-nlp-plugin");
 const {IvmPlugin} = require("warp-contracts-ivm-plugin");
+const {EvaluationProgressPlugin} = require("warp-contracts-evaluation-progress-plugin");
+const {EventEmitter} = require("node:events")
+const {events} = require("./db/nodeDb");
 
+const eventEmitter = new EventEmitter();
+eventEmitter.on('progress-notification', (data) => {
+  events.progress(data.contractTxId, data.message);
+});
 
 module.exports = WarpFactory.forMainnet()
   .useStateCache(new LmdbCache({
@@ -14,4 +21,5 @@ module.exports = WarpFactory.forMainnet()
     dbLocation: `./cache/warp/lmdb/contract`
   }))
   .use(new IvmPlugin({}))
+  .use(new EvaluationProgressPlugin(eventEmitter, 500))
   //.use(new NlpExtension());
