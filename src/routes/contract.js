@@ -46,7 +46,7 @@ module.exports = async (ctx) => {
       const contractErrors = await getContractErrors(nodeDb, contractId);
       if (contractErrors.length) {
         response.status = registrationStatus['error'];
-        response.errors = result;
+        response.errors = contractErrors;
       } else {
         const failures = await getFailures(nodeDb, contractId);
 
