@@ -2464,11 +2464,6 @@ isexe@^2.0.0:
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
 
-isolated-vm@4.4.2:
-  version "4.4.2"
-  resolved "https://registry.yarnpkg.com/isolated-vm/-/isolated-vm-4.4.2.tgz#d5cf66f8751e9824cf0710d1a41022a1a60d29b7"
-  integrity sha512-4ObzqZWZTS3bQtavzgoCMsOxpQt3hMeenkPavx2Razig3wX3fAkXZ3XpmqXKoJu6KMl4egBI1MfSg0BnxZ/rfg==
-
 isomorphic-unfetch@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/isomorphic-unfetch/-/isomorphic-unfetch-3.1.0.tgz#87341d5f4f7b63843d468438128cb087b7c3e98f"
@@ -3650,13 +3645,6 @@ warp-contracts-evaluation-progress-plugin@1.0.17:
   resolved "https://registry.yarnpkg.com/warp-contracts-evaluation-progress-plugin/-/warp-contracts-evaluation-progress-plugin-1.0.17.tgz#660fd0e17bcb642f242e6b53535f912b27bbd4c0"
   integrity sha512-nssIxmQtpjU4wJa8IF1Vx76JSeG25aV1tZMFHdJ5CffRBoxMDII/BuGZqJAEx5abCWvaoo/zUVaQetvdkM56Kg==
 
-warp-contracts-ivm-plugin@1.0.11:
-  version "1.0.11"
-  resolved "https://registry.yarnpkg.com/warp-contracts-ivm-plugin/-/warp-contracts-ivm-plugin-1.0.11.tgz#1a7587482fd5bc15be90f5f4d50f19e018d551ee"
-  integrity sha512-rAFEPNpCzVg6qjxGGFQhEf2VezztVkZZgYtiXDrKPVRzDKxMXYhhyGAN2B5cx1n6bn/YJQKA6k2dMDtYq5u05Q==
-  dependencies:
-    isolated-vm "4.4.2"
-
 warp-contracts-lmdb@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/warp-contracts-lmdb/-/warp-contracts-lmdb-1.1.1.tgz#8593c379faadb2cdc0c14427aa5dd475794964b2"
@@ -3680,10 +3668,10 @@ warp-contracts-pubsub@^1.0.3:
     "@aws-amplify/api" "^4.0.61"
     "@aws-amplify/core" "4.7.12"
 
-warp-contracts@1.2.27:
-  version "1.2.27"
-  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.2.27.tgz#d18e5318fd8f06005415200532f5bd200ed2e6f7"
-  integrity sha512-Wbs4MLP0E0e0F13RRA0MvrGQkuILr1wHYGyj0ba/QPtWs/iy6tuMA4QzGgpTmNydx1XZkTGatCkV0QFkdT2NdA==
+warp-contracts@1.2.28:
+  version "1.2.28"
+  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.2.28.tgz#69a23a6ae06cbdc846c14a9e694c9a2c4e1ded32"
+  integrity sha512-gxCHRJtPuC7a/APZJ8jGyIgyCp+WYQNtYCQ9K+sk5ORtkoFYC8KnGdliRQsQOlHfX37OBYi9A8tBtO+D6fxR0Q==
   dependencies:
     "@assemblyscript/loader" "^0.19.23"
     "@idena/vrf-js" "^1.0.1"

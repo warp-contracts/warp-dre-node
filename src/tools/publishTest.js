@@ -17,7 +17,10 @@ const path = require("path");
 
   // QAjM3_MklqXSXr-7z_J7t0UqEAyjBpqQDF9NDzf_JPU
 // 5dV4R2zESiRHQjN6xVt7-NGWSbL5aLaDBV52tlRyFbg
-    const message = { contractTxId: 'Daj-MNSnH55TDfxqC7v4eq0lKzVIwh98srUaWqyuZtY', test: true, interaction: {} };
+  // mS6mBLQ4HmWAqiVs4Nhs3DEpjk3PZCrR6yUOosTSKa8
+  // XIutiOKujGI21_ywULlBeyy-L9d8goHxt0ZyUayGaDg
+
+    const message = { contractTxId: 'mS6mBLQ4HmWAqiVs4Nhs3DEpjk3PZCrR6yUOosTSKa8', test: true, interaction: {} };
     // const message = { contractTxId: '5Yt1IujBmOm1LSux9KDUTjCE7rJqepzP7gZKf_DyzWI', test: true, interaction: {} };
     // const message = { contractTxId: '5dV4R2zESiRHQjN6xVt7-NGWSbL5aLaDBV52tlRyFbg', test: true, initialState: {"kupa": "gowna"} };
     const channel = `contracts`;
