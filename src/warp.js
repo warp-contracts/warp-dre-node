@@ -1,6 +1,7 @@
 const {defaultCacheOptions, WarpFactory} = require("warp-contracts");
 const {LmdbCache} = require("warp-contracts-lmdb");
 const {NlpExtension} = require("warp-contracts-nlp-plugin");
+const {IvmPlugin} = require("warp-contracts-ivm-plugin");
 
 
 module.exports = WarpFactory.forMainnet()
@@ -12,4 +13,5 @@ module.exports = WarpFactory.forMainnet()
     ...defaultCacheOptions,
     dbLocation: `./cache/warp/lmdb/contract`
   }))
-  .use(new NlpExtension());
+  .use(new IvmPlugin({}))
+  //.use(new NlpExtension());

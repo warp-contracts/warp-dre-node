@@ -2464,6 +2464,11 @@ isexe@^2.0.0:
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
 
+isolated-vm@4.4.2:
+  version "4.4.2"
+  resolved "https://registry.yarnpkg.com/isolated-vm/-/isolated-vm-4.4.2.tgz#d5cf66f8751e9824cf0710d1a41022a1a60d29b7"
+  integrity sha512-4ObzqZWZTS3bQtavzgoCMsOxpQt3hMeenkPavx2Razig3wX3fAkXZ3XpmqXKoJu6KMl4egBI1MfSg0BnxZ/rfg==
+
 isomorphic-unfetch@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/isomorphic-unfetch/-/isomorphic-unfetch-3.1.0.tgz#87341d5f4f7b63843d468438128cb087b7c3e98f"
@@ -3640,6 +3645,13 @@ vm2@3.9.11:
     acorn "^8.7.0"
     acorn-walk "^8.2.0"
 
+warp-contracts-ivm-plugin@1.0.11:
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/warp-contracts-ivm-plugin/-/warp-contracts-ivm-plugin-1.0.11.tgz#1a7587482fd5bc15be90f5f4d50f19e018d551ee"
+  integrity sha512-rAFEPNpCzVg6qjxGGFQhEf2VezztVkZZgYtiXDrKPVRzDKxMXYhhyGAN2B5cx1n6bn/YJQKA6k2dMDtYq5u05Q==
+  dependencies:
+    isolated-vm "4.4.2"
+
 warp-contracts-lmdb@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/warp-contracts-lmdb/-/warp-contracts-lmdb-1.1.1.tgz#8593c379faadb2cdc0c14427aa5dd475794964b2"
@@ -3663,10 +3675,10 @@ warp-contracts-pubsub@^1.0.3:
     "@aws-amplify/api" "^4.0.61"
     "@aws-amplify/core" "4.7.12"
 
-warp-contracts@1.2.23:
-  version "1.2.23"
-  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.2.23.tgz#5cc0e65b8d5e027781d15e76ef30878536a8ba08"
-  integrity sha512-beN5q3JKHZzO5T3NtTigMPwRX6pQAPHk+dCCl59MvbXMKgWlR4VJBlotk6o6JD8GWo4mouDLeROu8i7VwgytYA==
+warp-contracts@1.2.26:
+  version "1.2.26"
+  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.2.26.tgz#9aaefeaa6139c5bf5d203d182d96c4337086ad52"
+  integrity sha512-ElXnd32XksclrHHmw5u0w2U4VVu1UHxyOwcymq15Kw27ijIHjxZXi3UKH5QjgcksxmzqpXtC6duuMYc/0Gzypg==
   dependencies:
     "@assemblyscript/loader" "^0.19.23"
     "@idena/vrf-js" "^1.0.1"

@@ -54,7 +54,7 @@ async function runListener() {
 
   const updateQueue = new Queue(updateQueueName, {
     connection: {
-      enableOfflineQueue: false,
+      enableOfflineQueue: true,
     },
     defaultJobOptions: {
       removeOnComplete: {
@@ -65,7 +65,7 @@ async function runListener() {
   });
   const registerQueue = new Queue(registerQueueName, {
     connection: {
-      enableOfflineQueue: false,
+      enableOfflineQueue: true,
     },
     defaultJobOptions: {
       removeOnComplete: {

@@ -12,7 +12,7 @@ let nodeManifest = null;
 let workersConfig = null;
 
 const evaluationOptions = {
-  useVM2: true,
+  useVM2: false,
   maxCallDepth: 5,
   maxInteractionEvaluationTimeSeconds: 10,
   allowBigInt: true,
@@ -64,7 +64,7 @@ module.exports = {
       warpSdk = {
         'warp-contracts': pjson.dependencies['warp-contracts'],
         'warp-contracts-lmdb': pjson.dependencies['warp-contracts-lmdb'],
-        'warp-contracts-nlp-plugin': pjson.dependencies['warp-contracts-nlp-plugin']
+        'warp-contracts-ivm-plugin': pjson.dependencies['warp-contracts-ivm-plugin']
       }
     }
     return warpSdk;

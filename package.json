@@ -28,8 +28,9 @@
     "koa-compress": "^5.1.0",
     "node-nlp": "^4.24.0",
     "safe-stable-stringify": "^2.4.1",
-    "warp-contracts": "1.2.23",
+    "warp-contracts": "1.2.26",
     "warp-contracts-lmdb": "1.1.1",
+    "warp-contracts-ivm-plugin": "1.0.11",
     "warp-contracts-nlp-plugin": "1.0.5",
     "warp-contracts-pubsub": "^1.0.3"
   },

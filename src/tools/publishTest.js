@@ -15,6 +15,7 @@ const path = require("path");
   await publisher.connect();
   console.log(publisher.status)
 
+  // QAjM3_MklqXSXr-7z_J7t0UqEAyjBpqQDF9NDzf_JPU
 // 5dV4R2zESiRHQjN6xVt7-NGWSbL5aLaDBV52tlRyFbg
     const message = { contractTxId: '1M0NUPGAUuBuRdvOAuVmU2I2NI4M24ay60Gw-CyXinw', test: false, interaction: {} };
     // const message = { contractTxId: '5Yt1IujBmOm1LSux9KDUTjCE7rJqepzP7gZKf_DyzWI', test: true, interaction: {} };

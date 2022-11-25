@@ -20,16 +20,20 @@ module.exports = {
         logger.info('State stored in sqlite', contractTxId);
 
         if (!isTest) {
-          redisPublisher.publish('states', JSON.stringify({
-            contractTxId: dbResult.contract_tx_id,
-            sortKey: dbResult.sort_key,
-            state: dbResult.state,
-            node: dbResult.manifest.walletAddress,
-            signature: dbResult.signature,
-            manifest: dbResult.manifest,
-            stateHash: dbResult.state_hash
-          }));
-          logger.info('Published to Redis', contractTxId);
+          try {
+            redisPublisher.publish('states', JSON.stringify({
+              contractTxId: dbResult.contract_tx_id,
+              sortKey: dbResult.sort_key,
+              state: dbResult.state,
+              node: dbResult.manifest.walletAddress,
+              signature: dbResult.signature,
+              manifest: dbResult.manifest,
+              stateHash: dbResult.state_hash
+            }));
+            logger.info('Published to Redis', contractTxId);
+          } catch (e) {
+            logger.error('Error while publishing to Redis');
+          }
 
 
           /*logger.info('Publishing to appSync');

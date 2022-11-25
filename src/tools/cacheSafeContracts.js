@@ -19,11 +19,11 @@ const path = require("path");
   console.log(publisher.status)
   const channel = `contracts`;
 
-  contracts = contracts.slice(0, 10);
+  // contracts = contracts.slice(0, 10);
 
   for (let contract of contracts) {
     console.log('Publishing', contract);
-    const message = {contractTxId: contract.contract_id, test: false, interaction: {}};
+    const message = {contractTxId: contract.contract_id, test: true, interaction: {}};
     publisher.publish(channel, JSON.stringify(message));
     console.log("Published %s to %s", contract.contract_id, channel);
   }
