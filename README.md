@@ -149,6 +149,7 @@ The event type is one of:
 message validation errors or because contract is blacklisted.
 * `FAILURE` - an error have occurred during contract evaluation
 * `EVALUATED` - contract has been successfully evaluated
+* `PROGRESS` - after evaluating each 500 interactions (useful for tracking the evaluation progress of a registered contract that has thousands of interactions)
 
 ### 4. Blacklisting
 
