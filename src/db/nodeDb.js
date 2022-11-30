@@ -205,6 +205,9 @@ module.exports = {
     failure: (nodeDb, contractTxId, message) => {
       insertEvent(nodeDb, 'FAILURE', contractTxId, message).finally(()=>{});
     },
+    updated: (nodeDb, contractTxId, message) => {
+      insertEvent(nodeDb, 'UPDATED', contractTxId, message).finally(()=>{});
+    },
     evaluated: (nodeDb, contractTxId, message) => {
       insertEvent(nodeDb, 'EVALUATED', contractTxId, message).finally(()=>{});
     },

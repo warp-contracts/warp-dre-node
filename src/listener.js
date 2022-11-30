@@ -97,10 +97,14 @@ async function runListener() {
     const contractTxId = jobId.split("|")[0];
     events.update(nodeDbEvents, contractTxId);
   });
-  updateEvents.on('completed', async ({jobId}) => {
-    logger.info('Update job completed', jobId);
+  updateEvents.on('completed', async ({jobId, returnvalue}) => {
+    logger.info('Update job completed', {jobId, returnvalue});
     const contractTxId = jobId.split("|")[0];
-    events.evaluated(nodeDbEvents, contractTxId);
+    if (returnvalue?.lastSortKey) {
+      events.updated(nodeDbEvents, contractTxId, returnvalue.lastSortKey);
+    } else {
+      events.evaluated(nodeDbEvents, contractTxId);
+    }
   });
 
   registerEvents.on('failed', async ({jobId, failedReason}) => {
