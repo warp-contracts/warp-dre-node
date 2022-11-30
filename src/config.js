@@ -65,6 +65,8 @@ module.exports = {
         'warp-contracts': pjson.dependencies['warp-contracts'],
         'warp-contracts-lmdb': pjson.dependencies['warp-contracts-lmdb'],
         'warp-contracts-evaluation-progress-plugin': pjson.dependencies['warp-contracts-evaluation-progress-plugin'],
+        'warp-contracts-nlp-plugin': pjson.dependencies['warp-contracts-nlp-plugin'],
+        'warp-contracts-plugin-ethers': pjson.dependencies['warp-contracts-plugin-ethers']
       }
     }
     return warpSdk;

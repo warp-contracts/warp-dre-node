@@ -148,14 +148,14 @@ The event type is one of:
 * `REJECT` - an update or registration request has been rejected either because of incoming
 message validation errors or because contract is blacklisted.
 * `FAILURE` - an error have occurred during contract evaluation
-* `EVALUATED` - contract has been successfully evaluated
-* `PROGRESS` - after evaluating each 500 interactions (useful for tracking the evaluation progress of a registered contract that has thousands of interactions)
+* `EVALUATED` - contract has been successfully evaluated (but it required loading interactions from Warp GW)
+* `PROGRESS` - added after evaluating each 500 interactions (useful for tracking the evaluation progress of a registered contract that has thousands of interactions)
+* `UPDATED` - contract has been successfully updated using the interaction sent in the message
 
 ### 4. Blacklisting
 
 Whenever a contract reaches a certain amount of failures (3 for both dre-1 and dre-2) - it is blacklisted
 and ignored.
-
 
 ### 5. Endpoints
 
