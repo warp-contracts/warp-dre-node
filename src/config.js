@@ -36,21 +36,43 @@ module.exports = {
 
   readGwPubSubConfig: () => {
     if (gwPubSub === null) {
-      gwPubSub = readConfig('gw-pubsub.json');
+      if (process.env.GW_HOST) {
+        gwPubSub = {
+          port: process.env.GW_PORT,
+          host: process.env.GW_HOST,
+          username: process.env.GW_USERNAME,
+          password: process.env.GW_PASSWORD,
+          tls: process.env.GW_TLS,
+          enableOfflineQueue: process.env.GW_ENABLE_OFFLINE_QUEUE,
+          lazyConnect: process.env.GW_LAZY_CONNECT,
+        }
+      } else {
+        gwPubSub = readConfig('gw-pubsub.json');
+      }
     }
     return gwPubSub;
   },
 
   readApiKeysConfig: () => {
     if (apiKeys === null) {
-      apiKeys = readConfig('api-keys.json');
+      if (process.env.APPSYNC_KEY) {
+        apiKeys = {
+          appsync: process.env.APPSYNC_KEY
+        }
+      } else {
+        apiKeys = readConfig('api-keys.json');
+      }
     }
     return apiKeys;
   },
 
   readNodeJwk: () => {
     if (nodeJwk === null) {
-      nodeJwk = readConfig('node-jwk.json');
+      if (process.env.NODE_JWK_KEY) {
+        nodeJwk = JSON.parse(process.env.NODE_JWK_KEY);
+      } else {
+        nodeJwk = readConfig('node-jwk.json');
+      }
     }
     return nodeJwk;
   },
@@ -94,7 +116,16 @@ module.exports = {
 
   readWorkersConfig: () => {
     if (workersConfig === null) {
-      workersConfig = readConfig('workers.json');
+      if (process.env.WORKERS_REGISTER) {
+        workersConfig = {
+          register: process.env.WORKERS_REGISTER,
+          update: process.env.WORKERS_UPDATE,
+          jobIdRefreshSeconds: process.env.WORKERS_JOB_ID_REFRESH_SECONDS,
+          maxFailures: process.env.WORKERS_MAX_FAILURES,
+        }
+      } else {
+        workersConfig = readConfig('workers.json');
+      }
     }
     return workersConfig;
   }
