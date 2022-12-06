@@ -1,11 +1,12 @@
 const {insertState, connect} = require("../db/nodeDb");
 const {publish: appSyncPublish, initPubSub: initAppSyncPublish} = require("warp-contracts-pubsub");
 const Redis = require("ioredis");
-const {readGwPubSubConfig} = require("../config");
+const {readGwPubSubConfig, readApiKeysConfig} = require("../config");
 
 initAppSyncPublish();
 
 const connectionOptions = readGwPubSubConfig();
+const apiKeys = readApiKeysConfig();
 
 const redisPublisher = new Redis(
   {
@@ -30,25 +31,24 @@ module.exports = {
               manifest: dbResult.manifest,
               stateHash: dbResult.state_hash
             }));
-            logger.info('Published to Redis', contractTxId);
+            logger.debug('Published to Redis', contractTxId);
           } catch (e) {
             logger.error('Error while publishing to Redis');
           }
 
 
-          /*logger.info('Publishing to appSync');
-          appSyncPublish(`states/${contractTxId}`, JSON.stringify({
-            sortKey: result.sortKey,
-            state: result.cachedValue.state,
-            signature: dbResult.sig,
-            manifest: dbResult.manifest,
-            stateHash: dbResult.state_hash
-          }), job.data.appSyncKey)
-            .then(r => {
-              logger.info(`Published to appSync ${contractTxId}`);
-            }).catch(e => {
-            logger.error('Error while publishing message', e);
-          });*/
+          if (apiKeys.publishState) {
+            logger.info('Publishing to appSync');
+            appSyncPublish(`states/${contractTxId}`, JSON.stringify({
+              sortKey: result.sortKey,
+              state: result.cachedValue.state
+            }), apiKeys.appsync)
+              .then(r => {
+                logger.debug(`Published to appSync ${contractTxId}`);
+              }).catch(e => {
+              logger.error('Error while publishing to AppSync', e);
+            });
+          }
         }
       }).catch(e => {
       logger.error('Error while storing in sqlite', e);
