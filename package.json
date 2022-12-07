@@ -17,7 +17,7 @@
     "@koa/cors": "4.0.0",
     "@koa/router": "12.0.0",
     "arweave": "1.11.6",
-    "better-sqlite3": "^7.6.2",
+    "better-sqlite3": "^8.0.1",
     "bullmq": "^3.2.4",
     "ioredis": "^5.2.4",
     "jsonpath-plus": "^7.2.0",
