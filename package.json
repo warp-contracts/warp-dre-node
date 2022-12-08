@@ -34,7 +34,7 @@
     "warp-contracts-nlp-plugin": "1.0.7",
     "warp-contracts-evaluation-progress-plugin": "1.0.17",
     "warp-contracts-plugin-ethers": "1.0.7",
-    "warp-contracts-pubsub": "^1.0.3",
+    "warp-contracts-pubsub": "^1.0.4",
     "websocket": "^1.0.34"
   },
   "devDependencies": {
