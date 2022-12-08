@@ -188,7 +188,15 @@ Parameters:
 
 ## How to run?
 
-TBA.
+### Docker compose
+
+To run docker-compose you need to set up correct environment variables.
+You can do it using .env file (.env.example contains variables you can configure) or [any other way supported by docker compose](https://docs.docker.com/compose/envvars-precedence/).
+
+When you set up all required environment variables, just run: 
+```shell
+docker-compouse up -d
+```
 
 ##  Future work
 1. Sync the local state with D.R.E. inside the Warp Contract SDK while connecting to a contract
