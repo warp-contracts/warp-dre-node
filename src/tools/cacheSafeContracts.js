@@ -27,6 +27,6 @@ const path = require("path");
     publisher.publish(channel, JSON.stringify(message));
     console.log("Published %s to %s", contract.contract_id, channel);
   }
-
+  publisher.disconnect();
 
 })();

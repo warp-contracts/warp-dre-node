@@ -30,7 +30,8 @@ const WebSocketClient = require('websocket').client;
 
       console.log("Published %s to %s", contract.contract_id);
     }
-    console.log("Sent %d contracts", contracts.length)
+    console.log("Sent %d contracts", contracts.length);
+    process.exit(0);
   });
 
   let streamId = '0xc2ae2d5523080b64cc788cddc91ff59a3e29f911/common';
