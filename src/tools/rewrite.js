@@ -33,8 +33,7 @@ async function main() {
   }
 
   console.log('Rewriting LMDB cache to another LMDB cache');
-  const heapLimit = require('v8').getHeapStatistics().heap_size_limit / (1024 * 1024);
-  console.log('Heap limit:', heapLimit);
+  console.log('Heap stats:', require('v8').getHeapStatistics());
 
   const input = new LmdbCache({ ...defaultCacheOptions, dbLocation: args.input })
     .storage();
