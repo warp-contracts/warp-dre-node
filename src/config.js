@@ -4,6 +4,7 @@ const Arweave = require("arweave");
 const pjson = require('../package.json');
 
 let gwPubSub = null;
+let bullMqRedisConfig = null;
 let apiKeys = null;
 let nodeJwk = null;
 let arweave = null;
@@ -51,6 +52,21 @@ module.exports = {
       }
     }
     return gwPubSub;
+  },
+
+  readBullMqRedisConfig: () => {
+    if (bullMqRedisConfig === null) {
+      bullMqRedisConfig = {
+        port: process.env.BULLMQ_PORT,
+        host: process.env.BULLMQ_HOST,
+        username: process.env.BULLMQ_USERNAME,
+        password: process.env.BULLMQ_PASSWORD,
+        tls: process.env.BULLMQ_TLS,
+        enableOfflineQueue: process.env.BULLMQ_ENABLE_OFFLINE_QUEUE,
+        lazyConnect: process.env.BULLMQ_LAZY_CONNECT,
+      }
+    }
+    return bullMqRedisConfig
   },
 
   readApiKeysConfig: () => {

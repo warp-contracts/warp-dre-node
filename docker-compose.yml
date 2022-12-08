@@ -1,5 +1,13 @@
 version: '3.8'
 services:
+  dre:
+    build: .
+    environment:
+      BULLMQ_HOST: cache
+      PUBSUB_TYPE: streamr
+    volumes:
+      - dre-sqlite:/app/sqlite
+      - dre-cache:/app/cache
   cache:
     image: redis:7.0-alpine
     restart: always
@@ -10,4 +18,8 @@ services:
       - cache:/data
 volumes:
   cache:
+    driver: local
+  dre-sqlite:
+    driver: local
+  dre-cache:
     driver: local

@@ -15,7 +15,7 @@ const {
     readApiKeysConfig,
     getEvaluationOptions,
     getWarpSdkConfig,
-    readWorkersConfig
+    readWorkersConfig, readBullMqRedisConfig
 } = require("./config");
 const {attachPaginate} = require('knex-paginate');
 const {
@@ -60,11 +60,9 @@ async function runListener() {
         timestamp = Date.now();
     }, workersConfig.jobIdRefreshSeconds * 1000);
 
-
+    const bullMqConnection = readBullMqRedisConfig();
     const updateQueue = new Queue(updateQueueName, {
-        connection: {
-            enableOfflineQueue: true,
-        },
+        connection: bullMqConnection,
         defaultJobOptions: {
             removeOnComplete: {
                 age: workersConfig.jobIdRefreshSeconds
@@ -73,9 +71,7 @@ async function runListener() {
         }
     });
     const registerQueue = new Queue(registerQueueName, {
-        connection: {
-            enableOfflineQueue: true,
-        },
+        connection: bullMqConnection,
         defaultJobOptions: {
             removeOnComplete: {
                 age: 3600
@@ -84,8 +80,8 @@ async function runListener() {
         }
     });
 
-    const updateEvents = new QueueEvents(updateQueueName);
-    const registerEvents = new QueueEvents(registerQueueName);
+    const updateEvents = new QueueEvents(updateQueueName, {connection: bullMqConnection});
+    const registerEvents = new QueueEvents(registerQueueName, {connection: bullMqConnection});
 
     // TODO: yeah, copy-pastes
     updateEvents.on('failed', async ({jobId, failedReason}) => {
@@ -101,6 +97,7 @@ async function runListener() {
         await upsertBlacklist(nodeDb, contractTxId);
         events.failure(nodeDbEvents, contractTxId, failedReason);
     });
+
     updateEvents.on('added', async ({jobId}) => {
         logger.info('Job added to update queue', jobId);
         const contractTxId = jobId.split("|")[0];
@@ -141,6 +138,7 @@ async function runListener() {
     const updateProcessor = path.join(__dirname, 'workers', 'updateProcessor');
     new Worker(updateQueueName, updateProcessor, {
         concurrency: workersConfig.update,
+        connection: bullMqConnection,
         metrics: {
             maxDataPoints: MetricsTime.ONE_WEEK,
         },
@@ -149,6 +147,7 @@ async function runListener() {
     const registerProcessor = path.join(__dirname, 'workers', 'registerProcessor');
     new Worker(registerQueueName, registerProcessor, {
         concurrency: workersConfig.register,
+        connection: bullMqConnection,
         metrics: {
             maxDataPoints: MetricsTime.ONE_WEEK,
         },
@@ -257,6 +256,7 @@ async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueu
     const onError = (err) => logger.error("Failed to subscribe:", err);
 
     let pubsubType = process.env.PUBSUB_TYPE;
+    logger.info(`Starting pubsub in ${pubsubType} mode`)
     switch (pubsubType) {
         case 'streamr':
             const pubsub = new StreamrWsClient({
@@ -264,6 +264,7 @@ async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueu
                 streamId: process.env.STREAMR_STREAM_ID
             });
             pubsub.sub(onMessage, onError);
+            process.on('exit', () => pubsub.close());
             break;
         case 'redis':
             const connectionOptions = readGwPubSubConfig();
@@ -285,6 +286,7 @@ async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueu
                 logger.info(`From channel '${channel}'`);
                 onMessage(msgObj);
             });
+            process.on('exit', () => subscriber.disconnect());
             break;
         default:
             throw new Error(`Pubsub type ${pubsubType} not supported`);
@@ -333,3 +335,8 @@ function setFlags(args) {
         }
     }
 }
+
+process.on('SIGINT', () => {
+    console.info("Interrupted")
+    process.exit(0)
+});
