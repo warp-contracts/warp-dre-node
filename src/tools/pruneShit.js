@@ -9,6 +9,6 @@ const lmdb = new LmdbCache({
 
 
 (async () => {
-  const stats = await lmdb.prune(3);
+  const stats = await lmdb.prune(2);
   console.log(stats);
 })();
