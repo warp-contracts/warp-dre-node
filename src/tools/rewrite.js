@@ -1,19 +1,18 @@
 /* eslint-disable */
-import { LmdbCache } from 'warp-contracts-lmdb'
-import { RootDatabase } from 'lmdb';
-import { defaultCacheOptions, CacheKey } from 'warp-contracts';
+const {LmdbCache} = require('warp-contracts-lmdb');
+const { defaultCacheOptions } = require('warp-contracts');
 
 const commandLineArgs = require('command-line-args')
 const cliProgress = require('cli-progress');
 
-process.on('uncaughtException', (error: any) => {
+process.on('uncaughtException', (error) => {
   console.error(`Uncaught exception: ${error}`);
   if (error.stack)
     console.error(error.stack);
   process.exit(1);
 });
 
-process.on('unhandledRejection', (error: any) => {
+process.on('unhandledRejection', (error) => {
   console.error(`Promise rejection: ${error}`);
   if (error.stack)
     console.error(error.stack);
@@ -35,10 +34,10 @@ async function main() {
 
   console.log('Rewriting LMDB cache to another LMDB cache');
 
-  const input = new LmdbCache<any>({ ...defaultCacheOptions, dbLocation: args.input })
-    .storage<RootDatabase<any, string>>();
-  const output = new LmdbCache<any>({ ...defaultCacheOptions, dbLocation: args.output })
-    .storage<RootDatabase<any, string>>();
+  const input = new LmdbCache({ ...defaultCacheOptions, dbLocation: args.input })
+    .storage();
+  const output = new LmdbCache({ ...defaultCacheOptions, dbLocation: args.output })
+    .storage();
 
   const bar = new cliProgress.SingleBar({
     etaBuffer: 1000,
@@ -46,7 +45,7 @@ async function main() {
   bar.start(input.getKeysCount(), 0);
 
   input.transactionSync(() => {
-    input.getRange({ snapshot: false })
+    input.getRange({ snapshot: true })
       .forEach(({ key, value }) => {
         output.putSync(key, value)
         bar.increment()
