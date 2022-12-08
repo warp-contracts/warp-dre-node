@@ -7,5 +7,6 @@ RUN yarn install --frozen-lockfile
 COPY . .
 COPY .env.example .env
 VOLUME /app/sqlite
+VOLUME /app/cache
 
 CMD ["node", "src/listener.js"]
