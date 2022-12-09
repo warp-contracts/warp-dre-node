@@ -21,6 +21,21 @@ const evaluationOptions = {
   internalWrites: true,
 };
 
+function getGitCommitHash() {
+  let hash = '';
+  if (fs.existsSync('./GIT_HASH')) {
+    hash = fs.readFileSync('./GIT_HASH').toString().trim();
+  }
+  else if (fs.existsSync('.git')) {
+    hash = require('child_process')
+        .execSync('git rev-parse HEAD')
+        .toString().trim();
+  } else {
+    throw new Error('Can\'t read git commit hash.');
+  }
+  return hash;
+}
+
 module.exports = {
   getArweave: () => {
     if (arweave === null) {
@@ -114,9 +129,7 @@ module.exports = {
     if (nodeManifest == null) {
       const jwk = module.exports.readNodeJwk();
       const address = await module.exports.getArweave().wallets.ownerToAddress(jwk.n);
-      const gitCommitHash = require('child_process')
-        .execSync('git rev-parse HEAD')
-        .toString().trim();
+      const gitCommitHash = getGitCommitHash();
 
       nodeManifest = {
         gitCommitHash: gitCommitHash,

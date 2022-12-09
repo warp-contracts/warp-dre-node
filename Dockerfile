@@ -5,7 +5,12 @@ WORKDIR /app
 COPY ["package.json", "yarn.lock", "./"]
 RUN yarn install --frozen-lockfile
 COPY . .
-COPY .env.example .env
+RUN mv .env.example .env
+
+# Save git commit hash
+RUN echo $(git rev-parse HEAD) > GIT_HASH
+RUN rm -rf .git/
+
 VOLUME /app/sqlite
 VOLUME /app/cache
 
