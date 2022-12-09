@@ -2,8 +2,8 @@
 
 A Delegated Resolution Environment for Warp Contracts.
 
-* [Why?](#why)
-* [I don't care, where is my state?](#i-dont-care-where-is-my-state)
+* [The reasoning](#the-reasoning)
+* [Nodes](#nodes)
 * [How it works?](#how-it-works)
     * [1. Messages processing](#1-messages-processing)
     * [2. Caching](#2-caching)
@@ -13,18 +13,24 @@ A Delegated Resolution Environment for Warp Contracts.
 * [How to run?](#how-to-run)
 * [Future work](#future-work)
 
-## Why?
-1. *Mo Interactions, Mo problems* - evaluating contracts with thousands of interactions is a pain
-2. *thug life* - some contracts may perform risky/unsafe operations. Gangsta stuff. You don't want to get hurt?
-3. *get rich or die tryin'* - ok, but how many different tokens exactly do I own? lack of aggregate data...
-4. *'cause you never understood how vital to me this WEB3 game is...* - fully centralized solutions with closed source code, unknown processing logic,
-tightly coupled to a concrete cloud vendor (GCP, AWS...) are sooooooo web2.
+## The reasoning
 
-## I don't care, where is my state?
+The purpose of implementing Warp D.R.E. is to address the following issues.
 
-Two nodes are currently available.
-1. **The Big Daddy** - https://dre-1.warp.cc
-2. **The Little Sister** - https://dre-2.warp.cc
+1. Evaluation of high-interaction contracts - evaluating contracts with thousands of interactions is a hassle for the user's CPU. Response-time and UX can be improved significantly when computation is delegated to D.R.E.
+
+2. Interaction with high-risk contracts - some contracts may perform risky/unsafe operations. Contract interaction via Warp D.R.E. ensures the safety of users' devices.
+
+3. Insights into PST tokens' - Providing aggregate information about PST tokens' status and count has always been challenging. With D.R.E.'s aggregation tool, one can check global address data with just a few clicks.
+
+4. Avoid centralised, closed-sourced solutions - private, unknown processing logic, and tightly coupled to a specific cloud vendor (such as GCP or AWS) belong to the web2 era. Warp D.R.E. is built on the principle of "Don't trust, verify". Once initial testing is complete, we will open up D.R.E nodes for public participation.
+
+## Nodes
+
+Currently, there are two nodes available
+
+1. **The East Side** - https://dre-1.warp.cc
+2. **The West Side** - https://dre-2.warp.cc
 
 To verify if your contract is available - check the `/contract` endpoint,  
 eg: https://dre-1.warp.cc/contract?id=-8A6RexFkpfWwuyVO98wzSFZh0d6VJuI-buTJvlwOJQ&events=true
