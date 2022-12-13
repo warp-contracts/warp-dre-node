@@ -88,7 +88,8 @@ module.exports = {
     if (apiKeys === null) {
       if (process.env.APPSYNC_KEY) {
         apiKeys = {
-          appsync: process.env.APPSYNC_KEY
+          appsync: process.env.APPSYNC_KEY,
+          publishState: process.env.APPSYNC_PUBLISH_STATE
         }
       } else {
         apiKeys = readConfig('api-keys.json');
