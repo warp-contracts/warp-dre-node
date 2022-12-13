@@ -1,4 +1,4 @@
-const {defaultCacheOptions, WarpFactory, LoggerFactory} = require("warp-contracts");
+const {defaultCacheOptions, WarpFactory} = require("warp-contracts");
 const {LmdbCache} = require("warp-contracts-lmdb");
 const {NlpExtension} = require("warp-contracts-nlp-plugin");
 const {EvaluationProgressPlugin} = require("warp-contracts-evaluation-progress-plugin");
@@ -20,4 +20,4 @@ module.exports = WarpFactory.forMainnet()
     dbLocation: `./cache/warp/lmdb/contract`
   }))
   .use(new EvaluationProgressPlugin(eventEmitter, 500))
-  //.use(new NlpExtension());
+  .use(new NlpExtension());

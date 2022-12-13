@@ -16,7 +16,7 @@
   "dependencies": {
     "@koa/cors": "4.0.0",
     "@koa/router": "12.0.0",
-    "arweave": "1.11.6",
+    "arweave": "1.11.8",
     "better-sqlite3": "^8.0.1",
     "bullmq": "^3.2.4",
     "ioredis": "^5.2.4",
@@ -28,11 +28,11 @@
     "koa-compress": "^5.1.0",
     "node-nlp": "^4.24.0",
     "safe-stable-stringify": "^2.4.1",
-    "warp-contracts": "1.2.32",
+    "warp-contracts": "1.2.35",
     "warp-contracts-lmdb": "1.1.5",
-    "warp-contracts-nlp-plugin": "1.0.5",
+    "warp-contracts-nlp-plugin": "1.0.7",
     "warp-contracts-evaluation-progress-plugin": "1.0.17",
-    "warp-contracts-plugin-ethers": "1.0.3",
+    "warp-contracts-plugin-ethers": "1.0.7",
     "warp-contracts-pubsub": "^1.0.3"
   },
   "devDependencies": {

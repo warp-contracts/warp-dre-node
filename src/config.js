@@ -16,7 +16,7 @@ const evaluationOptions = {
   maxCallDepth: 5,
   maxInteractionEvaluationTimeSeconds: 10,
   allowBigInt: true,
-  allowUnsafeClient: false,
+  unsafeClient: 'skip',
   internalWrites: true,
 };
 
