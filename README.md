@@ -191,7 +191,13 @@ Parameters:
 ### Docker compose
 
 #### Pre requirenments
-You need to have docker installed on your local machine with docker-compose. You can use [docker-desktop](https://www.docker.com/products/docker-desktop/).
+1. You need to have docker installed on your local machine with docker-compose. You can use [docker-desktop](https://www.docker.com/products/docker-desktop/).
+2. You need to have ArWeave wallet. You can generate it using: 
+   1. [arweave wallet](https://arweave.app/add). You can download the wallet using the download button in the [wallet setting](https://arweave.app/settings).
+   2. Generate a new wallet using script: `yarn generate-arweave-wallet`
+    > ⚠️ Don't use wallets with real founds for test/development proposes.
+3. [NodeJS](https://nodejs.org/en/download/)
+4. [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/)
 
 #### Running
 
@@ -204,7 +210,7 @@ The file .env.example contains variables you can configure) or [any other way su
 
 When you set up all required environment variables, just run: 
 ```shell
-docker-compouse up -d
+yarn run-docker
 ```
 
 ##  Future work
