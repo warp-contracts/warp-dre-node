@@ -5,7 +5,7 @@ WORKDIR /app
 COPY ["package.json", "yarn.lock", "./"]
 RUN yarn install --frozen-lockfile
 COPY . .
-RUN mv .env.example .env
+RUN mv .env.defaults .env
 
 # Save git commit hash
 RUN echo $(git rev-parse HEAD) > GIT_HASH

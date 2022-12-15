@@ -198,7 +198,7 @@ You need to have docker installed on your local machine with docker-compose. You
 To run docker-compose you need to set up correct environment variables.
 You can do it using .env file: 
 ```shell
-cp .env.example .env
+cp .env.defaults .env
 ```
 The file .env.example contains variables you can configure) or [any other way supported by docker compose](https://docs.docker.com/compose/envvars-precedence/).
 
