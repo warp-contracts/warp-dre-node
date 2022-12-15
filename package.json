@@ -5,10 +5,14 @@
   "author": "just_ppe",
   "license": "MIT",
   "scripts": {
-    "start:prod": "docker-compose up -d && node src/listener.js",
-    "start:prod:unsafe": "docker-compose up -d && node src/listener.js allowUnsafe",
-    "start:test": "docker-compose up -d && node src/listener.js test",
-    "start:test:unsafe": "docker-compose up -d && node src/listener.js test allowUnsafe"
+    "generate-arweave-wallet": "node src/tools/generateArweaveWallet.js",
+    "run-bullmq":  "docker-compose up -d bullmq",
+    "run-docker":  "docker-compose up -d",
+    "stop-docker":  "docker-compose down",
+    "start:prod": "yarn-or-npm run run-bullmq && node src/listener.js",
+    "start:prod:unsafe": "yarn-or-npm run run-bullmq && node src/listener.js allowUnsafe",
+    "start:test": "yarn-or-npm run run-bullmq && node src/listener.js test",
+    "start:test:unsafe": "yarn-or-npm run run-bullmq && node src/listener.js test allowUnsafe"
   },
   "engines": {
     "node": ">=16.5"
@@ -38,6 +42,7 @@
     "websocket": "^1.0.34"
   },
   "devDependencies": {
-    "deep-object-diff": "^1.1.9"
+    "deep-object-diff": "^1.1.9",
+    "yarn-or-npm": "^3.0.1"
   }
 }
