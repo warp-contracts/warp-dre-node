@@ -190,8 +190,17 @@ Parameters:
 
 ### Docker compose
 
+#### Pre requirenments
+You need to have docker installed on your local machine with docker-compose. You can use [docker-desktop](https://www.docker.com/products/docker-desktop/).
+
+#### Running
+
 To run docker-compose you need to set up correct environment variables.
-You can do it using .env file (.env.example contains variables you can configure) or [any other way supported by docker compose](https://docs.docker.com/compose/envvars-precedence/).
+You can do it using .env file: 
+```shell
+cp .env.example .env
+```
+The file .env.example contains variables you can configure) or [any other way supported by docker compose](https://docs.docker.com/compose/envvars-precedence/).
 
 When you set up all required environment variables, just run: 
 ```shell

@@ -11,15 +11,7 @@ let arweave = null;
 let warpSdk = null;
 let nodeManifest = null;
 let workersConfig = null;
-
-const evaluationOptions = {
-  useVM2: true,
-  maxCallDepth: 5,
-  maxInteractionEvaluationTimeSeconds: 10,
-  allowBigInt: true,
-  unsafeClient: 'skip',
-  internalWrites: true,
-};
+let evaluationOptions = null;
 
 function getGitCommitHash() {
   let hash = '';
@@ -110,6 +102,16 @@ module.exports = {
   },
 
   getEvaluationOptions: () => {
+    if (evaluationOptions === null) {
+      evaluationOptions = {
+        useVM2: process.env.EVALUATION_USEVM2,
+        maxCallDepth: process.env.EVALUATION_MAXCALLDEPTH,
+        maxInteractionEvaluationTimeSeconds: process.env.EVALUATION_MAXINTERACTIONEVALUATIONTIMESECONDS,
+        allowBigInt: process.env.EVALUATION_ALLOWBIGINT,
+        unsafeClient: process.env.EVALUATION_UNSAFECLIENT,
+        internalWrites: process.env.EVALUATION_INTERNALWRITES,
+      }
+    }
     return evaluationOptions;
   },
 

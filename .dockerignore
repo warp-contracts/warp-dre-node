@@ -8,5 +8,4 @@ README.md
 *.png
 safeContracts.json
 .env
-img.png
-img_1.png
+.DS_Store

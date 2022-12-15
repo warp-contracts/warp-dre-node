@@ -15,7 +15,7 @@ services:
       GW_ENABLE_OFFLINE_QUEUE: "${GW_ENABLE_OFFLINE_QUEUE:-true}"
       GW_LAZY_CONNECT: "${GW_LAZY_CONNECT}"
       BULLMQ_PORT: "${BULLMQ_PORT}"
-      BULLMQ_HOST: "${BULLMQ_HOST:-cache}"
+      BULLMQ_HOST: "${BULLMQ_HOST:-bullmq}"
       BULLMQ_USERNAME: "${BULLMQ_USERNAME}"
       BULLMQ_PASSWORD: "${BULLMQ_PASSWORD}"
       BULLMQ_TLS: "${BULLMQ_TLS}"
@@ -29,7 +29,7 @@ services:
     volumes:
       - dre-sqlite:/app/sqlite
       - dre-cache:/app/cache
-  cache:
+  bullmq:
     image: redis:7.0-alpine
     restart: always
     ports:

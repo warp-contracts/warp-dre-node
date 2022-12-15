@@ -30,19 +30,12 @@
     "node-nlp": "^4.24.0",
     "safe-stable-stringify": "^2.4.1",
     "warp-contracts": "1.2.35",
+    "warp-contracts-evaluation-progress-plugin": "1.0.17",
     "warp-contracts-lmdb": "1.1.5",
     "warp-contracts-nlp-plugin": "1.0.7",
-    "warp-contracts-evaluation-progress-plugin": "1.0.17",
     "warp-contracts-plugin-ethers": "1.0.7",
     "warp-contracts-pubsub": "^1.0.4",
     "websocket": "^1.0.34"
-  },
-  "devDependencies": {
-    "@types/command-line-args": "^5.2.0",
-    "cli-progress": "^3.11.2",
-    "command-line-args": "^5.2.1",
-    "deep-object-diff": "^1.1.9",
-    "ws": "^8.11.0"
   },
   "devDependencies": {
     "deep-object-diff": "^1.1.9"
