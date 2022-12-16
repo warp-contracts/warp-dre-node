@@ -19,6 +19,7 @@ async function readState() {
     }).readState();
 
   console.log(Object.keys(result.cachedValue.validity).length);
+  console.log(result.cachedValue.validity['pbabEjmdaqOvF-yTkFhs5i2lbmmbC6s4NrUqM_8eAYE']);
 }
 
 
