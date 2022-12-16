@@ -233,6 +233,18 @@ docker buildx create --name multibuilder
 docker buildx use multibuilder
 ```
 
+## Helm
+
+Create secret:
+```shell
+kubectl create secret generic dre --from-env-file=.env
+```
+
+Install/update helm chart:
+```shell
+helm upgrade --install warp-dre-node ./helm
+```
+
 ##  Future work
 1. Sync the local state with D.R.E. inside the Warp Contract SDK while connecting to a contract
    (i.e. while calling `warp.contract(<contract_tx_id)`).
