@@ -213,6 +213,26 @@ When you set up all required environment variables, just run:
 yarn run-docker
 ```
 
+## Docker build
+
+### Dev image (default platform)
+
+Build dev tag image
+```shell
+docker buildx bake
+```
+
+Build image with custom tag
+```shell
+TAG=myCustomTag docker buildx bake
+```
+
+If you want to build multiplatform images
+```shell
+docker buildx create --name multibuilder
+docker buildx use multibuilder
+```
+
 ##  Future work
 1. Sync the local state with D.R.E. inside the Warp Contract SDK while connecting to a contract
    (i.e. while calling `warp.contract(<contract_tx_id)`).
