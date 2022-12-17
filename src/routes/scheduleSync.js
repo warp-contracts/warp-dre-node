@@ -12,14 +12,7 @@ module.exports = async (ctx) => {
       throw new Error('Invalid tx id format');
     }
     const now = new Date();
-
-    console.log('===== SYNC now, ', now);
-    console.log('===== UPDATES has, ', updates.has(contractTxId));
-    console.log('===== UPDATES get, ', updates.get(contractTxId));
-    console.log('===== UPDATES passed, ', (now - updates.get(contractTxId)) / 1000);
-
     if (updates.has(contractTxId) && (now - updates.get(contractTxId)) / 1000 < chillOutTimeSeconds) {
-      console.log("===== UPDATES throwing!");
       throw new Error(`Chill out and wait ${chillOutTimeSeconds}s`);
     }
     const test = ctx.query.test !== 'false';
