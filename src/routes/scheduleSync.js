@@ -7,6 +7,9 @@ const chillOutTimeSeconds = 10;
 
 module.exports = async (ctx) => {
   const contractTxId = ctx.query.id;
+  if (!isTxIdValid(contractTxId)) {
+    throw new Error('Invalid tx id format');
+  }
   const now = new Date();
   try {
     if (updates.has(contractTxId) && (now - updates.get(contractTxId)) / 1000 < chillOutTimeSeconds) {
@@ -30,3 +33,8 @@ module.exports = async (ctx) => {
     ctx.status = 500;
   }
 };
+
+function isTxIdValid(txId) {
+  const validTxIdRegex = /[a-z0-9_-]{43}/i;
+  return validTxIdRegex.test(txId);
+}
