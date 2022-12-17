@@ -19,6 +19,7 @@ module.exports = async (ctx) => {
     console.log('===== UPDATES passed, ', (now - updates.get(contractTxId)) / 1000);
 
     if (updates.has(contractTxId) && (now - updates.get(contractTxId)) / 1000 < chillOutTimeSeconds) {
+      console.log("===== UPDATES throwing!");
       throw new Error(`Chill out and wait ${chillOutTimeSeconds}s`);
     }
     const test = ctx.query.test !== 'false';
