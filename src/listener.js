@@ -214,7 +214,7 @@ async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueu
     const contractFailures = await getFailures(nodeDb, msgObj.contractTxId);
 
     if (Number.isInteger(contractFailures) && contractFailures > workersConfig.maxFailures - 1) {
-      validationMessage = 'Contract blacklisted';
+      validationMessage = `Contract blacklisted: ${msgObj.contractTxId}`;
     }
 
     if (validationMessage !== null) {
