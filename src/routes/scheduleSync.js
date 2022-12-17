@@ -8,13 +8,11 @@ const chillOutTimeSeconds = 10;
 module.exports = async (ctx) => {
   const contractTxId = ctx.query.id;
   const now = new Date();
-
-  if (updates.has(contractTxId) && (now - updates.get(contractTxId)) / 1000 < chillOutTimeSeconds) {
-    throw new Error(`Chill out and wait ${chillOutTimeSeconds}s`);
-  }
-  const test = ctx.query.test !== 'false';
   try {
-
+    if (updates.has(contractTxId) && (now - updates.get(contractTxId)) / 1000 < chillOutTimeSeconds) {
+      throw new Error(`Chill out and wait ${chillOutTimeSeconds}s`);
+    }
+    const test = ctx.query.test !== 'false';
     const connectionOptions = readGwPubSubConfig();
 
     const publisher = new Redis(connectionOptions);
