@@ -1,45 +1,34 @@
-const {JSONPath} = require('jsonpath-plus');
-const {getLastState} = require("../db/nodeDb");
+const Redis = require("ioredis");
+const {readGwPubSubConfig} = require("../config");
+
+const updates = new Map();
+
+const chillOutTimeSeconds = 10;
 
 module.exports = async (ctx) => {
-  const contractId = ctx.query.id;
-  const showValidity = ctx.query.validity === 'true';
-  const showErrorMessages = ctx.query.errorMessages === 'true';
-  const query = ctx.query.query;
-  const nodeDb = ctx.nodeDb;
+  const contractTxId = ctx.query.id;
+  const now = new Date();
 
+  if (updates.has(contractTxId) && (now - updates.get(contractTxId)) / 1000 < chillOutTimeSeconds) {
+    throw new Error(`Chill out and wait ${chillOutTimeSeconds}s`);
+  }
+  const test = ctx.query.test !== 'false';
   try {
-    const response = {};
-    const result = await getLastState(nodeDb, contractId);
-    if (result) {
-      response.contractTxId = contractId;
-      response.sortKey = result.sort_key;
-      response.timestamp = result.timestamp;
-      response.signature = result.signature;
-      response.stateHash = result.state_hash;
-      response.manifest = JSON.parse(result.manifest);
 
-      if (query) {
-        response.result = JSONPath({path: query, json: JSON.parse(result.state)});
-      } else {
-        response.state = JSON.parse(result.state);
-      }
+    const connectionOptions = readGwPubSubConfig();
 
-      if (showValidity) {
-        response.validity = JSON.parse(result.validity);
-      }
+    const publisher = new Redis(connectionOptions);
+    await publisher.connect();
+    const channel = 'contracts';
 
-      if (showErrorMessages) {
-        response.errorMessages = JSON.parse(result.error_messages);
-      }
-    } else {
-      response.message = 'Contract not cached';
-    }
-    ctx.body = response;
+    const message = {contractTxId, test, interaction: {}};
+    publisher.publish(channel, JSON.stringify(message));
+    updates.set(contractTxId, now);
+
+    ctx.body = 'Scheduled for update';
     ctx.status = 200;
   } catch (e) {
     ctx.body = e.message;
     ctx.status = 500;
   }
-
 };

@@ -50,7 +50,8 @@ module.exports = {
             });
           }
         }
-      }).catch(e => {
+      })
+      .catch(e => {
       logger.error('Error while storing in sqlite', e);
     });
   }

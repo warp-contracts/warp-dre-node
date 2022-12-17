@@ -171,7 +171,7 @@ async function runListener() {
 
 runListener().catch((e) => {
   logger.error(e);
-})
+});
 
 async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueue, registerQueue) {
   const connectionOptions = readGwPubSubConfig();
@@ -188,7 +188,6 @@ async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueu
       );
     }
   });
-
 
   subscriber.on("message", async (channel, message) => {
     const msgObj = JSON.parse(message);
