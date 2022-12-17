@@ -7,11 +7,15 @@ const chillOutTimeSeconds = 10;
 
 module.exports = async (ctx) => {
   const contractTxId = ctx.query.id;
-  if (!isTxIdValid(contractTxId)) {
-    throw new Error('Invalid tx id format');
-  }
-  const now = new Date();
   try {
+    if (!isTxIdValid(contractTxId)) {
+      throw new Error('Invalid tx id format');
+    }
+    const now = new Date();
+
+    console.log('===== SYNC now, ', now);
+    console.log('===== UPDATES has, ', updates.has(contractTxId));
+
     if (updates.has(contractTxId) && (now - updates.get(contractTxId)) / 1000 < chillOutTimeSeconds) {
       throw new Error(`Chill out and wait ${chillOutTimeSeconds}s`);
     }
