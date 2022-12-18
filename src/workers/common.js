@@ -1,12 +1,13 @@
 const {insertState, connect} = require("../db/nodeDb");
 const {publish: appSyncPublish, initPubSub: initAppSyncPublish} = require("warp-contracts-pubsub");
 const Redis = require("ioredis");
-const {readGwPubSubConfig, readApiKeysConfig} = require("../config");
+const {readGwPubSubConfig, readApiKeysConfig, readWorkersConfig} = require("../config");
 
 initAppSyncPublish();
 
 const connectionOptions = readGwPubSubConfig();
 const apiKeys = readApiKeysConfig();
+const workersOptions = readWorkersConfig();
 
 const redisPublisher = new Redis(
   {
@@ -54,5 +55,12 @@ module.exports = {
       .catch(e => {
       logger.error('Error while storing in sqlite', e);
     });
+  },
+  checkStateSize: (state) => {
+    const maxSize = workersOptions.maxStateSizeB;
+    const stateSize = Buffer.byteLength(JSON.stringify(state));
+    if (stateSize > maxSize) {
+      throw new Error('[MaxStateSizeError] State too big');
+    }
   }
 }

@@ -9,9 +9,8 @@ const compress = require("koa-compress");
 const zlib = require("zlib");
 const router = require("./router");
 const {readGwPubSubConfig, readApiKeysConfig, getEvaluationOptions, getWarpSdkConfig, readWorkersConfig} = require("./config");
-const {attachPaginate} = require('knex-paginate');
 const {createNodeDbTables, insertFailure, upsertBlacklist, getFailures, connect, events, hasContract, connectEvents,
-  createNodeDbEventsTables
+  createNodeDbEventsTables, doBlacklist
 } = require("./db/nodeDb");
 
 LoggerFactory.INST.logLevel('info');
@@ -78,10 +77,7 @@ async function runListener() {
   const updateEvents = new QueueEvents(updateQueueName);
   const registerEvents = new QueueEvents(registerQueueName);
 
-  // TODO: yeah, copy-pastes
-  updateEvents.on('failed', async ({jobId, failedReason}) => {
-    logger.error('Update job failed', {jobId, failedReason});
-    const contractTxId = jobId.split('|')[0];
+  async function onFailedJob(contractTxId, jobId, failedReason) {
     await insertFailure(nodeDb, {
       contract_tx_id: contractTxId,
       evaluation_options: getEvaluationOptions(),
@@ -89,8 +85,19 @@ async function runListener() {
       job_id: jobId,
       failure: failedReason
     });
-    await upsertBlacklist(nodeDb, contractTxId);
+    if (failedReason.includes('[MaxStateSizeError]')) {
+      await doBlacklist(nodeDb, contractTxId, workersConfig.maxFailures);
+    } else {
+      await upsertBlacklist(nodeDb, contractTxId);
+    }
     events.failure(nodeDbEvents, contractTxId, failedReason);
+  }
+
+  // TODO: yeah, copy-pastes
+  updateEvents.on('failed', async ({jobId, failedReason}) => {
+    logger.error('Update job failed', {jobId, failedReason});
+    const contractTxId = jobId.split('|')[0];
+    await onFailedJob(contractTxId, jobId, failedReason);
   });
   updateEvents.on('added', async ({jobId}) => {
     logger.info('Job added to update queue', jobId);
@@ -109,15 +116,8 @@ async function runListener() {
 
   registerEvents.on('failed', async ({jobId, failedReason}) => {
     logger.error('Register job failed', {jobId, failedReason});
-    await insertFailure(nodeDb, {
-      contract_tx_id: jobId,
-      evaluation_options: getEvaluationOptions(),
-      sdk_config: getWarpSdkConfig(),
-      job_id: jobId,
-      failure: failedReason
-    });
-    await upsertBlacklist(nodeDb, jobId);
-    events.failure(nodeDbEvents, jobId, failedReason);
+    const contractTxId = jobId;
+    await onFailedJob(contractTxId, jobId, failedReason);
   });
   registerEvents.on('added', async ({jobId}) => {
     logger.info('Job added to register queue', jobId);

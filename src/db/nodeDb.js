@@ -141,6 +141,15 @@ module.exports = {
                         0) + 1);`, [contractTxId, contractTxId]);
   },
 
+  doBlacklist: async (nodeDb, contractTxId, failures) => {
+    await nodeDb
+      .raw(
+        `INSERT OR
+         REPLACE
+         INTO black_list
+        VALUES (?, ?)`, [contractTxId, failures]);
+  },
+
   getFailures: async (nodeDb, contractTxId) => {
     const result = await nodeDb('black_list')
       .where({

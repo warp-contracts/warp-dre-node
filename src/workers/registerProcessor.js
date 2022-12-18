@@ -1,6 +1,6 @@
 const warp = require('../warp');
 const {LoggerFactory, genesisSortKey, CacheKey, EvalStateResult, Benchmark} = require("warp-contracts");
-const {storeAndPublish} = require("./common");
+const {storeAndPublish, checkStateSize} = require("./common");
 const {getEvaluationOptions} = require("../config");
 
 LoggerFactory.INST.logLevel('none');
@@ -25,7 +25,9 @@ module.exports = async (job) => {
       result = await warp.contract(contractTxId)
         .setEvaluationOptions(evaluationOptions)
         .readState();
+      checkStateSize(result.cachedValue.state);
     } else {
+      checkStateSize(job.data.initialState);
       await stateCache.put(
         new CacheKey(contractTxId, genesisSortKey),
         new EvalStateResult(job.data.initialState, {}, {})

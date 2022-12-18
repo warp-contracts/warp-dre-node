@@ -1,6 +1,6 @@
 const warp = require('../warp');
 const {LoggerFactory} = require("warp-contracts");
-const {storeAndPublish} = require("./common");
+const {storeAndPublish, checkStateSize} = require("./common");
 const {getEvaluationOptions} = require("../config");
 
 LoggerFactory.INST.logLevel('none');
@@ -43,6 +43,7 @@ module.exports = async (job) => {
     }
 
     logger.info(`Evaluated ${contractTxId} @ ${result.sortKey}`, contract.lastReadStateStats());
+    checkStateSize(result.cachedValue.state);
     storeAndPublish(logger, isTest, contractTxId, result).finally(() => {
     });
     return { lastSortKey };
