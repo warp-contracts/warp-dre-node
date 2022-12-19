@@ -15,7 +15,7 @@ const path = require("path");
   await publisher.connect();
   console.log(publisher.status)
   const message = {contractTxId: 'Daj-MNSnH55TDfxqC7v4eq0lKzVIwh98srUaWqyuZtY', test: true, initialState: {
-      foo: 'x'.repeat(3*1024*1024)
+      foo: 'x'.repeat(333*1024*1024)
     }};
   const channel = `contracts`;
 
