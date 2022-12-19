@@ -14,9 +14,6 @@ module.exports = WarpFactory.forMainnet()
   .useStateCache(new LmdbCache({
     ...defaultCacheOptions,
     dbLocation: `./cache/warp/lmdb/state`
-  }, {
-    minEntriesPerContract: 10,
-    maxEntriesPerContract: 50
   }))
   .useContractCache(new LmdbCache({
     ...defaultCacheOptions,
