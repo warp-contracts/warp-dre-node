@@ -4134,10 +4134,10 @@ warp-contracts-pubsub@^1.0.3:
     "@aws-amplify/api" "^4.0.61"
     "@aws-amplify/core" "4.7.12"
 
-warp-contracts@1.2.35:
-  version "1.2.35"
-  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.2.35.tgz#c0c1e47e1ca1dce0877c51e61a678dc5a78f55a6"
-  integrity sha512-P2T28hdZq40+p/qTKiQDDSjdIn2SgIG5nGayqknGMLPt99iaYNN8MFh1Lvnmiaq9DbntFqA7mBFdrr0WdpC/tw==
+warp-contracts@1.2.36:
+  version "1.2.36"
+  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.2.36.tgz#fa83224ca1268c3ebb4739b65b583639e9ef847a"
+  integrity sha512-XJQp4YfIwIcj+SqhvKMfsWs4mICaksOqwQT6gojXGZooWFkMpGkQzVO4MiWb2gXKaRG3jlBOqXdyb7873EvrRQ==
   dependencies:
     "@assemblyscript/loader" "^0.19.23"
     "@idena/vrf-js" "^1.0.1"
