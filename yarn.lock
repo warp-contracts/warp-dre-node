@@ -4701,10 +4701,10 @@ warp-contracts-pubsub@^1.0.4:
     isomorphic-ws "^5.0.0"
     ws "^8.11.0"
 
-warp-contracts@1.2.36:
-  version "1.2.36"
-  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.2.36.tgz#fa83224ca1268c3ebb4739b65b583639e9ef847a"
-  integrity sha512-XJQp4YfIwIcj+SqhvKMfsWs4mICaksOqwQT6gojXGZooWFkMpGkQzVO4MiWb2gXKaRG3jlBOqXdyb7873EvrRQ==
+warp-contracts@1.2.37:
+  version "1.2.37"
+  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.2.37.tgz#dec8164200a5bfeb2f176e527f9f3cc7e6a73d26"
+  integrity sha512-WP9uGClr7Dl7djzKJ8ui0cAcQzbkTh1yuXd+aonz+WBbi3xVBnwH/iJf0hPIgmi6wWbCU+NnjCrXVJ+rbIk9Kg==
   dependencies:
     "@assemblyscript/loader" "^0.19.23"
     "@idena/vrf-js" "^1.0.1"
