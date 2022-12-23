@@ -15,12 +15,12 @@ let warpSdkConfig = {
   'warp-contracts-plugin-ethers': pjson.dependencies['warp-contracts-plugin-ethers']
 };
 const evaluationOptions = {
-  useVM2: process.env.EVALUATION_USEVM2,
-  maxCallDepth: process.env.EVALUATION_MAXCALLDEPTH,
-  maxInteractionEvaluationTimeSeconds: process.env.EVALUATION_MAXINTERACTIONEVALUATIONTIMESECONDS,
-  allowBigInt: process.env.EVALUATION_ALLOWBIGINT,
+  useVM2: process.env.EVALUATION_USEVM2 === 'true',
+  maxCallDepth: parseInt(process.env.EVALUATION_MAXCALLDEPTH),
+  maxInteractionEvaluationTimeSeconds: parseInt(process.env.EVALUATION_MAXINTERACTIONEVALUATIONTIMESECONDS),
+  allowBigInt: process.env.EVALUATION_ALLOWBIGINT === 'true',
   unsafeClient: process.env.EVALUATION_UNSAFECLIENT,
-  internalWrites: process.env.EVALUATION_INTERNALWRITES
+  internalWrites: process.env.EVALUATION_INTERNALWRITES === 'true'
 };
 
 const config = {
@@ -28,26 +28,26 @@ const config = {
   streamId: process.env.STREAMR_STREAM_ID,
   arweave,
   gwPubSubConfig: {
-    port: process.env.GW_PORT,
+    port: process.env.GW_PORT ? parseInt(process.env.GW_PORT) : process.env.GW_PORT,
     host: process.env.GW_HOST,
     username: process.env.GW_USERNAME,
     password: process.env.GW_PASSWORD,
     tls: process.env.GW_TLS === 'true',
-    enableOfflineQueue: process.env.GW_ENABLE_OFFLINE_QUEUE,
-    lazyConnect: process.env.GW_LAZY_CONNECT
+    enableOfflineQueue: process.env.GW_ENABLE_OFFLINE_QUEUE === 'true',
+    lazyConnect: process.env.GW_LAZY_CONNECT === 'true'
   },
   bullMqConnection: {
-    port: process.env.BULLMQ_PORT,
+    port: process.env.BULLMQ_PORT ? parseInt(process.env.BULLMQ_PORT) : process.env.BULLMQ_PORT,
     host: process.env.BULLMQ_HOST,
     username: process.env.BULLMQ_USERNAME,
     password: process.env.BULLMQ_PASSWORD,
-    tls: process.env.BULLMQ_TLS,
-    enableOfflineQueue: process.env.BULLMQ_ENABLE_OFFLINE_QUEUE,
-    lazyConnect: process.env.BULLMQ_LAZY_CONNECT
+    tls: process.env.BULLMQ_TLS === 'true',
+    enableOfflineQueue: process.env.BULLMQ_ENABLE_OFFLINE_QUEUE === 'true',
+    lazyConnect: process.env.BULLMQ_LAZY_CONNECT === 'true'
   },
   appSync: {
     key: process.env.APPSYNC_KEY,
-    publishState: process.env.APPSYNC_PUBLISH_STATE.toLowerCase() === 'true'
+    publishState: process.env.APPSYNC_PUBLISH_STATE === 'true'
   },
   pubsub: {
     type: process.env.PUBSUB_TYPE
@@ -57,11 +57,11 @@ const config = {
   warpSdkConfig,
   nodeManifest: (async () => await getNodeManifest())(),
   workersConfig: {
-    register: process.env.WORKERS_REGISTER,
-    update: process.env.WORKERS_UPDATE,
-    jobIdRefreshSeconds: process.env.WORKERS_JOB_ID_REFRESH_SECONDS,
-    maxFailures: process.env.WORKERS_MAX_FAILURES,
-    maxStateSizeB: process.env.WORKERS_MAX_STATESIZE
+    register: parseInt(process.env.WORKERS_REGISTER),
+    update: parseInt(process.env.WORKERS_UPDATE),
+    jobIdRefreshSeconds: parseInt(process.env.WORKERS_JOB_ID_REFRESH_SECONDS),
+    maxFailures: parseInt(process.env.WORKERS_MAX_FAILURES),
+    maxStateSizeB: parseInt(process.env.WORKERS_MAX_STATESIZE)
   }
 };
 
