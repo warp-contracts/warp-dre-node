@@ -21,7 +21,8 @@ const evaluationOptions = {
   maxInteractionEvaluationTimeSeconds: parseInt(process.env.EVALUATION_MAXINTERACTIONEVALUATIONTIMESECONDS),
   allowBigInt: process.env.EVALUATION_ALLOWBIGINT === 'true',
   unsafeClient: process.env.EVALUATION_UNSAFECLIENT,
-  internalWrites: process.env.EVALUATION_INTERNALWRITES === 'true'
+  internalWrites: process.env.EVALUATION_INTERNALWRITES === 'true',
+  useKVStorage: true
 };
 
 const config = {
