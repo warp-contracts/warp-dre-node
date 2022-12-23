@@ -1,6 +1,18 @@
 version: '3.8'
 services:
-  cache:
+  dre:
+    build: .
+    env_file:
+      - .env
+    environment:
+      BULLMQ_HOST: "${BULLMQ_HOST:-bullmq}"
+    ports:
+      - '8080:8080'
+
+    volumes:
+      - dre-sqlite:/app/sqlite
+      - dre-cache:/app/cache
+  bullmq:
     image: redis:7.0-alpine
     restart: always
     ports:
@@ -10,4 +22,8 @@ services:
       - cache:/data
 volumes:
   cache:
+    driver: local
+  dre-sqlite:
+    driver: local
+  dre-cache:
     driver: local

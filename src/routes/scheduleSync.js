@@ -1,5 +1,5 @@
-const Redis = require("ioredis");
-const {readGwPubSubConfig} = require("../config");
+const Redis = require('ioredis');
+const { readGwPubSubConfig } = require('../config');
 
 const updates = new Map();
 
@@ -22,7 +22,7 @@ module.exports = async (ctx) => {
     await publisher.connect();
     const channel = 'contracts';
 
-    const message = {contractTxId, test, interaction: {}};
+    const message = { contractTxId, test, interaction: {} };
     publisher.publish(channel, JSON.stringify(message));
     updates.set(contractTxId, now);
 

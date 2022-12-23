@@ -1,5 +1,5 @@
-const {JSONPath} = require('jsonpath-plus');
-const {getLastState} = require("../db/nodeDb");
+const { JSONPath } = require('jsonpath-plus');
+const { getLastState } = require('../db/nodeDb');
 
 module.exports = async (ctx) => {
   const contractId = ctx.query.id;
@@ -20,7 +20,7 @@ module.exports = async (ctx) => {
       response.manifest = JSON.parse(result.manifest);
 
       if (query) {
-        response.result = JSONPath({path: query, json: JSON.parse(result.state)});
+        response.result = JSONPath({ path: query, json: JSON.parse(result.state) });
       } else {
         response.state = JSON.parse(result.state);
       }
@@ -41,5 +41,4 @@ module.exports = async (ctx) => {
     ctx.body = e.message;
     ctx.status = 500;
   }
-
 };
