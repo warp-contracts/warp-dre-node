@@ -225,6 +225,10 @@ async function processContractData(msgObj, nodeDb, nodeDbEvents, registerQueue, 
     );
     logger.info('Published to contracts queue', jobId);
   } else if (msgObj.interaction) {
+    if (await isRegisteringContract(registerQueue, contractTxId)) {
+      logger.warn(`${contractTxId} is currently being registered, skipping update`);
+      return;
+    }
     if (!isRegistered) {
       logger.warn('Contract not registered, adding to register queue', contractTxId);
       await registerQueue.add(
@@ -246,6 +250,13 @@ async function processContractData(msgObj, nodeDb, nodeDbEvents, registerQueue, 
         { jobId }
       );
     }
+  }
+
+  async function isRegisteringContract(registerQueue, contractTxId) {
+    const jobState = await registerQueue.getJobState(contractTxId);
+    // https://api.docs.bullmq.io/classes/Queue.html#getJobState
+    const inProgressStates = ['delayed', 'active', 'waiting', 'waiting-children'];
+    return inProgressStates.includes(jobState);
   }
 }
 

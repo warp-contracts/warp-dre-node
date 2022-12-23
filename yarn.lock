@@ -2113,10 +2113,10 @@ bufferutil@^4.0.1:
   dependencies:
     node-gyp-build "^4.3.0"
 
-bullmq@^3.4.2:
-  version "3.4.2"
-  resolved "https://registry.yarnpkg.com/bullmq/-/bullmq-3.4.2.tgz#e92a0634946c7199ec3bfb7f7cf8f001f3ab056d"
-  integrity sha512-7jff1+lIfj4Is6yiv75XABfY2+ao8YTH+zjkKafMq496DN4YjH9MVeDTfqGPyY9jVs89bApyRolKUp0gMx4dFg==
+bullmq@^3.5.1:
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/bullmq/-/bullmq-3.5.1.tgz#253032396e9fb30d63336ad28ae2eaeffb37de41"
+  integrity sha512-QxQnSIPBmEVq/bM1wxmMdh9RS4oNyUNeCvoTegr2EgtlNYToCkLgHAkM56JhaRlffo9ExNiWfVFJpXLWDfK0Fw==
   dependencies:
     cron-parser "^4.6.0"
     glob "^8.0.3"
@@ -3445,9 +3445,9 @@ knex-paginate@^3.0.2:
   resolved "https://registry.npmjs.org/knex-paginate/-/knex-paginate-3.0.2.tgz"
   integrity sha512-0M8bFlAb+vh2VXjI73gJsD6ffR2AunYe8i3xc0OEzXr+ynIx+cD7OBEqb0NKzmVNCi0pB0B6Bh/vXjov420sIQ==
 
-knex@^2.2.0:
+knex@^2.3.0:
   version "2.3.0"
-  resolved "https://registry.npmjs.org/knex/-/knex-2.3.0.tgz"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-2.3.0.tgz#87fa2a9553d7cafb125d7a0645256fbe29ef5967"
   integrity sha512-WMizPaq9wRMkfnwKXKXgBZeZFOSHGdtoSz5SaLAVNs3WRDfawt9O89T4XyH52PETxjV8/kRk0Yf+8WBEP/zbYw==
   dependencies:
     colorette "2.0.19"
