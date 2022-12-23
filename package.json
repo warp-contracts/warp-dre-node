@@ -5,10 +5,20 @@
   "author": "just_ppe",
   "license": "MIT",
   "scripts": {
-    "start:prod": "docker-compose up -d && node src/listener.js",
-    "start:prod:unsafe": "docker-compose up -d && node src/listener.js allowUnsafe",
-    "start:test": "docker-compose up -d && node src/listener.js test",
-    "start:test:unsafe": "docker-compose up -d && node src/listener.js test allowUnsafe"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prettier:format": "prettier --config .prettierrc 'src/**/*.js' --write",
+
+    "prepublishOnly": "yarn-or-npm lint",
+    "preversion": "yarn-or-npm lint && yarn-or-npm build",
+
+    "generate-arweave-wallet": "node src/tools/generateArweaveWallet.js",
+    "run-bullmq": "docker-compose up -d bullmq",
+    "run-docker": "docker-compose up -d",
+    "stop-docker": "docker-compose down",
+    "start": "yarn-or-npm run run-bullmq && node src/listener.js",
+    "start:prod": "ENV=prod yarn-or-npm run run-bullmq && node src/listener.js",
+    "start:test": "ENV=test yarn-or-npm run run-bullmq && node src/listener.js"
   },
   "engines": {
     "node": ">=16.5"
@@ -19,6 +29,7 @@
     "arweave": "1.11.8",
     "better-sqlite3": "^8.0.1",
     "bullmq": "^3.4.2",
+    "dotenv": "^16.0.3",
     "ioredis": "^5.2.4",
     "jsonpath-plus": "^7.2.0",
     "knex": "^2.2.0",
@@ -29,17 +40,19 @@
     "node-nlp": "^4.24.0",
     "safe-stable-stringify": "^2.4.1",
     "warp-contracts": "1.2.36",
+    "warp-contracts-evaluation-progress-plugin": "1.0.17",
     "warp-contracts-lmdb": "1.1.5",
     "warp-contracts-nlp-plugin": "1.0.7",
-    "warp-contracts-evaluation-progress-plugin": "1.0.17",
     "warp-contracts-plugin-ethers": "1.0.7",
-    "warp-contracts-pubsub": "^1.0.3"
+    "warp-contracts-pubsub": "^1.0.4",
+    "websocket": "^1.0.34"
   },
   "devDependencies": {
-    "@types/command-line-args": "^5.2.0",
-    "cli-progress": "^3.11.2",
-    "command-line-args": "^5.2.1",
     "deep-object-diff": "^1.1.9",
-    "ws": "^8.11.0"
+    "eslint": "^8.30.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "^2.8.1",
+    "yarn-or-npm": "^3.0.1"
   }
 }

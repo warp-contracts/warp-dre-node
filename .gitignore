@@ -16,3 +16,5 @@ cache
 sqlite
 dre-1/
 dre-2/
+.env
+Dockerfile

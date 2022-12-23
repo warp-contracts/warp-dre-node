@@ -1,6 +1,7 @@
-const knex = require("knex");
-const {signState} = require("../signature");
-const {getNodeManifest} = require("../config");
+const knex = require('knex');
+const { signState } = require('../signature');
+const { config } = require('../config');
+const logger = require('../logger')('node-db');
 
 let eventsDb = null;
 let stateDb = null;
@@ -52,7 +53,7 @@ module.exports = {
         t.jsonb('state').notNullable();
         t.jsonb('validity').notNullable();
         t.jsonb('error_messages').notNullable();
-        t.unique(['contract_tx_id', 'sort_key'])
+        t.unique(['contract_tx_id', 'sort_key']);
       });
     }
   },
@@ -64,7 +65,7 @@ module.exports = {
         connection: {
           filename: `sqlite/node.sqlite`
         },
-        useNullAsDefault: true,
+        useNullAsDefault: true
         /*pool: {
           afterCreate: (conn, cb) => {
             // https://github.com/knex/knex/issues/4971#issuecomment-1030701574
@@ -98,39 +99,37 @@ module.exports = {
   },
 
   insertFailure: async (nodeDb, failureInfo) => {
-    await nodeDb('errors')
-      .insert(failureInfo)
-      .onConflict(['job_id'])
-      .ignore();
+    await nodeDb('errors').insert(failureInfo).onConflict(['job_id']).ignore();
   },
 
   insertState: async (nodeDb, contractTxId, readResult) => {
-    const manifest = await getNodeManifest();
-    const {sig, stateHash} = await signState(contractTxId, readResult.sortKey, readResult.cachedValue.state, manifest);
+    const manifest = await config.nodeManifest;
+    const { sig, stateHash } = await signState(
+      contractTxId,
+      readResult.sortKey,
+      readResult.cachedValue.state,
+      manifest
+    );
 
     const entry = {
       contract_tx_id: contractTxId,
-      manifest,
+      manifest: manifest,
       sort_key: readResult.sortKey,
       signature: sig,
       state_hash: stateHash,
       state: readResult.cachedValue.state,
       validity: readResult.cachedValue.validity,
       error_messages: readResult.cachedValue.errorMessages
-    }
+    };
 
-    await nodeDb('states')
-      .insert(entry)
-      .onConflict(['contract_tx_id', 'sort_key'])
-      .ignore();
+    await nodeDb('states').insert(entry).onConflict(['contract_tx_id', 'sort_key']).ignore();
 
     return entry;
   },
 
   upsertBlacklist: async (nodeDb, contractTxId) => {
-    await nodeDb
-      .raw(
-        `INSERT OR
+    await nodeDb.raw(
+      `INSERT OR
          REPLACE
          INTO black_list
         VALUES (?,
@@ -138,16 +137,19 @@ module.exports = {
                         (SELECT failures
                          FROM black_list
                          WHERE contract_tx_id = ?),
-                        0) + 1);`, [contractTxId, contractTxId]);
+                        0) + 1);`,
+      [contractTxId, contractTxId]
+    );
   },
 
   doBlacklist: async (nodeDb, contractTxId, failures) => {
-    await nodeDb
-      .raw(
-        `INSERT OR
+    await nodeDb.raw(
+      `INSERT OR
          REPLACE
          INTO black_list
-        VALUES (?, ?)`, [contractTxId, failures]);
+        VALUES (?, ?)`,
+      [contractTxId, failures]
+    );
   },
 
   getFailures: async (nodeDb, contractTxId) => {
@@ -189,42 +191,43 @@ module.exports = {
   },
 
   getAllContracts: async (nodeDb) => {
-    return nodeDb('states')
-      .distinct('contract_tx_id')
-      .pluck('contract_tx_id');
+    return nodeDb('states').distinct('contract_tx_id').pluck('contract_tx_id');
   },
 
   hasContract: async (nodeDb, contractTxId) => {
-    return (await nodeDb('states')
-      .where({
-        contract_tx_id: contractTxId
-      }).first()) != null;
+    return (
+      (await nodeDb('states')
+        .where({
+          contract_tx_id: contractTxId
+        })
+        .first()) != null
+    );
   },
 
   events: {
     register: (nodeDb, contractTxId, message) => {
-      insertEvent(nodeDb, 'REQUEST_REGISTER', contractTxId, message).finally(()=>{});
+      insertEvent(nodeDb, 'REQUEST_REGISTER', contractTxId, message).finally(() => {});
     },
     update: (nodeDb, contractTxId, message) => {
-      insertEvent(nodeDb, 'REQUEST_UPDATE', contractTxId, message).finally(()=>{});
+      insertEvent(nodeDb, 'REQUEST_UPDATE', contractTxId, message).finally(() => {});
     },
     reject: (nodeDb, contractTxId, message) => {
-      insertEvent(nodeDb, 'REJECT', contractTxId, message).finally(()=>{});
+      insertEvent(nodeDb, 'REJECT', contractTxId, message).finally(() => {});
     },
     failure: (nodeDb, contractTxId, message) => {
-      insertEvent(nodeDb, 'FAILURE', contractTxId, message).finally(()=>{});
+      insertEvent(nodeDb, 'FAILURE', contractTxId, message).finally(() => {});
     },
     updated: (nodeDb, contractTxId, message) => {
-      insertEvent(nodeDb, 'UPDATED', contractTxId, message).finally(()=>{});
+      insertEvent(nodeDb, 'UPDATED', contractTxId, message).finally(() => {});
     },
     evaluated: (nodeDb, contractTxId, message) => {
-      insertEvent(nodeDb, 'EVALUATED', contractTxId, message).finally(()=>{});
+      insertEvent(nodeDb, 'EVALUATED', contractTxId, message).finally(() => {});
     },
     blacklisted: (nodeDb, contractTxId, message) => {
-      insertEvent(nodeDb, 'BLACKLISTED', contractTxId, message).finally(()=>{});
+      insertEvent(nodeDb, 'BLACKLISTED', contractTxId, message).finally(() => {});
     },
     progress: (contractTxId, message) => {
-      insertEvent(module.exports.connectEvents(), 'PROGRESS', contractTxId, message).finally(()=>{});
+      insertEvent(module.exports.connectEvents(), 'PROGRESS', contractTxId, message).finally(() => {});
     },
     loadForContract: async (nodeDb, contractTxId) => {
       return nodeDb('events')
@@ -235,15 +238,16 @@ module.exports = {
         .orderBy('timestamp', 'desc');
     }
   }
-}
+};
 
 async function insertEvent(nodeDb, event, contractTxId, message) {
   nodeDb('events')
     .insert({
-      'contract_tx_id': contractTxId,
-      'event': event,
-      'message': message
-    }).catch(e => {
-      console.error('Error while storing event', {event, contractTxId, message});
+      contract_tx_id: contractTxId,
+      event: event,
+      message: message
+    })
+    .catch(() => {
+      logger.error('Error while storing event', { event, contractTxId, message });
     });
 }

@@ -1,12 +1,13 @@
-const {JSONPath} = require('jsonpath-plus');
-const {getLastState, getContractErrors, getFailures, events} = require("../db/nodeDb");
+const { JSONPath } = require('jsonpath-plus');
+const { getLastState, getContractErrors, getFailures, events } = require('../db/nodeDb');
+const { config } = require('../config');
 
 const registrationStatus = {
   'not-registered': 'not-registered',
-  'registered': 'registered',
-  'evaluated': 'evaluated',
-  'error': 'error',
-  'blacklisted': 'blacklisted'
+  registered: 'registered',
+  evaluated: 'evaluated',
+  error: 'error',
+  blacklisted: 'blacklisted'
 };
 
 module.exports = async (ctx) => {
@@ -16,7 +17,7 @@ module.exports = async (ctx) => {
   const showErrorMessages = ctx.query.errorMessages === 'true';
   const showEvents = ctx.query.events === 'true';
   const query = ctx.query.query;
-  const {nodeDb, nodeDbEvents} = ctx;
+  const { nodeDb, nodeDbEvents } = ctx;
 
   try {
     const response = {};
@@ -25,7 +26,7 @@ module.exports = async (ctx) => {
       response.status = registrationStatus['evaluated'];
       response.contractTxId = contractId;
       if (query) {
-        response.result = JSONPath({path: query, json: JSON.parse(result.state)});
+        response.result = JSONPath({ path: query, json: JSON.parse(result.state) });
       } else {
         if (showState) {
           response.state = JSON.parse(result.state);
@@ -50,7 +51,7 @@ module.exports = async (ctx) => {
       } else {
         const failures = await getFailures(nodeDb, contractId);
 
-        if (Number.isInteger(failures) && failures > workersConfig.maxFailures - 1) {
+        if (Number.isInteger(failures) && failures > config.workersConfig.maxFailures - 1) {
           response.status = registrationStatus['blacklisted'];
           response.failures = failures;
         } else {

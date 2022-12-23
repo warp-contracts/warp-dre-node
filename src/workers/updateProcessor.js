@@ -1,7 +1,7 @@
 const warp = require('../warp');
-const {LoggerFactory} = require("warp-contracts");
-const {storeAndPublish, checkStateSize} = require("./common");
-const {getEvaluationOptions} = require("../config");
+const { LoggerFactory } = require('warp-contracts');
+const { storeAndPublish, checkStateSize } = require('./common');
+const { config } = require('../config');
 
 LoggerFactory.INST.logLevel('none');
 LoggerFactory.INST.logLevel('info', 'interactionsProcessor');
@@ -9,20 +9,15 @@ LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
 const logger = LoggerFactory.INST.create('interactionsProcessor');
 LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
 
-const evaluationOptions = getEvaluationOptions();
-
 module.exports = async (job) => {
-
-  const {contractTxId, isTest, interaction} = job.data;
+  const { contractTxId, isTest, interaction } = job.data;
 
   // workaround for https://github.com/taskforcesh/bullmq/issues/1557
   try {
     logger.info('Update Processor', contractTxId);
     const stateCache = warp.stateEvaluator.getCache();
     const lmdb = stateCache.storage();
-    const contract = warp
-      .contract(contractTxId)
-      .setEvaluationOptions(evaluationOptions);
+    const contract = warp.contract(contractTxId).setEvaluationOptions(config.evaluationOptions);
 
     let lastSortKey = null;
 
@@ -44,8 +39,7 @@ module.exports = async (job) => {
 
     logger.info(`Evaluated ${contractTxId} @ ${result.sortKey}`, contract.lastReadStateStats());
     checkStateSize(result.cachedValue.state);
-    storeAndPublish(logger, isTest, contractTxId, result).finally(() => {
-    });
+    storeAndPublish(logger, isTest, contractTxId, result).finally(() => {});
     return { lastSortKey };
   } catch (e) {
     throw new Error(e);
