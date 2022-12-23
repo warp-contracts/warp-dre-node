@@ -5,6 +5,7 @@ const blacklisted = require('./routes/blacklisted');
 const cached = require('./routes/cached');
 const errors = require('./routes/errors');
 const scheduleSync = require('./routes/scheduleSync');
+const kv = require('./routes/kv');
 
 const router = new Router();
 
@@ -14,5 +15,6 @@ router.get('/blacklist', blacklisted);
 router.get('/cached', cached);
 router.get('/errors', errors);
 router.get('/sync', scheduleSync);
+router.get('/kv', kv);
 
 module.exports = router;
