@@ -4786,10 +4786,10 @@ warp-contracts-pubsub@^1.0.4:
     isomorphic-ws "^5.0.0"
     ws "^8.11.0"
 
-warp-contracts@1.2.37-beta.2:
-  version "1.2.37-beta.2"
-  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.2.37-beta.2.tgz#7e6866d2cf8043a11aea03009b55e3ff8d4ba418"
-  integrity sha512-l0oPs0aK6es6lYvMDtukzt9kCxeZlSZfn4dbc2O4dhcda5bvr9awuTosCPYQrVmSDFyvknT5IsNpu5CkswPglw==
+warp-contracts@1.2.37-beta.4:
+  version "1.2.37-beta.4"
+  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.2.37-beta.4.tgz#bceac8171470bf3b5b14763a48fa106781e94686"
+  integrity sha512-sKh8D2PtoscSRZq9sF4NETb2D0Mieu45lgIx1ypiMnaL4S4QM9dBNBw2mMva2B61Ei/ldGeDMs2uOQMpQ2kSwA==
   dependencies:
     "@assemblyscript/loader" "^0.19.23"
     "@ethereumjs/trie" "^5.0.2"
