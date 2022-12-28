@@ -8,10 +8,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prettier:format": "prettier --config .prettierrc 'src/**/*.js' --write",
-
     "prepublishOnly": "yarn-or-npm lint",
     "preversion": "yarn-or-npm lint && yarn-or-npm build",
-
     "generate-arweave-wallet": "node src/tools/generateArweaveWallet.js",
     "run-bullmq": "docker-compose up -d bullmq",
     "run-docker": "docker-compose up -d",
@@ -39,7 +37,7 @@
     "koa-compress": "^5.1.0",
     "node-nlp": "^4.24.0",
     "safe-stable-stringify": "^2.4.1",
-    "warp-contracts": "1.2.37",
+    "warp-contracts": "1.2.38",
     "warp-contracts-evaluation-progress-plugin": "1.0.17",
     "warp-contracts-lmdb": "1.1.5",
     "warp-contracts-nlp-plugin": "1.0.7",
@@ -48,6 +46,8 @@
     "websocket": "^1.0.34"
   },
   "devDependencies": {
+    "cli-progress": "^3.11.2",
+    "command-line-args": "^5.2.1",
     "deep-object-diff": "^1.1.9",
     "eslint": "^8.30.0",
     "eslint-config-prettier": "^8.5.0",
