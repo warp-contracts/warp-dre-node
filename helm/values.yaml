@@ -8,7 +8,7 @@ image:
   repository: warpredstone/dre
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: pr-4
+  tag: main
 
 imagePullSecrets: []
 nameOverride: ""
