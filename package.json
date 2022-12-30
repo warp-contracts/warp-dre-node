@@ -15,8 +15,8 @@
     "run-docker": "docker-compose up -d",
     "stop-docker": "docker-compose down",
     "start": "yarn-or-npm run run-bullmq && node src/listener.js",
-    "start:prod": "ENV=prod yarn-or-npm run run-bullmq && node src/listener.js",
-    "start:test": "ENV=test yarn-or-npm run run-bullmq && node src/listener.js"
+    "start:prod": "yarn-or-npm run run-bullmq && ENV=prod node src/listener.js",
+    "start:test": "yarn-or-npm run run-bullmq && ENV=test node src/listener.js"
   },
   "engines": {
     "node": ">=16.5"
