@@ -269,12 +269,22 @@ async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueu
   logger.info(`Starting pubsub in ${pubsubType} mode`);
   switch (pubsubType) {
     case 'streamr': {
-      const pubsub = new StreamrWsClient({
+      const connection = {
         direction: 'sub',
-        streamId: config.streamId
-      });
+        streamId: config.streamr.id
+      };
+      if (config.streamr.host) {
+        connection.readHost = config.streamr.host;
+      }
+      if (config.streamr.port) {
+        connection.readPort = config.streamr.port;
+      }
+      const pubsub = new StreamrWsClient(connection);
       pubsub.sub(onMessage, onError);
-      process.on('exit', () => pubsub.close());
+      process.on('exit', () => {
+        logger.info('Closing pubsub');
+        pubsub.close();
+      });
       break;
     }
     case 'redis': {
