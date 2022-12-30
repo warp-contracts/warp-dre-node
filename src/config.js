@@ -66,9 +66,7 @@ const config = {
   }
 };
 
-(async () => await logConfig(config))();
 validate(config);
-module.exports.config = config;
 
 function getArweave() {
   return Arweave.init({
@@ -137,3 +135,6 @@ async function logConfig(config) {
   logger.info('evaluationOptions', config.evaluationOptions);
   logger.info('workersConfig', config.workersConfig);
 }
+
+module.exports.config = config;
+module.exports.logConfig = async () => await logConfig(config);

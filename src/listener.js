@@ -8,7 +8,7 @@ const compress = require('koa-compress');
 const zlib = require('zlib');
 const router = require('./router');
 const { StreamrWsClient } = require('warp-contracts-pubsub');
-const { config } = require('./config');
+const { config, logConfig} = require('./config');
 const {
   createNodeDbTables,
   insertFailure,
@@ -34,6 +34,7 @@ const registerQueueName = 'register';
 
 async function runListener() {
   logger.info('🚀🚀🚀 Starting execution node');
+  await logConfig();
 
   const nodeDb = connect();
   const nodeDbEvents = connectEvents();
