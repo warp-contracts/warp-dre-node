@@ -5,7 +5,7 @@ const { EvaluationProgressPlugin } = require('warp-contracts-evaluation-progress
 const { EventEmitter } = require('node:events');
 const { events } = require('./db/nodeDb');
 const { EthersExtension } = require('warp-contracts-plugin-ethers');
-const { EvmSignatureVerificationPlugin } = require('warp-contracts-plugin-signature');
+const { EvmSignatureVerificationServerPlugin } = require('warp-contracts-plugin-signature/server');
 
 const eventEmitter = new EventEmitter();
 eventEmitter.on('progress-notification', (data) => {
@@ -27,5 +27,5 @@ module.exports = WarpFactory.forMainnet()
   )
   .use(new EvaluationProgressPlugin(eventEmitter, 500))
   .use(new NlpExtension())
-  .use(new EvmSignatureVerificationPlugin())
+  .use(new EvmSignatureVerificationServerPlugin())
   .use(new EthersExtension());
