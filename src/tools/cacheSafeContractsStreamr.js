@@ -12,7 +12,7 @@ const WebSocketClient = require('websocket').client;
     console.log('Connect Error: ' + error.toString());
   });
   client.on('connect', async (connection) => {
-    contracts = contracts.slice(0, 2);
+    contracts = contracts.slice(0, 1);
     console.log('WebSocket Client Connected');
     connection.on('error', function (error) {
       console.log('Connection Error: ' + error.toString());
@@ -23,7 +23,7 @@ const WebSocketClient = require('websocket').client;
 
     for (let contract of contracts) {
       console.log('Publishing', contract);
-      const message = { contractTxId: contract.contract_id, test: true, interaction: {} };
+      const message = { contractTxId: contract.contract_id, test: false, interaction: {} };
       // publisher.publish(channel, JSON.stringify(message));
       connection.sendUTF(JSON.stringify(message));
 
@@ -35,7 +35,9 @@ const WebSocketClient = require('websocket').client;
 
   let streamId = '0xc2ae2d5523080b64cc788cddc91ff59a3e29f911/common';
   let port = 7180;
-  let url = `ws://redstone-nlb-prod-b3c531f79942790e.elb.eu-central-1.amazonaws.com`;
+  let url = `ws://write.streamr.warp.cc`;
+  // let url = `ws://34.107.60.243`;
+  // let url = `ws://redstone-nlb-prod-b3c531f79942790e.elb.eu-central-1.amazonaws.com`;
   let requestUrl = `${url}:${port}/streams/${encodeURIComponent(
     streamId
   )}/publish?apiKey=YjZhODI3MzRiMzA3NDlkNGIxYjVmYjllMmE4MzViZWI`;
