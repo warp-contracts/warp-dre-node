@@ -4829,19 +4829,19 @@ warp-contracts-lmdb@1.1.5:
   dependencies:
     lmdb "2.7.3"
 
-warp-contracts-nlp-plugin@1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/warp-contracts-nlp-plugin/-/warp-contracts-nlp-plugin-1.0.7.tgz#163ce1991dca5d25483655428572400d41a6891e"
-  integrity sha512-oFn16bdK+ETfaZ6a9zqVAojUTPak+h5Bt8lpiHZnf1247J97ckDOdJe6sXMYGaQKIBF3JkqDH9R0WyVeuRdC3Q==
-  dependencies:
-    node-nlp "^4.24.0"
-
 warp-contracts-plugin-ethers@1.0.7:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/warp-contracts-plugin-ethers/-/warp-contracts-plugin-ethers-1.0.7.tgz#7e27aa70707b1f48fdab0d9e7092e4a627cf7bf1"
   integrity sha512-GwxteXdbjoTEZrEtZdsHvauaajodguK5403fdZrcCtYuwmEZS2XMiZfk8rE2DG9o0P+9MXYKp/p0OnPvVGb6vw==
   dependencies:
     ethers "^5.7.2"
+    node-nlp "^4.24.0"
+
+warp-contracts-plugin-nlp@1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/warp-contracts-plugin-nlp/-/warp-contracts-plugin-nlp-1.0.8.tgz#56d53516a4594e4836f5b90261fb36197a8638e9"
+  integrity sha512-FAWLuz3rB/xtNGKi+YQymEUoVUFtrwhAQ2WYstsfkw/Z95LUTpWVbI5Zm86zGla7lI3U/idTUzG71s0wmsp3jA==
+  dependencies:
     node-nlp "^4.24.0"
 
 warp-contracts-plugin-signature@1.0.8:

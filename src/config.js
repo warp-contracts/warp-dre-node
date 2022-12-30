@@ -11,8 +11,9 @@ let warpSdkConfig = {
   'warp-contracts': pjson.dependencies['warp-contracts'],
   'warp-contracts-lmdb': pjson.dependencies['warp-contracts-lmdb'],
   'warp-contracts-evaluation-progress-plugin': pjson.dependencies['warp-contracts-evaluation-progress-plugin'],
-  'warp-contracts-nlp-plugin': pjson.dependencies['warp-contracts-nlp-plugin'],
-  'warp-contracts-plugin-ethers': pjson.dependencies['warp-contracts-plugin-ethers']
+  'warp-contracts-plugin-nlp': pjson.dependencies['warp-contracts-plugin-nlp'],
+  'warp-contracts-plugin-ethers': pjson.dependencies['warp-contracts-plugin-ethers'],
+  'warp-contracts-plugin-signature': pjson.dependencies['warp-contracts-plugin-signature']
 };
 const evaluationOptions = {
   useVM2: process.env.EVALUATION_USEVM2 === 'true',
