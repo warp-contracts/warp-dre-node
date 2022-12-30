@@ -26,7 +26,11 @@ const evaluationOptions = {
 
 const config = {
   env: process.env.ENV,
-  streamId: process.env.STREAMR_STREAM_ID,
+  streamr: {
+    id: process.env.STREAMR_STREAM_ID,
+    host: process.env.STREAMR_STREAM_HOST,
+    port: process.env.STREAMR_STREAM_PORT,
+  },
   arweave,
   gwPubSubConfig: {
     port: process.env.GW_PORT ? parseInt(process.env.GW_PORT) : process.env.GW_PORT,
@@ -134,6 +138,7 @@ async function logConfig(config) {
   logger.info('---------');
   logger.info('evaluationOptions', config.evaluationOptions);
   logger.info('workersConfig', config.workersConfig);
+  logger.info('streamr', config.streamr);
 }
 
 module.exports.config = config;
