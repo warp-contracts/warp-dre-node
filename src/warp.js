@@ -1,6 +1,6 @@
 const { defaultCacheOptions, WarpFactory } = require('warp-contracts');
 const { LmdbCache } = require('warp-contracts-lmdb');
-const { NlpExtension } = require('warp-contracts-nlp-plugin');
+const { NlpExtension } = require('warp-contracts-plugin-nlp');
 const { EvaluationProgressPlugin } = require('warp-contracts-evaluation-progress-plugin');
 const { EventEmitter } = require('node:events');
 const { events } = require('./db/nodeDb');
