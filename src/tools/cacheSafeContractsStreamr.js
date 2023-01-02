@@ -36,7 +36,6 @@ const WebSocketClient = require('websocket').client;
   let streamId = '0xc2ae2d5523080b64cc788cddc91ff59a3e29f911/common';
   let port = 7180;
   let url = `ws://write.streamr.warp.cc`;
-  // let url = `ws://34.107.60.243`;
   // let url = `ws://redstone-nlb-prod-b3c531f79942790e.elb.eu-central-1.amazonaws.com`;
   let requestUrl = `${url}:${port}/streams/${encodeURIComponent(
     streamId
