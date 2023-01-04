@@ -2,14 +2,19 @@ const warp = require('../warp');
 
 module.exports = async (ctx) => {
   const contractId = ctx.query.id;
-  const key = ctx.query.key;
+  const keys = ctx.query.keys.split(',');
 
   try {
     if (!isTxIdValid(contractId)) {
       throw new Error('Invalid tx format');
     }
-    const result = await warp.contract(contractId).getStorageValue(key);
-    ctx.body = { contractTxId: contractId, key: key, value: result };
+    const latestState = await warp.stateEvaluator.latestAvailableState(contractId);
+    const result = await warp.contract(contractId).getStorageValues(keys);
+    ctx.body = {
+      contractTxId: contractId,
+      sortKey: latestState?.sortKey,
+      value: JSON.stringify(Array.from(result.entries()))
+    };
     ctx.status = 200;
   } catch (e) {
     ctx.body = e.message;
