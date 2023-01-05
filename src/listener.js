@@ -279,7 +279,7 @@ async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueu
       if (config.streamr.port) {
         connection.readPort = config.streamr.port;
       }
-      const pubsub = new StreamrWsClient(connection);
+      const pubsub = await StreamrWsClient.create(connection);
       pubsub.sub(onMessage, onError);
       process.on('exit', () => {
         logger.info('Closing pubsub');
