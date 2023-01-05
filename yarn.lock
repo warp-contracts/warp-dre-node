@@ -4855,10 +4855,10 @@ warp-contracts-plugin-signature@1.0.8:
     ethers "^5.7.2"
     safe-stable-stringify "^2.4.1"
 
-warp-contracts-pubsub@^1.0.4:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/warp-contracts-pubsub/-/warp-contracts-pubsub-1.0.4.tgz#629a66e4a87b2070cbc941a2c6c092fa1861ea1b"
-  integrity sha512-XfS8gvzKYq6ert+JjmvG9RhciT/hJi4NUFc1QPC865GWdJHHBrb6usYaECgzOlNrzw5NMOSYYz4+Yyb3IQh5Xw==
+warp-contracts-pubsub@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/warp-contracts-pubsub/-/warp-contracts-pubsub-1.0.5.tgz#6193749997874a3ccd1f9a2c8a921bcfa0252eb2"
+  integrity sha512-8p6qv7i2qgsMit8ldMHNEX09Lqip3/Sw48kRixGWPduGPrXyVkCZxGqcH51Oz4/vzyNYe7650lKlgM9MruGI+Q==
   dependencies:
     "@aws-amplify/api" "^4.0.61"
     "@aws-amplify/core" "4.7.12"

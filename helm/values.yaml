@@ -6,9 +6,9 @@ replicaCount: 2
 
 image:
   repository: warpredstone/dre
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: main
+  tag: dev
 
 imagePullSecrets: []
 nameOverride: ""

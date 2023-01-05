@@ -40,10 +40,10 @@
     "warp-contracts": "1.2.37",
     "warp-contracts-evaluation-progress-plugin": "1.0.17",
     "warp-contracts-lmdb": "1.1.5",
-    "warp-contracts-plugin-nlp": "1.0.8",
     "warp-contracts-plugin-ethers": "1.0.7",
+    "warp-contracts-plugin-nlp": "1.0.8",
     "warp-contracts-plugin-signature": "1.0.8",
-    "warp-contracts-pubsub": "^1.0.4",
+    "warp-contracts-pubsub": "^1.0.5",
     "websocket": "^1.0.34"
   },
   "devDependencies": {
