@@ -54,7 +54,12 @@ async function main() {
     });
   });
 
+  await inContracts.close()
+  await outContracts.close()
+  await outSource.close()
+
   bar.stop();
+
 }
 
 main().catch((e) => console.error(e));

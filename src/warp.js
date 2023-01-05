@@ -23,6 +23,10 @@ module.exports = WarpFactory.forMainnet()
     new LmdbCache({
       ...defaultCacheOptions,
       dbLocation: `./cache/warp/lmdb/contract`
+    }),
+    new LmdbCache({
+      ...defaultCacheOptions,
+      dbLocation: `./cache/warp/lmdb/source`
     })
   )
   .use(new EvaluationProgressPlugin(eventEmitter, 500))

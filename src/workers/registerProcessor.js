@@ -3,7 +3,7 @@ const { LoggerFactory, genesisSortKey, CacheKey, EvalStateResult } = require('wa
 const { storeAndPublish, checkStateSize } = require('./common');
 const { config } = require('../config');
 
-LoggerFactory.INST.logLevel('none');
+LoggerFactory.INST.logLevel('debug');
 LoggerFactory.INST.logLevel('info', 'contractsProcessor');
 const logger = LoggerFactory.INST.create('contractsProcessor');
 LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
