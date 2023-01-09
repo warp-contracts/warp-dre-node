@@ -6,6 +6,7 @@ const { EventEmitter } = require('node:events');
 const { events } = require('./db/nodeDb');
 const { EthersExtension } = require('warp-contracts-plugin-ethers');
 const { EvmSignatureVerificationServerPlugin } = require('warp-contracts-plugin-signature/server');
+const exitHook = require('async-exit-hook');
 
 const eventEmitter = new EventEmitter();
 eventEmitter.on('progress-notification', (data) => {

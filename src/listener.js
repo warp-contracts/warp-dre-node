@@ -8,7 +8,7 @@ const compress = require('koa-compress');
 const zlib = require('zlib');
 const router = require('./router');
 const { StreamrWsClient } = require('warp-contracts-pubsub');
-const { config, logConfig} = require('./config');
+const { config, logConfig } = require('./config');
 const {
   createNodeDbTables,
   insertFailure,
@@ -23,6 +23,8 @@ const {
 } = require('./db/nodeDb');
 
 const logger = require('./logger')('listener');
+const exitHook = require('async-exit-hook');
+const warp = require('./warp');
 
 let isTestInstance = config.env === 'test';
 let port = 8080;
@@ -334,7 +336,13 @@ setInterval(() => {
   timestamp = Date.now();
 }, config.workersConfig.jobIdRefreshSeconds * 1000);
 
-process.on('SIGINT', () => {
+
+
+// Graceful shutdown
+async function cleanup(callback) {
   logger.info('Interrupted');
-  process.exit(0);
-});
+  await warp.close();
+  callback();
+}
+
+exitHook(cleanup);
