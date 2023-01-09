@@ -4,8 +4,8 @@ const { storeAndPublish, checkStateSize } = require('./common');
 const { config } = require('../config');
 
 LoggerFactory.INST.logLevel('debug');
-LoggerFactory.INST.logLevel('info', 'interactionsProcessor');
-LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
+LoggerFactory.INST.logLevel('debug', 'interactionsProcessor');
+LoggerFactory.INST.logLevel('debug', 'DefaultStateEvaluator');
 const logger = LoggerFactory.INST.create('interactionsProcessor');
 LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
 

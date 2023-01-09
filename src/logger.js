@@ -1,7 +1,7 @@
 const { LoggerFactory } = require('warp-contracts');
 
 module.exports = (name) => {
-  const level = 'info';
+  const level = 'debug';
   LoggerFactory.INST.logLevel(level);
 
   const logger = LoggerFactory.INST.create(name);
