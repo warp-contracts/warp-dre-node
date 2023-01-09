@@ -34,6 +34,9 @@ let timestamp = Date.now();
 const updateQueueName = 'update';
 const registerQueueName = 'register';
 
+let updateWorker;
+let registerWorker;
+
 async function runListener() {
   logger.info('🚀🚀🚀 Starting execution node');
   await logConfig();
@@ -127,7 +130,7 @@ async function runListener() {
   await clearQueue(registerQueue);
 
   const updateProcessor = path.join(__dirname, 'workers', 'updateProcessor');
-  new Worker(updateQueueName, updateProcessor, {
+  updateWorker = new Worker(updateQueueName, updateProcessor, {
     concurrency: config.workersConfig.update,
     connection: config.bullMqConnection,
     metrics: {
@@ -136,7 +139,7 @@ async function runListener() {
   });
 
   const registerProcessor = path.join(__dirname, 'workers', 'registerProcessor');
-  new Worker(registerQueueName, registerProcessor, {
+  registerWorker = new Worker(registerQueueName, registerProcessor, {
     concurrency: config.workersConfig.register,
     connection: config.bullMqConnection,
     metrics: {
@@ -336,10 +339,14 @@ setInterval(() => {
   timestamp = Date.now();
 }, config.workersConfig.jobIdRefreshSeconds * 1000);
 
+
 // Graceful shutdown
 async function cleanup(callback) {
   logger.info('Interrupted');
+  await updateWorker?.close();
+  await registerWorker?.close();
   await warp.close();
+
   callback();
 }
 
