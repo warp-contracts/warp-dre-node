@@ -36,8 +36,10 @@ module.exports = async (job) => {
         }
       };
     }
-    storeAndPublish(logger, isTest, contractTxId, result).finally(() => {});
+    storeAndPublish(logger, isTest, contractTxId, result).finally(() => { });
   } catch (e) {
+    logger.error('Exception in update processor', e);
+
     throw new Error(e);
   }
 };

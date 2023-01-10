@@ -39,9 +39,11 @@ module.exports = async (job) => {
 
     logger.info(`Evaluated ${contractTxId} @ ${result.sortKey}`, contract.lastReadStateStats());
     checkStateSize(result.cachedValue.state);
-    storeAndPublish(logger, isTest, contractTxId, result).finally(() => {});
+    storeAndPublish(logger, isTest, contractTxId, result).finally(() => { });
     return { lastSortKey };
   } catch (e) {
+    logger.error('Exception in update processor', e);
+
     throw new Error(e);
   }
 };
