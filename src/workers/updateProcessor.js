@@ -16,21 +16,31 @@ module.exports = async (job) => {
   try {
     logger.info('Update Processor', contractTxId);
     const stateCache = warp.stateEvaluator.getCache();
+    logger.info('A', contractTxId);
+
     const lmdb = stateCache.storage();
+    logger.info('B', contractTxId);
     const contract = warp.contract(contractTxId).setEvaluationOptions(config.evaluationOptions);
+    logger.info('C', contractTxId);
 
     let lastSortKey = null;
 
     let result = await lmdb.transaction(async () => {
+      logger.info('D', contractTxId);
+
       const lastCachedKey = (await warp.stateEvaluator.latestAvailableState(contractTxId))?.sortKey;
+      logger.info('E', contractTxId);
       if (lastCachedKey?.localeCompare(interaction.lastSortKey) === 0) {
         logger.debug('Safe to use latest interaction');
         lastSortKey = interaction.lastSortKey;
+        logger.info('F', contractTxId);
         return await contract.readStateFor([interaction]);
       } else {
+        logger.info('G', contractTxId);
         return null;
       }
     });
+    logger.info('F', contractTxId);
 
     if (result == null) {
       logger.debug('Not safe to use latest interaction, reading via Warp GW.');
@@ -39,7 +49,10 @@ module.exports = async (job) => {
 
     logger.info(`Evaluated ${contractTxId} @ ${result.sortKey}`, contract.lastReadStateStats());
     checkStateSize(result.cachedValue.state);
+    logger.info('G', contractTxId);
+
     storeAndPublish(logger, isTest, contractTxId, result).finally(() => { });
+    logger.info('H', contractTxId);
     return { lastSortKey };
   } catch (e) {
     logger.error('Exception in update processor', e);
