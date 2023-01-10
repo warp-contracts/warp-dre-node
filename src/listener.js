@@ -346,7 +346,7 @@ async function cleanup(callback) {
   await updateWorker?.close();
   await registerWorker?.close();
   await warp.close();
-
+  logger.info('Clean up finished');
   callback();
 }
 
