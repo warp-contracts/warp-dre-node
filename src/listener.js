@@ -339,7 +339,6 @@ setInterval(() => {
   timestamp = Date.now();
 }, config.workersConfig.jobIdRefreshSeconds * 1000);
 
-
 // Graceful shutdown
 async function cleanup(callback) {
   logger.info('Interrupted');

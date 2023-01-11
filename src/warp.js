@@ -14,20 +14,38 @@ eventEmitter.on('progress-notification', (data) => {
 
 module.exports = WarpFactory.forMainnet()
   .useStateCache(
-    new LmdbCache({
-      ...defaultCacheOptions,
-      dbLocation: `./cache/warp/lmdb/state`
-    })
+    new LmdbCache(
+      {
+        ...defaultCacheOptions,
+        dbLocation: `./cache/warp/lmdb/state`
+      },
+      {
+        maxEntriesPerContract: 1000,
+        minEntriesPerContract: 1
+      }
+    )
   )
   .useContractCache(
-    new LmdbCache({
-      ...defaultCacheOptions,
-      dbLocation: `./cache/warp/lmdb/contract`
-    }),
-    new LmdbCache({
-      ...defaultCacheOptions,
-      dbLocation: `./cache/warp/lmdb/source`
-    })
+    new LmdbCache(
+      {
+        ...defaultCacheOptions,
+        dbLocation: `./cache/warp/lmdb/contract`
+      },
+      {
+        maxEntriesPerContract: 1000,
+        minEntriesPerContract: 1
+      }
+    ),
+    new LmdbCache(
+      {
+        ...defaultCacheOptions,
+        dbLocation: `./cache/warp/lmdb/source`
+      },
+      {
+        maxEntriesPerContract: 1000,
+        minEntriesPerContract: 1
+      }
+    )
   )
   .use(new EvaluationProgressPlugin(eventEmitter, 500))
   .use(new NlpExtension())

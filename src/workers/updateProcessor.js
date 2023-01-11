@@ -51,7 +51,7 @@ module.exports = async (job) => {
     checkStateSize(result.cachedValue.state);
     logger.info('G', contractTxId);
 
-    storeAndPublish(logger, isTest, contractTxId, result).finally(() => { });
+    storeAndPublish(logger, isTest, contractTxId, result).finally(() => {});
     logger.info('H', contractTxId);
     return { lastSortKey };
   } catch (e) {
