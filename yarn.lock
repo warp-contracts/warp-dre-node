@@ -4827,10 +4827,9 @@ warp-contracts-evaluation-progress-plugin@1.0.17:
   resolved "https://registry.npmjs.org/warp-contracts-evaluation-progress-plugin/-/warp-contracts-evaluation-progress-plugin-1.0.17.tgz"
   integrity sha512-nssIxmQtpjU4wJa8IF1Vx76JSeG25aV1tZMFHdJ5CffRBoxMDII/BuGZqJAEx5abCWvaoo/zUVaQetvdkM56Kg==
 
-warp-contracts-lmdb@1.1.7:
+"warp-contracts-lmdb@git+https://github.com/warp-contracts/warp-contracts-lmdb.git#e951551abe775ebbb1ee369e17c3e6bcb94d7ff9":
   version "1.1.7"
-  resolved "https://registry.npmjs.org/warp-contracts-lmdb/-/warp-contracts-lmdb-1.1.7.tgz"
-  integrity sha512-Nocqwg9R1IJHJmqpVlCcOs3a6PeOp9bDNk8agH7Vcqb2HAZ9lFENi1qa0F1wd3Lwh2LhRb4vje7Xme46u6Mdfg==
+  resolved "git+https://github.com/warp-contracts/warp-contracts-lmdb.git#e951551abe775ebbb1ee369e17c3e6bcb94d7ff9"
   dependencies:
     lmdb "2.7.3"
 

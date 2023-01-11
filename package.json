@@ -40,7 +40,7 @@
     "safe-stable-stringify": "^2.4.1",
     "warp-contracts": "1.2.44",
     "warp-contracts-evaluation-progress-plugin": "1.0.17",
-    "warp-contracts-lmdb": "git://github.com/warp-contracts/warp-contracts-lmdb.git#e951551abe775ebbb1ee369e17c3e6bcb94d7ff9",
+    "warp-contracts-lmdb": "git+https://github.com/warp-contracts/warp-contracts-lmdb.git#e951551abe775ebbb1ee369e17c3e6bcb94d7ff9",
     "warp-contracts-plugin-ethers": "1.0.7",
     "warp-contracts-plugin-nlp": "1.0.8",
     "warp-contracts-plugin-signature": "1.0.8",
