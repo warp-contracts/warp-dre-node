@@ -13,6 +13,10 @@ async function readState() {
       new LmdbCache({
         ...defaultCacheOptions,
         dbLocation: `./cache/warp/lmdb/contract`
+      }),
+      new LmdbCache({
+        ...defaultCacheOptions,
+        dbLocation: `./cache/warp/lmdb/source`
       })
     );
 
