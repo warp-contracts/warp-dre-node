@@ -70,10 +70,16 @@ class LMDBTrie {
   }
 
   async open() {
-    // noop
+    if (this.database == null) {
+      this.database = open({
+        name: '@ethereumjs/trie',
+        path: this.path
+      });
+    }
   }
 
   async close() {
-    // noop
+    await this.database.close();
+    this.database = null;
   }
 }
