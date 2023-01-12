@@ -7,7 +7,7 @@ const { config } = require('../config');
   const rawContracts = fs.readFileSync(path.join('safeContracts.json'), 'utf-8');
   let contracts = JSON.parse(rawContracts);
 
-  const publisher = new Redis(config.gwPubSubConfig);
+  const publisher = new Redis(config.gwSubConfig);
   await publisher.connect();
   console.log(publisher.status);
   const channel = `contracts`;

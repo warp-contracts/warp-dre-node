@@ -5,10 +5,9 @@ const { config } = require('../config');
 
 initAppSyncPublish();
 
-const redisPublisher = new Redis({
-  ...config.gwPubSubConfig,
-  lazyConnect: false
-});
+
+
+const redisPublisher = config.statePubConfig?.host ? new Redis(config.statePubConfig) : null;
 
 module.exports = {
   storeAndPublish: async (logger, isTest, contractTxId, result) => {
@@ -17,22 +16,24 @@ module.exports = {
         logger.info('State stored in sqlite', contractTxId);
 
         if (!isTest) {
-          try {
-            redisPublisher.publish(
-              'states',
-              JSON.stringify({
-                contractTxId: dbResult.contract_tx_id,
-                sortKey: dbResult.sort_key,
-                state: dbResult.state,
-                node: dbResult.manifest.walletAddress,
-                signature: dbResult.signature,
-                manifest: dbResult.manifest,
-                stateHash: dbResult.state_hash
-              })
-            );
-            logger.debug('Published to Redis', contractTxId);
-          } catch (e) {
-            logger.error('Error while publishing to Redis');
+          if (redisPublisher) {
+            try {
+              redisPublisher.publish(
+                'states',
+                JSON.stringify({
+                  contractTxId: dbResult.contract_tx_id,
+                  sortKey: dbResult.sort_key,
+                  state: dbResult.state,
+                  node: dbResult.manifest.walletAddress,
+                  signature: dbResult.signature,
+                  manifest: dbResult.manifest,
+                  stateHash: dbResult.state_hash
+                })
+              );
+              logger.debug('Published to Redis', contractTxId);
+            } catch (e) {
+              logger.error('Error while publishing to Redis');
+            }
           }
 
           if (config.appSync.publishState) {

@@ -288,7 +288,7 @@ async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueu
       break;
     }
     case 'redis': {
-      const subscriber = new Redis(config.gwPubSubConfig);
+      const subscriber = new Redis(config.gwSubConfig);
       await subscriber.connect();
       logger.info('Connected to Warp Gateway notifications', subscriber.status);
 

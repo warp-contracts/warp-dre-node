@@ -32,7 +32,8 @@ const config = {
     port: parseInt(process.env.STREAMR_STREAM_PORT),
   },
   arweave,
-  gwPubSubConfig: {
+  // interactions subscription from gw
+  gwSubConfig: {
     port: process.env.GW_PORT ? parseInt(process.env.GW_PORT) : process.env.GW_PORT,
     host: process.env.GW_HOST,
     username: process.env.GW_USERNAME,
@@ -41,6 +42,17 @@ const config = {
     enableOfflineQueue: process.env.GW_ENABLE_OFFLINE_QUEUE === 'true',
     lazyConnect: process.env.GW_LAZY_CONNECT === 'true'
   },
+  // optional - evaluated state publish channel (used by the aggregate node)
+  statePubConfig: {
+    port: process.env.STATE_PUB_PORT ? parseInt(process.env.STATE_PUB_PORT) : process.env.STATE_PUB_PORT,
+    host: process.env.STATE_PUB_HOST,
+    username: process.env.STATE_PUB_USERNAME,
+    password: process.env.STATE_PUB_PASSWORD,
+    tls: process.env.STATE_PUB_TLS === 'true',
+    enableOfflineQueue: process.env.STATE_PUB_ENABLE_OFFLINE_QUEUE === 'true',
+    lazyConnect: process.env.STATE_PUB_LAZY_CONNECT === 'true'
+  },
+  // internal bullmq redis
   bullMqConnection: {
     port: process.env.BULLMQ_PORT ? parseInt(process.env.BULLMQ_PORT) : process.env.BULLMQ_PORT,
     host: process.env.BULLMQ_HOST,
@@ -119,13 +131,21 @@ async function logConfig(config) {
   logger.info('Arweave public address', nodeManifest.walletAddress);
   logger.info('gitCommitHash', nodeManifest.gitCommitHash);
   logger.info('---------');
-  logger.info('--- gwPubSubConfig');
-  logger.info('--- host', config.gwPubSubConfig.host);
-  logger.info('--- port', config.gwPubSubConfig.port);
-  logger.info('--- tls', config.gwPubSubConfig.tls);
-  logger.info('--- lazyConnect', config.gwPubSubConfig.lazyConnect);
-  logger.info('--- enableOfflineQueue', config.gwPubSubConfig.enableOfflineQueue);
-  logger.info('--- /gwPubSubConfig');
+  logger.info('--- gwSubConfig');
+  logger.info('--- host', config.gwSubConfig.host);
+  logger.info('--- port', config.gwSubConfig.port);
+  logger.info('--- tls', config.gwSubConfig.tls);
+  logger.info('--- lazyConnect', config.gwSubConfig.lazyConnect);
+  logger.info('--- enableOfflineQueue', config.gwSubConfig.enableOfflineQueue);
+  logger.info('--- /gwSubConfig');
+  logger.info('---------');
+  logger.info('--- statePubConfig');
+  logger.info('--- host', config.statePubConfig.host);
+  logger.info('--- port', config.statePubConfig.port);
+  logger.info('--- tls', config.statePubConfig.tls);
+  logger.info('--- lazyConnect', config.statePubConfig.lazyConnect);
+  logger.info('--- enableOfflineQueue', config.statePubConfig.enableOfflineQueue);
+  logger.info('--- /statePubConfig');
   logger.info('---------');
   logger.info('--- bullMqConnection');
   logger.info('--- port', config.bullMqConnection.port);
