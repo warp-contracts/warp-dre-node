@@ -41,7 +41,8 @@ module.exports = {
               `states/${contractTxId}`,
               JSON.stringify({
                 sortKey: result.sortKey,
-                state: result.cachedValue.state
+                state: result.cachedValue.state,
+                signature: dbResult.signature
               }),
               config.appSync.key
             )
