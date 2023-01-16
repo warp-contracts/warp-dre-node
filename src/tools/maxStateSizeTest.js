@@ -1,14 +1,9 @@
 const Redis = require('ioredis');
-const fs = require('fs');
-const path = require('path');
+const { config } = require('../config');
+
 
 (async () => {
-  function readGwPubSubConfig() {
-    const json = fs.readFileSync(path.join('.secrets', 'gw-pubsub.json'), 'utf-8');
-    return JSON.parse(json);
-  }
-
-  const connectionOptions = readGwPubSubConfig();
+  const connectionOptions = config.gwPubSubConfig;
 
   const publisher = new Redis(connectionOptions);
   await publisher.connect();

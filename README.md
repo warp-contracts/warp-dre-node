@@ -212,6 +212,25 @@ and ignored.
 3. `/cached` - returns a list of all cached contracts
 4. `/blacklist` - returns all contracts that failed at least once. If contract failed 3 times - it is blacklisted.
 5. `/errors` - returns all errors for all contracts
+6. `/sync` - schedule force synchronization of a given contract. This endpoint can't be called more frequent then every 10 seconds.
+   Parameters:
+   * `id` - text contract tx id
+   
+   Example: 
+   ```bash
+   http ":8080/sync?id=KT45jaf8n9UwgkEareWxPgLJk4oMWpI5NODgYVIF1fY"
+   HTTP/1.1 200 OK
+   
+   Scheduled for update
+   ```
+   Error when too frequent requests per one contract:
+   ```bash
+   http ":8080/sync?id=KT45jaf8n9UwgkEareWxPgLJk4oMWpI5NODgYVIF1fY"
+   HTTP/1.1 500 Internal Server Error
+
+   Chill out and wait 10s
+   ```
+   
 
 ## Environment variables
 
@@ -220,13 +239,21 @@ using environment variables or .env file.
 
 You can check out the default values in the .env.defaults file.
 
-| Variable              | Required   | Description                                                                                              |
-|-----------------------|------------|----------------------------------------------------------------------------------------------------------|
-| APPSYNC_PUBLISH_STATE | true       | Publish state into the appsync. Requires non-empty APPSYNC_KEY.                                          |
-| APPSYNC_KEY           | true/false | [AWS AppSync](https://aws.amazon.com/appsync/) key.                                                      |
-| NODE_JWK_KEY          | true       | JWK key of Arweave wallet. See more in [Pre requirements](#Pre-requirements) section.                    |
-| PUBSUB_TYPE           | true       | Transport for node pub/sub. The node gets information about new blocks with it. Can be streamr or redis. |
-| STREAMR_STREAM_ID     | true/false | Required when PUBSUB_TYPE is streamr. Streamr stream id                                                  |
+| Variable                | Required                 | Description                                                                                                  |
+|-------------------------|--------------------------|--------------------------------------------------------------------------------------------------------------|
+| APPSYNC_PUBLISH_STATE   | true                     | Publish state into the appsync. Requires non-empty APPSYNC_KEY.                                              |
+| APPSYNC_KEY             | true/false               | [AWS AppSync](https://aws.amazon.com/appsync/) key.                                                          |
+| NODE_JWK_KEY            | true                     | JWK key of Arweave wallet. See more in [Pre requirements](#Pre-requirements) section.                        |
+| PUBSUB_TYPE             | true                     | Transport for node pub/sub. The node gets information about new blocks with it. Can be `streamr` or `redis`. |
+| STREAMR_STREAM_ID       | if PUBSUB_TYPE=`streamr` | Required when PUBSUB_TYPE is streamr. Streamr stream id                                                      |
+| GW_PORT                 | if PUBSUB_TYPE='redis'   | Port to Redis pubsub instance                                                                                |
+| GW_HOST                 | if PUBSUB_TYPE='redis'   | Host to Redis pubsub instance                                                                                |
+| GW_USERNAME             | if PUBSUB_TYPE='redis'   | Username for authenticating to Redis pubsub instance                                                         |
+| GW_PASSWORD             | if PUBSUB_TYPE='redis'   | Password for authenticating to Redis pubsub instance                                                         |
+| GW_TLS                  | if PUBSUB_TYPE='redis'   | TLS enabled/disabled for Redis pubsub instance                                                               |
+| GW_ENABLE_OFFLINE_QUEUE | if PUBSUB_TYPE='redis'   | https://luin.github.io/ioredis/interfaces/CommonRedisOptions.html#enableOfflineQueue                         |
+| GW_LAZY_CONNECT         | if PUBSUB_TYPE='redis'   | https://luin.github.io/ioredis/interfaces/CommonRedisOptions.html#lazyConnect                                |
+
 
 ## How to run?
 
@@ -246,7 +273,8 @@ You can check out the default values in the .env.defaults file.
 2. You need to have Arweave wallet. You can generate it using:
     1. [arweave wallet](https://arweave.app/add). You can download the wallet using the download button in
        the [wallet setting](https://arweave.app/settings).
-    2. Generate a new wallet using script: `yarn generate-arweave-wallet`
+    2. Generate a new wallet using script: `mkdir .secrets && yarn generate-arweave-wallet`
+    3. Script will generate arweave keys, you should past JSON string in `NODE_JWK_KEY` env variable in `.env` file 
    > ⚠️ Don't use wallets with real funds for test/development proposes.
 3. [NodeJS](https://nodejs.org/en/download/)
 4. [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/)

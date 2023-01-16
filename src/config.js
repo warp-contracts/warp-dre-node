@@ -56,7 +56,7 @@ const config = {
   nodeJwk,
   evaluationOptions,
   warpSdkConfig,
-  nodeManifest: (async () => await getNodeManifest())(),
+  nodeManifest: getNodeManifest(),
   workersConfig: {
     register: parseInt(process.env.WORKERS_REGISTER),
     update: parseInt(process.env.WORKERS_UPDATE),

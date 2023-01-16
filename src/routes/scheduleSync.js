@@ -1,5 +1,5 @@
 const Redis = require('ioredis');
-const { readGwPubSubConfig } = require('../config');
+const { config } = require('../config');
 
 const updates = new Map();
 
@@ -16,7 +16,7 @@ module.exports = async (ctx) => {
       throw new Error(`Chill out and wait ${chillOutTimeSeconds}s`);
     }
     const test = ctx.query.test !== 'false';
-    const connectionOptions = readGwPubSubConfig();
+    const connectionOptions = config.gwPubSubConfig;
 
     const publisher = new Redis(connectionOptions);
     await publisher.connect();
