@@ -42,6 +42,11 @@ spec:
           env:
             - name: BULLMQ_HOST
               value: localhost
+            - name: GW_TLS_CA_CERT
+              valueFrom:
+                secretKeyRef:
+                  key: ca.crt
+                  name: redis-crt
           envFrom:
             - secretRef:
                 name: dre

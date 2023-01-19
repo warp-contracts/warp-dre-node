@@ -24,6 +24,30 @@ const evaluationOptions = {
   internalWrites: process.env.EVALUATION_INTERNALWRITES === 'true'
 };
 
+function getGwPubSubConfig() {
+  const conf = {
+    port: process.env.GW_PORT ? parseInt(process.env.GW_PORT) : process.env.GW_PORT,
+    host: process.env.GW_HOST,
+    username: process.env.GW_USERNAME,
+    password: process.env.GW_PASSWORD,
+    enableOfflineQueue: process.env.GW_ENABLE_OFFLINE_QUEUE === 'true',
+    lazyConnect: process.env.GW_LAZY_CONNECT === 'true'
+  };
+  if (process.env.GW_TLS === 'true') {
+    if (process.env.GW_TLS_CA_CERT) {
+      conf.tls = {
+        ca: [process.env.GW_TLS_CA_CERT],
+        checkServerIdentity: () => { return null; },
+      }
+    } else {
+      conf.tls = true;
+    }
+  } else {
+    conf.tls = false;
+  }
+  return conf;
+}
+
 const config = {
   env: process.env.ENV,
   streamr: {
@@ -32,15 +56,7 @@ const config = {
     port: parseInt(process.env.STREAMR_STREAM_PORT)
   },
   arweave,
-  gwPubSubConfig: {
-    port: process.env.GW_PORT ? parseInt(process.env.GW_PORT) : process.env.GW_PORT,
-    host: process.env.GW_HOST,
-    username: process.env.GW_USERNAME,
-    password: process.env.GW_PASSWORD,
-    tls: process.env.GW_TLS === 'true',
-    enableOfflineQueue: process.env.GW_ENABLE_OFFLINE_QUEUE === 'true',
-    lazyConnect: process.env.GW_LAZY_CONNECT === 'true'
-  },
+  gwPubSubConfig: getGwPubSubConfig(),
   bullMqConnection: {
     port: process.env.BULLMQ_PORT ? parseInt(process.env.BULLMQ_PORT) : process.env.BULLMQ_PORT,
     host: process.env.BULLMQ_HOST,
