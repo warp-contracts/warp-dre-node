@@ -15,22 +15,18 @@ module.exports = async (job) => {
   // workaround for https://github.com/taskforcesh/bullmq/issues/1557
   try {
     logger.info('Update Processor', contractTxId);
-    const stateCache = warp.stateEvaluator.getCache();
-    const lmdb = stateCache.storage();
+
     const contract = warp.contract(contractTxId).setEvaluationOptions(config.evaluationOptions);
 
     let lastSortKey = null;
+    let result = null;
 
-    let result = await lmdb.transaction(async () => {
-      const lastCachedKey = (await warp.stateEvaluator.latestAvailableState(contractTxId))?.sortKey;
-      if (lastCachedKey?.localeCompare(interaction.lastSortKey) === 0) {
-        logger.debug('Safe to use latest interaction');
-        lastSortKey = interaction.lastSortKey;
-        return await contract.readStateFor([interaction]);
-      } else {
-        return null;
-      }
-    });
+    const lastCachedKey = (await warp.stateEvaluator.latestAvailableState(contractTxId))?.sortKey;
+    if (lastCachedKey?.localeCompare(interaction.lastSortKey) === 0) {
+      logger.debug('Safe to use latest interaction');
+      lastSortKey = interaction.lastSortKey;
+      result = await contract.readStateFor(lastSortKey, [interaction]);
+    }
 
     if (result == null) {
       logger.debug('Not safe to use latest interaction, reading via Warp GW.');
@@ -42,6 +38,8 @@ module.exports = async (job) => {
     storeAndPublish(logger, isTest, contractTxId, result).finally(() => {});
     return { lastSortKey };
   } catch (e) {
+    logger.error('Exception in update processor', e);
+
     throw new Error(e);
   }
 };

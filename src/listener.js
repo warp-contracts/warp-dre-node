@@ -8,7 +8,7 @@ const compress = require('koa-compress');
 const zlib = require('zlib');
 const router = require('./router');
 const { StreamrWsClient } = require('warp-contracts-pubsub');
-const { config, logConfig} = require('./config');
+const { config, logConfig } = require('./config');
 const {
   createNodeDbTables,
   insertFailure,
@@ -23,6 +23,8 @@ const {
 } = require('./db/nodeDb');
 
 const logger = require('./logger')('listener');
+const exitHook = require('async-exit-hook');
+const warp = require('./warp');
 
 let isTestInstance = config.env === 'test';
 let port = 8080;
@@ -31,6 +33,9 @@ let timestamp = Date.now();
 
 const updateQueueName = 'update';
 const registerQueueName = 'register';
+
+let updateWorker;
+let registerWorker;
 
 async function runListener() {
   logger.info('🚀🚀🚀 Starting execution node');
@@ -125,7 +130,7 @@ async function runListener() {
   await clearQueue(registerQueue);
 
   const updateProcessor = path.join(__dirname, 'workers', 'updateProcessor');
-  new Worker(updateQueueName, updateProcessor, {
+  updateWorker = new Worker(updateQueueName, updateProcessor, {
     concurrency: config.workersConfig.update,
     connection: config.bullMqConnection,
     metrics: {
@@ -134,7 +139,7 @@ async function runListener() {
   });
 
   const registerProcessor = path.join(__dirname, 'workers', 'registerProcessor');
-  new Worker(registerQueueName, registerProcessor, {
+  registerWorker = new Worker(registerQueueName, registerProcessor, {
     concurrency: config.workersConfig.register,
     connection: config.bullMqConnection,
     metrics: {
@@ -344,7 +349,14 @@ setInterval(() => {
   timestamp = Date.now();
 }, config.workersConfig.jobIdRefreshSeconds * 1000);
 
-process.on('SIGINT', () => {
+// Graceful shutdown
+async function cleanup(callback) {
   logger.info('Interrupted');
-  process.exit(0);
-});
+  await updateWorker?.close();
+  await registerWorker?.close();
+  await warp.close();
+  logger.info('Clean up finished');
+  callback();
+}
+
+exitHook(cleanup);
