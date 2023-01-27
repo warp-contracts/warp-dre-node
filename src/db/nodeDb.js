@@ -56,6 +56,18 @@ module.exports = {
         t.unique(['contract_tx_id', 'sort_key']);
       });
     }
+
+    // Trigger for ensuring only the newest state is stored
+    await knex.raw(`
+    CREATE TRIGGER IF NOT EXISTS reject_outdated_state
+    BEFORE INSERT
+      ON states
+    BEGIN
+      SELECT CASE
+      WHEN (EXISTS (SELECT 1 FROM states WHERE states.contract_tx_id = NEW.contract_tx_id AND states.sort_key > NEW.sort_key))
+      THEN RAISE(ABORT, 'Outdated sort_key')
+      END;
+    END;`);
   },
 
   connect: () => {
