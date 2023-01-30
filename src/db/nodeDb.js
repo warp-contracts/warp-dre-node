@@ -26,7 +26,7 @@ module.exports = {
         t.string('contract_tx_id').index();
         t.jsonb('evaluation_options');
         t.jsonb('sdk_config');
-        t.string('job_id').index().unique();
+        t.string('job_id').unique();
         t.string('failure').notNullable();
         t.timestamp('timestamp').defaultTo(knex.fn.now());
       });
@@ -35,7 +35,7 @@ module.exports = {
     const hasBlacklistTable = await knex.schema.hasTable('black_list');
     if (!hasBlacklistTable) {
       await knex.schema.createTable('black_list', function (t) {
-        t.string('contract_tx_id').index().unique();
+        t.string('contract_tx_id').unique();
         t.integer('failures');
       });
     }
@@ -46,7 +46,7 @@ module.exports = {
         t.string('contract_tx_id').unique();
         t.jsonb('manifest').notNullable();
         t.string('bundle_tx_id');
-        t.string('sort_key').index();
+        t.string('sort_key');
         t.string('signature').notNullable();
         t.string('state_hash').notNullable();
         t.timestamp('timestamp').defaultTo(knex.fn.now());
