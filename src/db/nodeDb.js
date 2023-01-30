@@ -43,7 +43,7 @@ module.exports = {
     const hasStatesTable = await knex.schema.hasTable('states');
     if (!hasStatesTable) {
       await knex.schema.createTable('states', function (t) {
-        t.string('contract_tx_id').index();
+        t.string('contract_tx_id').unique();
         t.jsonb('manifest').notNullable();
         t.string('bundle_tx_id');
         t.string('sort_key').index();
@@ -60,7 +60,7 @@ module.exports = {
     // Trigger for ensuring only the newest state is stored
     await knex.raw(`
     CREATE TRIGGER IF NOT EXISTS reject_outdated_state
-    BEFORE INSERT
+    BEFORE UPDATE
       ON states
     BEGIN
       SELECT CASE
