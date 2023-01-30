@@ -134,7 +134,7 @@ module.exports = {
       error_messages: readResult.cachedValue.errorMessages
     };
 
-    await nodeDb('states').insert(entry).onConflict(['contract_tx_id', 'sort_key']).ignore();
+    await nodeDb('states').insert(entry).onConflict(['contract_tx_id']).merge();
 
     return entry;
   },
