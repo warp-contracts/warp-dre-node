@@ -29,7 +29,7 @@ const config = {
   streamr: {
     id: process.env.STREAMR_STREAM_ID,
     host: process.env.STREAMR_STREAM_HOST,
-    port: parseInt(process.env.STREAMR_STREAM_PORT),
+    port: parseInt(process.env.STREAMR_STREAM_PORT)
   },
   arweave,
   gwPubSubConfig: {

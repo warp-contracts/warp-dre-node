@@ -47,6 +47,19 @@ module.exports = WarpFactory.forMainnet()
       }
     )
   )
+  .useKVStorageFactory(
+    (contractTxId) =>
+      new LmdbCache(
+        {
+          ...defaultCacheOptions,
+          dbLocation: `./cache/warp/kv/lmdb/${contractTxId}`
+        },
+        {
+          minEntriesPerContract: 1,
+          maxEntriesPerContract: 10
+        }
+      )
+  )
   .use(new EvaluationProgressPlugin(eventEmitter, 500))
   .use(new NlpExtension())
   .use(new EvmSignatureVerificationServerPlugin())
