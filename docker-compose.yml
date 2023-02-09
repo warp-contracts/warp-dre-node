@@ -7,7 +7,7 @@ services:
     environment:
       BULLMQ_HOST: "${BULLMQ_HOST:-bullmq}"
     ports:
-      - '8080:8080'
+      - '80:8080'
 
     volumes:
       - dre-sqlite:/app/sqlite
