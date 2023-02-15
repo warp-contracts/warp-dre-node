@@ -1,7 +1,6 @@
 name: Create Release
 
 on:
-  pull_request: # delete
   workflow_dispatch:
     inputs:
       prerelease:
