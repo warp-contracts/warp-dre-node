@@ -10,7 +10,7 @@ on:
       prerelease:
         type: boolean
         required: false
-        default: false
+        default: true
       draft:
         type: boolean
         required: false
@@ -35,11 +35,13 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          tag_name: ${{ steps.version.outputs.version_tag }}
-          release_name: Release ${{ steps.version.outputs.version_tag }}
-          draft: ${{ inputs.draft }}
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: ${{ steps.version.outputs.version_tag }}
           prerelease: ${{ inputs.prerelease }}
+          draft: ${{ inputs.draft }}
+          title: Release ${{ steps.version.outputs.version_tag }}
+          files: |
+            docker-compose.yml
+            
