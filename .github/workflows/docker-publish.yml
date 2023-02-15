@@ -12,6 +12,7 @@ on:
     types:
     - released
     - published
+    - created
   pull_request:
     branches: [ "main" ]
     paths:
