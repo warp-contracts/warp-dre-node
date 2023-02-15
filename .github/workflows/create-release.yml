@@ -10,12 +10,7 @@ on:
       prerelease:
         type: boolean
         required: false
-        default: true
-      draft:
-        type: boolean
-        required: false
-        default: true # false
-      
+        default: true     
 
 jobs:
   release:
@@ -40,7 +35,6 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: ${{ steps.version.outputs.version_tag }}
           prerelease: ${{ inputs.prerelease }}
-          draft: ${{ inputs.draft }}
           title: Release ${{ steps.version.outputs.version_tag }}
           files: |
             docker-compose.yml
