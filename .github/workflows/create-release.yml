@@ -30,12 +30,12 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: softprops/action-gh-release@v0.1.15
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: ${{ steps.version.outputs.version_tag }}
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          tag_name: ${{ steps.version.outputs.version_tag }}
           prerelease: ${{ inputs.prerelease }}
-          title: Release ${{ steps.version.outputs.version_tag }}
+          name: Release ${{ steps.version.outputs.version_tag }}
           files: |
             docker-compose.yml
             
