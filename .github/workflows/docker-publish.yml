@@ -7,6 +7,9 @@ on:
     tags: [ 'v*.*.*' ]
   pull_request:
     branches: [ "main" ]
+    paths:
+    - 'src/**'
+    - 'Dockerfile'
   workflow_dispatch:
 
 env:
