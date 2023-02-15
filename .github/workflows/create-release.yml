@@ -31,7 +31,7 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v0.1.15
         with:
-          token: "${{ secrets.GITHUB_TOKEN }}"
+          token: "${{ secrets.RELEASE_TOKEN }}"
           tag_name: ${{ steps.version.outputs.version_tag }}
           prerelease: ${{ inputs.prerelease }}
           name: Release ${{ steps.version.outputs.version_tag }}
