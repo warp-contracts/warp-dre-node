@@ -5,6 +5,9 @@ on:
     branches: [ "main" ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
+  release:
+    - released
+    
   pull_request:
     branches: [ "main" ]
     paths:
