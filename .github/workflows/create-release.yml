@@ -3,12 +3,19 @@ name: Create Release
 # Use (MAJOR) or (MINOR) in the commit if you want to update corresponding version
 
 on:
+  pull_request: # delete
+    
   workflow_dispatch:
     inputs:
       prerelease:
         type: boolean
         required: false
         default: false
+      draft:
+        type: boolean
+        required: false
+        default: true # false
+      
 
 jobs:
   release:
@@ -34,5 +41,5 @@ jobs:
         with:
           tag_name: ${{ steps.version.outputs.version_tag }}
           release_name: Release ${{ steps.version.outputs.version_tag }}
-          draft: false
+          draft: ${{ inputs.draft }}
           prerelease: ${{ inputs.prerelease }}
