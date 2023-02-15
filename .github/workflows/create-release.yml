@@ -3,14 +3,13 @@ name: Create Release
 # Use (MAJOR) or (MINOR) in the commit if you want to update corresponding version
 
 on:
-  pull_request: # delete
     
   workflow_dispatch:
     inputs:
       prerelease:
         type: boolean
         required: false
-        default: true     
+        default: false     
 
 jobs:
   release:
