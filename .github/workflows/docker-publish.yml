@@ -6,6 +6,7 @@ on:
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   release:
+    types:
     - released
     
   pull_request:
