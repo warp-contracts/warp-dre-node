@@ -1,4 +1,6 @@
 name: Create Release
+# Update patch version by default. 
+# Use (MAJOR) or (MINOR) in the commit if you want to update corresponding version
 
 on:
   workflow_dispatch:
