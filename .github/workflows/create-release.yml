@@ -37,4 +37,4 @@ jobs:
           name: Release ${{ steps.version.outputs.version_tag }}
           files: |
             docker-compose.yml
-            
+            .env.defaults
