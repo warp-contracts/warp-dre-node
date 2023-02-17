@@ -2,6 +2,7 @@ version: '3.8'
 services:
   dre:
     image: "warpredstone/dre:${DRE_IMAGE_TAG:-latest}"
+    restart: always
     env_file:
       - .env
     environment:
