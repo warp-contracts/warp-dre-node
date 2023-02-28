@@ -15,6 +15,7 @@ module.exports = async (ctx) => {
   const showState = ctx.query.state !== 'false';
   const showValidity = ctx.query.validity === 'true';
   const showErrorMessages = ctx.query.errorMessages === 'true';
+  const showErrors = ctx.query.errors === 'true';
   const showEvents = ctx.query.events === 'true';
   const query = ctx.query.query;
   const { nodeDb, nodeDbEvents } = ctx;
@@ -37,6 +38,9 @@ module.exports = async (ctx) => {
       }
       if (showErrorMessages) {
         response.errorMessages = JSON.parse(result.error_messages);
+      }
+      if (showErrors) {
+        response.errors = await getContractErrors(nodeDb, contractId);
       }
       response.sortKey = result.sort_key;
       response.timestamp = result.timestamp;
