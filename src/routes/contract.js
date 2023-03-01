@@ -22,42 +22,43 @@ module.exports = async (ctx) => {
 
   try {
     const response = {};
-    const result = await getLastState(nodeDb, contractId);
-    if (result) {
-      response.status = registrationStatus['evaluated'];
-      response.contractTxId = contractId;
-      if (query) {
-        response.result = JSONPath({ path: query, json: JSON.parse(result.state) });
-      } else {
-        if (showState) {
-          response.state = JSON.parse(result.state);
-        }
-      }
-      if (showValidity) {
-        response.validity = JSON.parse(result.validity);
-      }
-      if (showErrorMessages) {
-        response.errorMessages = JSON.parse(result.error_messages);
-      }
-      if (showErrors) {
-        response.errors = await getContractErrors(nodeDb, contractId);
-      }
-      response.sortKey = result.sort_key;
-      response.timestamp = result.timestamp;
-      response.signature = result.signature;
-      response.stateHash = result.state_hash;
-      response.manifest = JSON.parse(result.manifest);
-    } else {
-      const contractErrors = await getContractErrors(nodeDb, contractId);
-      if (contractErrors.length) {
-        response.status = registrationStatus['error'];
-        response.errors = contractErrors;
-      } else {
-        const failures = await getFailures(nodeDb, contractId);
+    const failures = await getFailures(nodeDb, contractId);
+    const blacklisted = Number.isInteger(failures) && failures > config.workersConfig.maxFailures - 1;
 
-        if (Number.isInteger(failures) && failures > config.workersConfig.maxFailures - 1) {
-          response.status = registrationStatus['blacklisted'];
-          response.failures = failures;
+    if (blacklisted) {
+      response.status = registrationStatus['blacklisted'];
+      response.errors = await getContractErrors(nodeDb, contractId);
+    } else {
+      const result = await getLastState(nodeDb, contractId);
+      if (result) {
+        response.status = registrationStatus['evaluated'];
+        response.contractTxId = contractId;
+        if (query) {
+          response.result = JSONPath({ path: query, json: JSON.parse(result.state) });
+        } else {
+          if (showState) {
+            response.state = JSON.parse(result.state);
+          }
+        }
+        if (showValidity) {
+          response.validity = JSON.parse(result.validity);
+        }
+        if (showErrorMessages) {
+          response.errorMessages = JSON.parse(result.error_messages);
+        }
+        if (showErrors) {
+          response.errors = await getContractErrors(nodeDb, contractId);
+        }
+        response.sortKey = result.sort_key;
+        response.timestamp = result.timestamp;
+        response.signature = result.signature;
+        response.stateHash = result.state_hash;
+        response.manifest = JSON.parse(result.manifest);
+      } else {
+        const contractErrors = await getContractErrors(nodeDb, contractId);
+        if (contractErrors.length) {
+          response.status = registrationStatus['error'];
+          response.errors = contractErrors;
         } else {
           throw new Error('No info about contract');
         }
