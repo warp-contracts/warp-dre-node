@@ -86,7 +86,9 @@ async function runListener() {
     if (failedReason.includes('[MaxStateSizeError]')) {
       await doBlacklist(nodeDb, contractTxId, config.workersConfig.maxFailures);
     } else {
-      await upsertBlacklist(nodeDb, contractTxId);
+      if (!failedReason.includes('Unable to retrieve transactions. Warp gateway responded with status')) {
+        await upsertBlacklist(nodeDb, contractTxId);
+      }
     }
     events.failure(nodeDbEvents, contractTxId, failedReason);
   }
