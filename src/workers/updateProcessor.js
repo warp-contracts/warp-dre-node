@@ -40,6 +40,6 @@ module.exports = async (job) => {
   } catch (e) {
     logger.error('Exception in update processor', e);
 
-    throw new Error(e);
+    throw new Error(`${contractTxId}|${interaction.id}|${e}`);
   }
 };
