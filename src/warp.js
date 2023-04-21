@@ -3,9 +3,12 @@ const { LmdbCache } = require('warp-contracts-lmdb');
 const { NlpExtension } = require('warp-contracts-plugin-nlp');
 const { EvaluationProgressPlugin } = require('warp-contracts-evaluation-progress-plugin');
 const { EventEmitter } = require('node:events');
-const { events } = require('./db/nodeDb');
+const { events, connect, getFailures } = require('./db/nodeDb');
 const { EthersExtension } = require('warp-contracts-plugin-ethers');
 const { EvmSignatureVerificationServerPlugin } = require('warp-contracts-plugin-signature/server');
+const { ContractBlacklistPlugin, getDreBlacklistFunction } = require('warp-contracts-plugin-blacklist');
+const { config } = require('./config');
+const { VM2Plugin } = require('warp-contracts-plugin-vm2');
 
 const eventEmitter = new EventEmitter();
 eventEmitter.on('progress-notification', (data) => {
@@ -20,8 +23,8 @@ module.exports = WarpFactory.forMainnet()
         dbLocation: `./cache/warp/lmdb/state`
       },
       {
-        minEntriesPerContract: 10,
-        maxEntriesPerContract: 50
+        minEntriesPerContract: 5,
+        maxEntriesPerContract: 20
       }
     )
   )
@@ -33,7 +36,7 @@ module.exports = WarpFactory.forMainnet()
       },
       {
         minEntriesPerContract: 1,
-        maxEntriesPerContract: 10
+        maxEntriesPerContract: 5
       }
     ),
     new LmdbCache(
@@ -43,7 +46,7 @@ module.exports = WarpFactory.forMainnet()
       },
       {
         minEntriesPerContract: 1,
-        maxEntriesPerContract: 10
+        maxEntriesPerContract: 5
       }
     )
   )
@@ -55,7 +58,7 @@ module.exports = WarpFactory.forMainnet()
           dbLocation: `./cache/warp/kv/lmdb/${contractTxId}`
         },
         {
-          minEntriesPerContract: 1,
+          minEntriesPerContract: 3,
           maxEntriesPerContract: 10
         }
       )
@@ -63,4 +66,11 @@ module.exports = WarpFactory.forMainnet()
   .use(new EvaluationProgressPlugin(eventEmitter, 500))
   .use(new NlpExtension())
   .use(new EvmSignatureVerificationServerPlugin())
-  .use(new EthersExtension());
+  .use(new EthersExtension())
+  .use(new VM2Plugin())
+  .use(
+    new ContractBlacklistPlugin(async (input) => {
+      const blacklistFunction = await getDreBlacklistFunction(getFailures, connect(), config.workersConfig.maxFailures);
+      return await blacklistFunction(input);
+    })
+  );

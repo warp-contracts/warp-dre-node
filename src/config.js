@@ -13,10 +13,11 @@ let warpSdkConfig = {
   'warp-contracts-evaluation-progress-plugin': pjson.dependencies['warp-contracts-evaluation-progress-plugin'],
   'warp-contracts-plugin-nlp': pjson.dependencies['warp-contracts-plugin-nlp'],
   'warp-contracts-plugin-ethers': pjson.dependencies['warp-contracts-plugin-ethers'],
-  'warp-contracts-plugin-signature': pjson.dependencies['warp-contracts-plugin-signature']
+  'warp-contracts-plugin-signature': pjson.dependencies['warp-contracts-plugin-signature'],
+  'warp-contracts-plugin-blacklist': pjson.dependencies['warp-contracts-plugin-blacklist'],
+  'warp-contracts-plugin-vm2': pjson.dependencies['warp-contracts-plugin-vm2']
 };
 const evaluationOptions = {
-  useVM2: process.env.EVALUATION_USEVM2 === 'true',
   maxCallDepth: parseInt(process.env.EVALUATION_MAXCALLDEPTH),
   maxInteractionEvaluationTimeSeconds: parseInt(process.env.EVALUATION_MAXINTERACTIONEVALUATIONTIMESECONDS),
   allowBigInt: process.env.EVALUATION_ALLOWBIGINT === 'true',
@@ -37,8 +38,10 @@ function getGwPubSubConfig() {
     if (process.env.GW_TLS_CA_CERT) {
       conf.tls = {
         ca: [process.env.GW_TLS_CA_CERT],
-        checkServerIdentity: () => { return null; },
-      }
+        checkServerIdentity: () => {
+          return null;
+        }
+      };
     } else {
       conf.tls = true;
     }
