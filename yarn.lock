@@ -1905,6 +1905,16 @@ arweave@1.11.8:
     bignumber.js "^9.0.2"
     util "^0.12.4"
 
+arweave@1.13.7:
+  version "1.13.7"
+  resolved "https://registry.yarnpkg.com/arweave/-/arweave-1.13.7.tgz#cda8534c833baec372a7052c61f53b4e39a886d7"
+  integrity sha512-Hv+x2bSI6UyBHpuVbUDMMpMje1ETfpJWj52kKfz44O0IqDRi/LukOkkDUptup1p6OT6KP1/DdpnUnsNHoskFeA==
+  dependencies:
+    arconnect "^0.4.2"
+    asn1.js "^5.4.1"
+    base64-js "^1.5.1"
+    bignumber.js "^9.0.2"
+
 arweave@^1.10.13:
   version "1.11.6"
   resolved "https://registry.npmjs.org/arweave/-/arweave-1.11.6.tgz"
@@ -4879,13 +4889,21 @@ warp-contracts-plugin-signature@1.0.12:
     ethers "^5.7.2"
     safe-stable-stringify "^2.4.1"
 
-warp-contracts-plugin-vm2@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/warp-contracts-plugin-vm2/-/warp-contracts-plugin-vm2-1.0.0.tgz#f55914a228102f3bda7dafc197c395078fa0e190"
-  integrity sha512-3XubaZ9eeRbBtMDwmTAewZk6WYgtcg9g44vATqH5vmn2wdPWIBcrBX3gA7XQIDbqPcLPpIgifMDZiQJSNwYZDA==
+warp-contracts-plugin-vm2@1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/warp-contracts-plugin-vm2/-/warp-contracts-plugin-vm2-1.0.1.tgz#0c1749f998508e8559a4627afc574ff80577353c"
+  integrity sha512-ogECglCyZZ3vF7nm9RqkDA+b8AwHmoda8Uv2oYIMyxm7haLjTMtZNY+QvqDbI3b/B/MR+nX1nwdTe7KIUqqQjQ==
   dependencies:
     bignumber.js "^9.1.1"
     vm2 "^3.9.16"
+
+warp-contracts-plugin-vrf@1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/warp-contracts-plugin-vrf/-/warp-contracts-plugin-vrf-1.0.4.tgz#a562721b88118bd31f6177ee2903b2d4c77f246f"
+  integrity sha512-JC5SmIiR/EX1tC1/FiDbYy9/98RcAU+YAfyJnECwMzfqILz0eFRVwHVt3M+7UKuTkm0MuEeVKMgEe3uj4snEdA==
+  dependencies:
+    "@idena/vrf-js" "^1.0.1"
+    elliptic "^6.5.4"
 
 warp-contracts-pubsub@^1.0.6:
   version "1.0.6"
@@ -4897,17 +4915,15 @@ warp-contracts-pubsub@^1.0.6:
     isomorphic-ws "^5.0.0"
     ws "^8.11.0"
 
-warp-contracts@1.4.2:
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.4.2.tgz#d8fb1da5fa1ea1da2dd83052b7a2e24170fefb2e"
-  integrity sha512-YCZNT2rzODy9gcSAOXC6j4PWGlxA9oCV/Gydkcoz4VK2OXwo05P7bzqyatWBIb/oHcYqN0dcEBDc+XWqJdlo2Q==
+warp-contracts@1.4.5:
+  version "1.4.5"
+  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.4.5.tgz#a9113c1f4fe963ca6a65410ae0917e55db5cc7fe"
+  integrity sha512-hUlJt1DXQapPf7cQRUehv9bEMNl6gX9srJ3K3LFAjKvtv2evD22tdcAH0MYHb+QchGIBLqJwva9d2pC7pSA+PQ==
   dependencies:
-    "@idena/vrf-js" "^1.0.1"
     archiver "^5.3.0"
-    arweave "^1.12.4"
+    arweave "1.13.7"
     async-mutex "^0.4.0"
     bignumber.js "9.1.1"
-    elliptic "^6.5.4"
     events "3.3.0"
     fast-copy "^3.0.0"
     level "^8.0.0"

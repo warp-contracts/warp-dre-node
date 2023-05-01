@@ -15,7 +15,8 @@ let warpSdkConfig = {
   'warp-contracts-plugin-ethers': pjson.dependencies['warp-contracts-plugin-ethers'],
   'warp-contracts-plugin-signature': pjson.dependencies['warp-contracts-plugin-signature'],
   'warp-contracts-plugin-blacklist': pjson.dependencies['warp-contracts-plugin-blacklist'],
-  'warp-contracts-plugin-vm2': pjson.dependencies['warp-contracts-plugin-vm2']
+  'warp-contracts-plugin-vm2': pjson.dependencies['warp-contracts-plugin-vm2'],
+  'warp-contracts-plugin-vrf': pjson.dependencies['warp-contracts-plugin-vrf']
 };
 const evaluationOptions = {
   maxCallDepth: parseInt(process.env.EVALUATION_MAXCALLDEPTH),

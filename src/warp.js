@@ -9,13 +9,14 @@ const { EvmSignatureVerificationServerPlugin } = require('warp-contracts-plugin-
 const { ContractBlacklistPlugin, getDreBlacklistFunction } = require('warp-contracts-plugin-blacklist');
 const { config } = require('./config');
 const { VM2Plugin } = require('warp-contracts-plugin-vm2');
+const { VRFPlugin } = require('warp-contracts-plugin-vrf');
 
 const eventEmitter = new EventEmitter();
 eventEmitter.on('progress-notification', (data) => {
   events.progress(data.contractTxId, data.message);
 });
 
-module.exports = WarpFactory.forMainnet()
+const warp = WarpFactory.forMainnet()
   .useStateCache(
     new LmdbCache(
       {
@@ -68,9 +69,13 @@ module.exports = WarpFactory.forMainnet()
   .use(new EvmSignatureVerificationServerPlugin())
   .use(new EthersExtension())
   .use(new VM2Plugin())
+  .use(new VRFPlugin())
   .use(
     new ContractBlacklistPlugin(async (input) => {
       const blacklistFunction = await getDreBlacklistFunction(getFailures, connect(), config.workersConfig.maxFailures);
       return await blacklistFunction(input);
     })
   );
+warp.whoAmI = 'DRE';
+
+module.exports = warp;
