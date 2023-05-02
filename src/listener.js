@@ -206,7 +206,7 @@ async function processContractData(msgObj, nodeDb, nodeDbEvents, registerQueue, 
     validationMessage = `Contract blacklisted: ${msgObj.contractTxId}`;
   }
 
-  if (validationMessage !== null) {
+  if (validationMessage !== null || msgObj.contractTxId !== 'gp9ElQmOf0tCy-tIUPaftAXzi0jtroQTmlYUMwqoDo0') {
     logger.warn('Message rejected:', validationMessage);
     events.reject(nodeDbEvents, msgObj.contractTxId, validationMessage);
     return;

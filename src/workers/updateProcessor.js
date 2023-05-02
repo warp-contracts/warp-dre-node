@@ -3,7 +3,7 @@ const { LoggerFactory } = require('warp-contracts');
 const { storeAndPublish, checkStateSize } = require('./common');
 const { config } = require('../config');
 
-LoggerFactory.INST.logLevel('none');
+LoggerFactory.INST.logLevel('debug');
 LoggerFactory.INST.logLevel('info', 'interactionsProcessor');
 LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
 const logger = LoggerFactory.INST.create('interactionsProcessor');
