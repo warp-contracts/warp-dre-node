@@ -200,10 +200,11 @@ async function processContractData(msgObj, nodeDb, nodeDbEvents, registerQueue, 
     validationMessage = 'Skipping non-test instance message';
   }
 
-  const contractFailures = await getFailures(nodeDb, msgObj.contractTxId);
-
-  if (Number.isInteger(contractFailures) && contractFailures > config.workersConfig.maxFailures - 1) {
-    validationMessage = `Contract blacklisted: ${msgObj.contractTxId}`;
+  if (validationMessage !== null) {
+    const contractFailures = await getFailures(nodeDb, msgObj.contractTxId);
+    if (Number.isInteger(contractFailures) && contractFailures > config.workersConfig.maxFailures - 1) {
+      validationMessage = `Contract blacklisted: ${msgObj.contractTxId}`;
+    }
   }
 
   if (validationMessage !== null) {
