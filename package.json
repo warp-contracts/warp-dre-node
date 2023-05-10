@@ -46,6 +46,7 @@
     "warp-contracts": "1.4.10",
     "warp-contracts-evaluation-progress-plugin": "1.0.17",
     "warp-contracts-lmdb": "1.1.10",
+    "warp-contracts-sqlite": "1.0.0-beta.0",
     "warp-contracts-plugin-ethers": "1.0.7",
     "warp-contracts-plugin-nlp": "1.0.8",
     "warp-contracts-plugin-signature": "1.0.12",

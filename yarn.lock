@@ -2027,6 +2027,14 @@ better-sqlite3@^8.0.1:
     bindings "^1.5.0"
     prebuild-install "^7.1.0"
 
+better-sqlite3@^8.3.0:
+  version "8.3.0"
+  resolved "https://registry.yarnpkg.com/better-sqlite3/-/better-sqlite3-8.3.0.tgz#3873ddfd9f2af90b628657e8ff221786c93d1984"
+  integrity sha512-JTmvBZL/JLTc+3Msbvq6gK6elbU9/wVMqiudplHrVJpr7sVMR9KJrNhZAbW+RhXKlpMcuEhYkdcHa3TXKNXQ1w==
+  dependencies:
+    bindings "^1.5.0"
+    prebuild-install "^7.1.0"
+
 bignumber.js@9.1.1, bignumber.js@^9.1.1:
   version "9.1.1"
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-9.1.1.tgz#c4df7dc496bd849d4c9464344c1aa74228b4dac6"
@@ -4997,6 +5005,15 @@ warp-contracts-pubsub@^1.0.6:
     "@aws-amplify/core" "^5.1.2"
     isomorphic-ws "^5.0.0"
     ws "^8.11.0"
+
+warp-contracts-sqlite@1.0.0-beta.0:
+  version "1.0.0-beta.0"
+  resolved "https://registry.yarnpkg.com/warp-contracts-sqlite/-/warp-contracts-sqlite-1.0.0-beta.0.tgz#13efaab529d242f2ac775268c473e72ee4da98b2"
+  integrity sha512-Sb8b6wu9B7LWy27KdFrbjchk4+1tQbIVU+BxqOG+Bps3N5H1ApZSHhhJoK8JWZR91Hc0yiMjfkWiVp2ChZJeSg==
+  dependencies:
+    better-sqlite3 "^8.3.0"
+    safe-stable-stringify "^2.4.3"
+
 
 warp-contracts@1.4.10:
   version "1.4.10"
