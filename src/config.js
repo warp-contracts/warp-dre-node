@@ -10,6 +10,7 @@ const arweave = getArweave();
 let warpSdkConfig = {
   'warp-contracts': pjson.dependencies['warp-contracts'],
   'warp-contracts-lmdb': pjson.dependencies['warp-contracts-lmdb'],
+  'warp-contracts-sqlite': pjson.dependencies['warp-contracts-sqlite'],
   'warp-contracts-evaluation-progress-plugin': pjson.dependencies['warp-contracts-evaluation-progress-plugin'],
   'warp-contracts-plugin-nlp': pjson.dependencies['warp-contracts-plugin-nlp'],
   'warp-contracts-plugin-ethers': pjson.dependencies['warp-contracts-plugin-ethers'],

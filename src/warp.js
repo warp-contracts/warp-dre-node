@@ -11,6 +11,7 @@ const { config } = require('./config');
 const { VM2Plugin } = require('warp-contracts-plugin-vm2');
 const { VRFPlugin } = require('warp-contracts-plugin-vrf');
 const { JWTVerifyPlugin } = require('@othent/warp-contracts-plugin-jwt-verify');
+const { SqliteContractCache } = require('warp-contracts-sqlite');
 
 const eventEmitter = new EventEmitter();
 eventEmitter.on('progress-notification', (data) => {
@@ -19,14 +20,13 @@ eventEmitter.on('progress-notification', (data) => {
 
 const warp = WarpFactory.forMainnet()
   .useStateCache(
-    new LmdbCache(
+    new SqliteContractCache(
       {
         ...defaultCacheOptions,
-        dbLocation: `./cache/warp/lmdb/state`
+        dbLocation: `./cache/warp/sqlite/state`
       },
       {
-        minEntriesPerContract: 5,
-        maxEntriesPerContract: 20
+        maxEntriesPerContract: 5
       }
     )
   )
