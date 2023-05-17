@@ -10,6 +10,7 @@ const { ContractBlacklistPlugin, getDreBlacklistFunction } = require('warp-contr
 const { config } = require('./config');
 const { VM2Plugin } = require('warp-contracts-plugin-vm2');
 const { VRFPlugin } = require('warp-contracts-plugin-vrf');
+const { JWTVerifyPlugin } = require('@othent/warp-contracts-plugin-jwt-verify');
 
 const eventEmitter = new EventEmitter();
 eventEmitter.on('progress-notification', (data) => {
@@ -70,6 +71,7 @@ const warp = WarpFactory.forMainnet()
   .use(new EthersExtension())
   .use(new VM2Plugin())
   .use(new VRFPlugin())
+  .use(new JWTVerifyPlugin())
   .use(
     new ContractBlacklistPlugin(async (input) => {
       const blacklistFunction = await getDreBlacklistFunction(getFailures, connect(), config.workersConfig.maxFailures);
