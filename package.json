@@ -50,7 +50,7 @@
     "warp-contracts-plugin-nlp": "1.0.8",
     "warp-contracts-plugin-signature": "1.0.12",
     "warp-contracts-plugin-blacklist": "1.0.0",
-    "warp-contracts-plugin-vm2": "1.0.1",
+    "warp-contracts-plugin-vm2": "1.0.2",
     "warp-contracts-plugin-vrf": "1.0.4",
     "@othent/warp-contracts-plugin-jwt-verify": "^1.0.401",
     "warp-contracts-pubsub": "^1.0.6",
