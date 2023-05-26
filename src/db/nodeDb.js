@@ -139,6 +139,10 @@ module.exports = {
     return entry;
   },
 
+  deleteStates: async (nodeDb, contractTxId) => {
+    await nodeDb.raw(`DELETE FROM states WHERE contract_tx_id = ?;`, [contractTxId]);
+  },
+
   upsertBlacklist: async (nodeDb, contractTxId) => {
     await nodeDb.raw(
       `INSERT OR
@@ -152,6 +156,10 @@ module.exports = {
                         0) + 1);`,
       [contractTxId, contractTxId]
     );
+  },
+
+  deleteBlacklist: async (nodeDb, contractTxId) => {
+    await nodeDb.raw(`DELETE FROM black_list WHERE contract_tx_id = ?;`, [contractTxId]);
   },
 
   doBlacklist: async (nodeDb, contractTxId, failures) => {
@@ -189,6 +197,14 @@ module.exports = {
       })
       .select('*')
       .orderBy('timestamp', 'desc');
+  },
+
+  deleteErrors: async (nodeDb, contractTxId) => {
+    await nodeDb.raw(`DELETE FROM errors WHERE contract_tx_id = ?;`, [contractTxId]);
+  },
+
+  deleteEvents: async (contractTxId) => {
+    await eventsDb.raw('DELETE FROM events WHERE contract_tx_id = ?;', [contractTxId]);
   },
 
   getLastState: async (nodeDb, contractTxId) => {
