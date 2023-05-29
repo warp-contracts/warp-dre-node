@@ -55,6 +55,7 @@ function getGwPubSubConfig() {
 
 const config = {
   env: process.env.ENV,
+  dreName: process.env.MY_NAME_IS,
   streamr: {
     id: process.env.STREAMR_STREAM_ID,
     host: process.env.STREAMR_STREAM_HOST,
@@ -136,6 +137,7 @@ async function logConfig(config) {
   logger.info('Node configuration');
   logger.info('---------');
   logger.info('Environment', config.env);
+  logger.info('Name', config.dreName);
   logger.info('---------');
   logger.info('Arweave public address', nodeManifest.walletAddress);
   logger.info('gitCommitHash', nodeManifest.gitCommitHash);

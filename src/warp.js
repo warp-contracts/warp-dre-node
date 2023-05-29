@@ -78,6 +78,6 @@ const warp = WarpFactory.forMainnet()
       return await blacklistFunction(input);
     })
   );
-warp.whoAmI = 'DRE';
+warp.whoAmI = config.dreName || 'DRE';
 
 module.exports = warp;
