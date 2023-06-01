@@ -1,5 +1,12 @@
 const { JSONPath } = require('jsonpath-plus');
-const { getLastState, getContractErrors, getFailures, events } = require('../db/nodeDb');
+const {
+  getLastStateFromDreCache,
+  getContractErrors,
+  getFailures,
+  events,
+  getLastStateFromWarpCache,
+  insertState
+} = require('../db/nodeDb');
 const { config } = require('../config');
 
 const registrationStatus = {
@@ -29,7 +36,14 @@ module.exports = async (ctx) => {
       response.status = registrationStatus['blacklisted'];
       response.errors = await getContractErrors(nodeDb, contractId);
     } else {
-      const result = await getLastState(nodeDb, contractId);
+      const warpState = await getLastStateFromWarpCache(nodeDb, contractId);
+      let result = await getLastStateFromDreCache(nodeDb, contractId);
+      let parsed = false;
+      if (warpState && (!result || result.sort_key.localeCompare(warpState.sortKey) < 0)) {
+        warpState.cachedValue = JSON.parse(warpState.cachedValue);
+        result = await insertState(nodeDb, contractId, warpState);
+        parsed = true;
+      }
       if (result) {
         response.status = registrationStatus['evaluated'];
         response.contractTxId = contractId;
@@ -37,14 +51,14 @@ module.exports = async (ctx) => {
           response.result = JSONPath({ path: query, json: JSON.parse(result.state) });
         } else {
           if (showState) {
-            response.state = JSON.parse(result.state);
+            response.state = parsed ? result.state : JSON.parse(result.state);
           }
         }
         if (showValidity) {
-          response.validity = JSON.parse(result.validity);
+          response.validity = parsed ? result.validity : JSON.parse(result.validity);
         }
         if (showErrorMessages) {
-          response.errorMessages = JSON.parse(result.error_messages);
+          response.errorMessages = parsed ? result.error_messages : JSON.parse(result.error_messages);
         }
         if (showErrors) {
           response.errors = await getContractErrors(nodeDb, contractId);
@@ -53,7 +67,7 @@ module.exports = async (ctx) => {
         response.timestamp = result.timestamp;
         response.signature = result.signature;
         response.stateHash = result.state_hash;
-        response.manifest = JSON.parse(result.manifest);
+        response.manifest = parsed ? result.manifest : JSON.parse(result.manifest);
       } else {
         const contractErrors = await getContractErrors(nodeDb, contractId);
         if (contractErrors.length) {
