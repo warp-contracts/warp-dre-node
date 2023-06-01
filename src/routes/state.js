@@ -1,5 +1,5 @@
 const { JSONPath } = require('jsonpath-plus');
-const { getLastState } = require('../db/nodeDb');
+const { getLastStateFromDreCache } = require('../db/nodeDb');
 
 module.exports = async (ctx) => {
   const contractId = ctx.query.id;
@@ -10,7 +10,7 @@ module.exports = async (ctx) => {
 
   try {
     const response = {};
-    const result = await getLastState(nodeDb, contractId);
+    const result = await getLastStateFromDreCache(nodeDb, contractId);
     if (result) {
       response.contractTxId = contractId;
       response.sortKey = result.sort_key;
