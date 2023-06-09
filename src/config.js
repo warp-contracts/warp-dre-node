@@ -57,6 +57,7 @@ function getGwPubSubConfig() {
 const config = {
   env: process.env.ENV,
   dreName: process.env.MY_NAME_IS,
+  gwUrl: readGwUrl(),
   streamr: {
     id: process.env.STREAMR_STREAM_ID,
     host: process.env.STREAMR_STREAM_HOST,
@@ -108,6 +109,10 @@ function getArweave() {
 function readNodeJwk() {
   if (!process.env.NODE_JWK_KEY) throw new Error('NODE_JWK_KEY is required');
   return JSON.parse(process.env.NODE_JWK_KEY);
+}
+function readGwUrl() {
+  if (!process.env.WARP_GW_URL) throw new Error('Gateway URL is required');
+  return process.env.WARP_GW_URL;
 }
 
 async function getNodeManifest() {
