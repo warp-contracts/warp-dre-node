@@ -19,6 +19,7 @@ eventEmitter.on('progress-notification', (data) => {
 });
 
 const warp = WarpFactory.forMainnet()
+  .useGwUrl(config.gwUrl)
   .useStateCache(
     new SqliteContractCache(
       {
