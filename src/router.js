@@ -1,6 +1,7 @@
 const Router = require('@koa/router');
 const contract = require('./routes/contract');
 const status = require('./routes/status');
+const contractViewState = require('./routes/contractViewState');
 const blacklisted = require('./routes/blacklisted');
 const cached = require('./routes/cached');
 const errors = require('./routes/errors');
@@ -11,6 +12,7 @@ const eraseContract = require('./routes/eraseContract');
 const router = new Router();
 
 router.get('/contract', contract);
+router.get('/contract/view-state', contractViewState);
 router.get('/status', status);
 router.get('/blacklist', blacklisted);
 router.get('/cached', cached);

@@ -85,6 +85,9 @@ const config = {
   evaluationOptions,
   warpSdkConfig,
   nodeManifest: getNodeManifest(),
+  availableFunctions: {
+    viewState: process.env.FUNC_VIEW_STATE === 'true'
+  },
   workersConfig: {
     register: parseInt(process.env.WORKERS_REGISTER),
     update: parseInt(process.env.WORKERS_UPDATE),

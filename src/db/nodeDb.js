@@ -57,6 +57,19 @@ module.exports = {
       });
     }
 
+    const hasViewStateTable = await knex.schema.hasTable('view_state');
+    if (!hasViewStateTable) {
+      await knex.schema.createTable('view_state', function (t) {
+        t.string('contract_tx_id').index();
+        t.string('sort_key');
+        t.string('signature').notNullable();
+        t.string('view_hash').notNullable();
+        t.jsonb('input').notNullable();
+        t.jsonb('result').notNullable();
+        t.unique(['contract_tx_id', 'input']);
+      });
+    }
+
     // Trigger for ensuring only the newest state is stored
     await knex.raw(`
     CREATE TRIGGER IF NOT EXISTS reject_outdated_state
@@ -216,6 +229,32 @@ module.exports = {
       .orderBy('sort_key', 'desc');
 
     return result;
+  },
+
+  getCachedViewState: async (nodeDb, contractTxId, sortKey, input) => {
+    const result = await nodeDb.raw(
+      `SELECT * FROM view_state WHERE contract_tx_id = ? AND sort_key = ? AND input = ?;`,
+      [contractTxId, sortKey, input]
+    );
+    return result;
+  },
+
+  insertViewStateIntoCache: async (nodeDb, contractTxId, sortKey, input, result) => {
+    const manifest = await config.nodeManifest;
+    const { sig, stateHash } = await signState(contractTxId, sortKey, result, manifest);
+
+    const entry = {
+      contract_tx_id: contractTxId,
+      sort_key: sortKey,
+      input: input,
+      signature: sig,
+      view_hash: stateHash,
+      result: result
+    };
+
+    await nodeDb('view_state').insert(entry).onConflict(['contract_tx_id', 'input']).merge();
+
+    return entry;
   },
 
   getAllContracts: async (nodeDb) => {
