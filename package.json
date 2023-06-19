@@ -17,6 +17,7 @@
     "stop-docker": "docker-compose down",
     "stop-docker:local": "docker-compose -f ./docker-compose-local.yml down",
     "start": "yarn-or-npm run run-bullmq && node src/listener.js",
+    "start:dev": "yarn-or-npm run run-bullmq && ENV=prod nodemon src/listener.js",
     "start:prod": "yarn-or-npm run run-bullmq && ENV=prod node src/listener.js",
     "start:test": "yarn-or-npm run run-bullmq && ENV=test node src/listener.js",
     "start:local": "docker-compose -f docker-compose-local.yml up --force-recreate --build -d",
@@ -29,6 +30,7 @@
   "dependencies": {
     "@koa/cors": "4.0.0",
     "@koa/router": "12.0.0",
+    "@othent/warp-contracts-plugin-jwt-verify": "^1.0.401",
     "arweave": "1.11.8",
     "async-exit-hook": "^2.0.1",
     "better-sqlite3": "^8.0.1",
@@ -47,13 +49,12 @@
     "warp-contracts-evaluation-progress-plugin": "1.0.17",
     "warp-contracts-lmdb": "1.1.10",
     "warp-contracts-sqlite": "1.0.1",
+    "warp-contracts-plugin-blacklist": "1.0.0",
     "warp-contracts-plugin-ethers": "1.0.7",
     "warp-contracts-plugin-nlp": "1.0.8",
     "warp-contracts-plugin-signature": "1.0.12",
-    "warp-contracts-plugin-blacklist": "1.0.0",
     "warp-contracts-plugin-vm2": "1.0.2",
     "warp-contracts-plugin-vrf": "1.0.4",
-    "@othent/warp-contracts-plugin-jwt-verify": "^1.0.401",
     "warp-contracts-pubsub": "^1.0.6",
     "websocket": "^1.0.34"
   },
@@ -64,6 +65,7 @@
     "eslint": "^8.30.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "nodemon": "^2.0.22",
     "prettier": "^2.8.1",
     "yarn-or-npm": "^3.0.1"
   }
