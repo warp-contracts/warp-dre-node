@@ -1,7 +1,7 @@
 const { JSONPath } = require('jsonpath-plus');
-const { getLastStateFromDreCache, getContractErrors, getFailures, events, insertState } = require('../db/nodeDb');
+const { getContractErrors, getFailures, events } = require('../db/nodeDb');
 const { config } = require('../config');
-const warp = require('../warp');
+const { getContractState } = require('../common');
 
 const registrationStatus = {
   'not-registered': 'not-registered',
@@ -30,13 +30,7 @@ module.exports = async (ctx) => {
       response.status = registrationStatus['blacklisted'];
       response.errors = await getContractErrors(nodeDb, contractId);
     } else {
-      const warpState = await warp.stateEvaluator.latestAvailableState(contractId);
-      let result = await getLastStateFromDreCache(nodeDb, contractId);
-      let parsed = false;
-      if (warpState && (!result || result.sort_key.localeCompare(warpState.sortKey) < 0)) {
-        result = await insertState(nodeDb, contractId, warpState);
-        parsed = true;
-      }
+      const { result, parsed } = await getContractState(contractId, nodeDb);
       if (result) {
         response.status = registrationStatus['evaluated'];
         response.contractTxId = contractId;
