@@ -5,6 +5,7 @@ const logger = require('../logger')('node-db');
 
 let eventsDb = null;
 let stateDb = null;
+let warpStateDb = null;
 
 module.exports = {
   createNodeDbEventsTables: async (knex) => {
@@ -123,6 +124,19 @@ module.exports = {
     return eventsDb;
   },
 
+  connectWarpState: () => {
+    if (warpStateDb == null) {
+      warpStateDb = knex({
+        client: 'better-sqlite3',
+        connection: {
+          filename: `cache/warp/sqlite/state.db`
+        },
+        useNullAsDefault: true
+      });
+    }
+    return warpStateDb;
+  },
+
   insertFailure: async (nodeDb, failureInfo) => {
     await nodeDb('errors').insert(failureInfo).onConflict(['job_id']).ignore();
   },
@@ -150,6 +164,11 @@ module.exports = {
     await nodeDb('states').insert(entry).onConflict(['contract_tx_id']).merge();
 
     return entry;
+  },
+
+  deleteWarpContractCache: async (warpStateCache, contractTxId, sortKey) => {
+    sortKey = sortKey || '0';
+    await warpStateCache.raw(`DELETE FROM sort_key_cache WHERE key = ? AND sort_key > ?;`, [contractTxId, sortKey]);
   },
 
   deleteStates: async (nodeDb, contractTxId) => {

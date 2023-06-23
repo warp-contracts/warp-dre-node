@@ -19,7 +19,8 @@ const {
   hasContract,
   connectEvents,
   createNodeDbEventsTables,
-  doBlacklist
+  doBlacklist,
+  connectWarpState
 } = require('./db/nodeDb');
 
 const logger = require('./logger')('listener');
@@ -48,6 +49,7 @@ async function runListener() {
 
   const nodeDb = connect();
   const nodeDbEvents = connectEvents();
+  const nodeDbWarpState = connectWarpState();
 
   await createNodeDbTables(nodeDb);
   await createNodeDbEventsTables(nodeDbEvents);
@@ -169,6 +171,7 @@ async function runListener() {
   app.context.registerQueue = registerQueue;
   app.context.nodeDb = nodeDb;
   app.context.nodeDbEvents = nodeDbEvents;
+  app.context.nodeDbWarpState = nodeDbWarpState;
   app.listen(port);
 
   await subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updateQueue, registerQueue);

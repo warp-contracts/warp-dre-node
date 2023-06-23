@@ -2,40 +2,55 @@ const warp = require('../warp');
 const Arweave = require('arweave');
 const fs = require('fs');
 const ArweaveUtils = require('arweave/node/lib/utils');
-const { deleteStates, deleteBlacklist, deleteErrors, deleteEvents } = require('../db/nodeDb');
+const { deleteStates, deleteBlacklist, deleteErrors, deleteEvents, deleteWarpContractCache } = require('../db/nodeDb');
 const { config } = require('../config');
+const { isTxIdValid } = require('../common');
 
 module.exports = async (ctx) => {
-  const { nodeDb } = ctx;
+  const { nodeDb, nodeDbWarpState } = ctx;
   const contractId = ctx.params.id;
   const signature = ctx.query.signature;
-  console.log(`Request to erase contract ${contractId}`);
+
+  /* Pruning contract state from a specified sortKey is only valid for
+   * - non kvStorage contracts
+   * - sqlite based contract cache
+   *  */
+  const sortKey = ctx.query.sortKey;
 
   try {
+    if (!contractId) {
+      ctx.throw(422, 'Missing contract id.');
+    }
     if (!isTxIdValid(contractId)) {
-      throw new Error('Invalid tx format');
+      ctx.throw(400, 'Invalid tx format');
     }
     if (!signature) {
-      throw new Error('Missing signature');
+      ctx.throw(422, 'Missing signature');
     }
     if (!(await isSigned(contractId, signature))) {
-      throw new Error('Invalid tx signature');
+      ctx.throw(400, 'Invalid tx signature');
     }
-    const result = await warp.stateEvaluator.getCache().delete(contractId);
-    console.log(`Delete ${contractId} result ${result}`);
-    await deleteStates(nodeDb, contractId);
-    await deleteBlacklist(nodeDb, contractId);
-    await deleteErrors(nodeDb, contractId);
-    await deleteEvents(contractId);
-    pruneKvStorage(contractId);
+
+    let result = null;
+    if (sortKey) {
+      result = await deleteWarpContractCache(nodeDbWarpState, contractId, sortKey);
+      await deleteStates(nodeDb, contractId);
+    } else {
+      result = await warp.stateEvaluator.getCache().delete(contractId);
+      await deleteStates(nodeDb, contractId);
+      await deleteBlacklist(nodeDb, contractId);
+      await deleteErrors(nodeDb, contractId);
+      await deleteEvents(contractId);
+      pruneKvStorage(contractId);
+    }
     ctx.body = {
       contractTxId: contractId,
       result: result
     };
     ctx.status = 200;
   } catch (e) {
-    ctx.body = e.message;
-    ctx.status = 500;
+    ctx.status = e.status || 500;
+    ctx.body = { message: e.message };
   }
 };
 
@@ -43,14 +58,9 @@ function pruneKvStorage(txId) {
   const kvDir = `./cache/warp/kv/lmdb/${txId}`;
   if (fs.existsSync(kvDir)) {
     fs.rmSync(kvDir, { recursive: true });
-    console.log(`Contract prune - removed ./cache/warp/kv/lmdb/${txId}`);
   }
 }
 
-function isTxIdValid(txId) {
-  const validTxIdRegex = /[a-z0-9_-]{43}/i;
-  return validTxIdRegex.test(txId);
-}
 async function isSigned(txId, signature) {
   return await Arweave.crypto.verify(
     config.nodeJwk.n,
