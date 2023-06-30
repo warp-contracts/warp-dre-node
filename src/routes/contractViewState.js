@@ -2,6 +2,7 @@ const warp = require('../warp');
 const { config } = require('../config');
 const { getLastStateFromDreCache, getCachedViewState, insertViewStateIntoCache } = require('../db/nodeDb');
 const { isTxIdValid } = require('../common');
+const { emptyTransfer } = require('warp-contracts');
 
 module.exports = async (ctx) => {
   if (!config.availableFunctions.viewState) {
@@ -27,24 +28,26 @@ module.exports = async (ctx) => {
     if (!input) {
       ctx.throw(400, 'Invalid input format');
     }
+    const caller = ctx.query.caller;
 
     let output = null;
     let sortKey = (await getLastStateFromDreCache(nodeDb, contractId)).sort_key;
-    let cachedView = (await getCachedViewState(nodeDb, contractId, sortKey, JSON.stringify(input)))[0];
+    let cachedView = (await getCachedViewState(nodeDb, contractId, sortKey, JSON.stringify(input), caller))[0];
 
     if (cachedView) {
       output = JSON.parse(cachedView.result);
     } else {
-      const interactionResult = await warp.contract(contractId).viewState(input);
+      const interactionResult = await warp.contract(contractId).viewState(input, [], emptyTransfer, caller);
       sortKey = (await warp.stateEvaluator.latestAvailableState(contractId)).sortKey;
 
       output = {
         type: interactionResult.type,
         result: interactionResult.result,
+        caller: caller,
         error: interactionResult.error,
         errorMessage: interactionResult.errorMessage
       };
-      cachedView = await insertViewStateIntoCache(nodeDb, contractId, sortKey, input, output);
+      cachedView = await insertViewStateIntoCache(nodeDb, contractId, sortKey, input, output, caller);
     }
 
     ctx.body = { ...output, sortKey, signature: cachedView.signature, hash: cachedView.view_hash };

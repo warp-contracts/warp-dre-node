@@ -62,11 +62,12 @@ module.exports = {
       await knex.schema.createTable('view_state', function (t) {
         t.string('contract_tx_id').index();
         t.string('sort_key');
+        t.string('caller').notNullable();
         t.string('signature').notNullable();
         t.string('view_hash').notNullable();
         t.jsonb('input').notNullable();
         t.jsonb('result').notNullable();
-        t.unique(['contract_tx_id', 'input']);
+        t.unique(['contract_tx_id', 'input', 'caller']);
       });
     }
 
@@ -231,28 +232,31 @@ module.exports = {
     return result;
   },
 
-  getCachedViewState: async (nodeDb, contractTxId, sortKey, input) => {
+  getCachedViewState: async (nodeDb, contractTxId, sortKey, input, caller) => {
+    caller = caller || '';
     const result = await nodeDb.raw(
-      `SELECT * FROM view_state WHERE contract_tx_id = ? AND sort_key = ? AND input = ?;`,
-      [contractTxId, sortKey, input]
+      `SELECT * FROM view_state WHERE contract_tx_id = ? AND sort_key = ? AND input = ? AND caller = ?;`,
+      [contractTxId, sortKey, input, caller]
     );
     return result;
   },
 
-  insertViewStateIntoCache: async (nodeDb, contractTxId, sortKey, input, result) => {
+  insertViewStateIntoCache: async (nodeDb, contractTxId, sortKey, input, result, caller) => {
+    caller = caller || '';
     const manifest = await config.nodeManifest;
-    const { sig, stateHash } = await signState(contractTxId, sortKey, result, manifest);
+    const { sig, stateHash } = await signState(contractTxId, sortKey, result, caller, manifest);
 
     const entry = {
       contract_tx_id: contractTxId,
       sort_key: sortKey,
       input: input,
+      caller: caller,
       signature: sig,
       view_hash: stateHash,
       result: result
     };
 
-    await nodeDb('view_state').insert(entry).onConflict(['contract_tx_id', 'input']).merge();
+    await nodeDb('view_state').insert(entry).onConflict(['contract_tx_id', 'input', 'caller']).merge();
 
     return entry;
   },
