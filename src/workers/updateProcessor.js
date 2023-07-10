@@ -5,7 +5,8 @@ const { config } = require('../config');
 
 LoggerFactory.INST.logLevel('none');
 LoggerFactory.INST.logLevel('info', 'interactionsProcessor');
-LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
+LoggerFactory.INST.logLevel('debug', 'DefaultStateEvaluator');
+LoggerFactory.INST.logLevel('debug', 'CacheableStateEvaluator');
 const logger = LoggerFactory.INST.create('interactionsProcessor');
 LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
 
