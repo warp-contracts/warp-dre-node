@@ -108,11 +108,12 @@ module.exports = {
 
   insertState: async (nodeDb, contractTxId, readResult) => {
     const manifest = await config.nodeManifest;
-    const { sig, stateHash } = await signState(
+    const { sig, stateHash, validityHash } = await signState(
       contractTxId,
       readResult.sortKey,
       readResult.cachedValue.state,
-      manifest
+      manifest,
+      readResult.cachedValue.validity
     );
 
     const entry = {
@@ -123,7 +124,8 @@ module.exports = {
       state_hash: stateHash,
       state: readResult.cachedValue.state,
       validity: readResult.cachedValue.validity,
-      error_messages: readResult.cachedValue.errorMessages
+      error_messages: readResult.cachedValue.errorMessages,
+      validity_hash: validityHash
     };
 
     await nodeDb('states').insert(entry).onConflict(['contract_tx_id']).merge();
