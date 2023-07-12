@@ -39,8 +39,12 @@ let registerWorker;
 
 const nonBlacklistErrors = [
   'Unable to retrieve transactions. Warp gateway responded with status',
-  'Trying to use testnet contract in a non-testnet env. Use the "forTestnet" factory method.'
+  'Trying to use testnet contract in a non-testnet env. Use the "forTestnet" factory method.',
+  'SkipUnsafeError'
 ];
+
+const bazarContract = 'aJIOMmqqpZ63V_SsBuSKWRILBYKIH967eFzMPHA8GYo';
+const uContract = 'FYJOKdtNKl18QgblxgLEZUfJMFUv6tZTQqGTtY-D6jQ';
 
 async function runListener() {
   logger.info('🚀🚀🚀 Starting execution node');
@@ -91,7 +95,7 @@ async function runListener() {
     if (failedReason.includes('[MaxStateSizeError]')) {
       await doBlacklist(nodeDb, contractTxId, config.workersConfig.maxFailures);
     } else {
-      if (!nonBlacklistErrors.includes(failedReason)) {
+      if (!nonBlacklistErrors.some((e) => failedReason.includes(e))) {
         await upsertBlacklist(nodeDb, contractTxId);
       }
     }
@@ -314,6 +318,9 @@ async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueu
       });
       subscriber.on('message', async (channel, message) => {
         const msgObj = JSON.parse(message);
+        if (msgObj.contractTxId != uContract && msgObj.contractTxId != bazarContract) {
+          return;
+        }
         logger.info(`From channel '${channel}'`);
         onMessage(msgObj);
       });
