@@ -25,6 +25,8 @@ const {
 const logger = require('./logger')('listener');
 const exitHook = require('async-exit-hook');
 const warp = require('./warp');
+const { execSync } = require('child_process');
+const fs = require('fs');
 
 let isTestInstance = config.env === 'test';
 let port = 8080;
@@ -55,6 +57,14 @@ async function runListener() {
 
   await createNodeDbTables(nodeDb);
   await createNodeDbEventsTables(nodeDbEvents);
+
+  if (fs.existsSync('./src/db/migrations/stateDb')) {
+    execSync('npx knex --knexfile=knexConfigStateDb.js migrate:latest');
+  }
+
+  if (fs.existsSync('./src/db/migrations/eventsDb')) {
+    execSync('npx knex --knexfile=knexConfigEventsDb.js migrate:latest');
+  }
 
   /* eslint no-unused-vars: "off", curly: "error" */
   let timestamp = Date.now();

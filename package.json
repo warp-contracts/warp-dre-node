@@ -22,7 +22,9 @@
     "start:test": "yarn-or-npm run run-bullmq && ENV=test node src/listener.js",
     "start:local": "docker-compose -f docker-compose-local.yml up --force-recreate --build -d",
     "logs": "docker logs -f --tail 1000 warp-dre-node-dre-1",
-    "stop:local": "docker logs -f --tail 1000 warp-dre-node-dre-1"
+    "stop:local": "docker logs -f --tail 1000 warp-dre-node-dre-1",
+    "migrate:make:state": "npx knex --knexfile=./knexConfigStateDb.js migrate:make",
+    "migrate:make:events": "npx knex --knexfile=./knexConfigEventsDb.js migrate:make"
   },
   "engines": {
     "node": ">=16.5"

@@ -2,6 +2,8 @@ const knex = require('knex');
 const { signState } = require('../signature');
 const { config } = require('../config');
 const logger = require('../logger')('node-db');
+const eventsDbConfig = require('../../knexConfigEventsDb');
+const stateDbConfig = require('../../knexConfigStateDb');
 
 let eventsDb = null;
 let stateDb = null;
@@ -86,41 +88,17 @@ module.exports = {
 
   connect: () => {
     if (stateDb == null) {
-      stateDb = knex({
-        client: 'better-sqlite3',
-        connection: {
-          filename: `sqlite/node.sqlite`
-        },
-        useNullAsDefault: true
-        /*pool: {
-          afterCreate: (conn, cb) => {
-            // https://github.com/knex/knex/issues/4971#issuecomment-1030701574
-            conn.pragma('journal_mode = WAL');
-            cb();
-          }
-        }*/
-      });
+      stateDb = knex(stateDbConfig);
     }
+
     return stateDb;
   },
 
   connectEvents: () => {
     if (eventsDb == null) {
-      eventsDb = knex({
-        client: 'better-sqlite3',
-        connection: {
-          filename: `sqlite/node-events.sqlite`
-        },
-        useNullAsDefault: true,
-        pool: {
-          afterCreate: (conn, cb) => {
-            // https://github.com/knex/knex/issues/4971#issuecomment-1030701574
-            conn.pragma('journal_mode = WAL');
-            cb();
-          }
-        }
-      });
+      eventsDb = knex(eventsDbConfig);
     }
+
     return eventsDb;
   },
 
