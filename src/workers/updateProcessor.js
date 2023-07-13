@@ -2,6 +2,7 @@ const warp = require('../warp');
 const { LoggerFactory } = require('warp-contracts');
 const { storeAndPublish, checkStateSize } = require('./common');
 const { config } = require('../config');
+const { uContract } = require('../constants');
 
 LoggerFactory.INST.logLevel('none');
 LoggerFactory.INST.logLevel('info', 'interactionsProcessor');
@@ -11,6 +12,10 @@ LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
 
 module.exports = async (job) => {
   const { contractTxId, isTest, interaction } = job.data;
+
+  if (contractTxId == uContract) {
+    return;
+  }
 
   // workaround for https://github.com/taskforcesh/bullmq/issues/1557
   try {

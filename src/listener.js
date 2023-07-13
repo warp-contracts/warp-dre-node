@@ -27,8 +27,8 @@ const exitHook = require('async-exit-hook');
 const warp = require('./warp');
 const { execSync } = require('child_process');
 const fs = require('fs');
-const { LoggerFactory } = require("warp-contracts");
-const { checkStateSize, storeAndPublish } = require("./workers/common");
+const { zarContract, uContract } = require('./constants');
+const pollGateway = require('./workers/pollGateway');
 
 let isTestInstance = config.env === 'test';
 let port = 8080;
@@ -46,9 +46,6 @@ const nonBlacklistErrors = [
   'Trying to use testnet contract in a non-testnet env. Use the "forTestnet" factory method.',
   'SkipUnsafeError'
 ];
-
-const zarContract = 'pKAUV26rFgG13XwS7oZ1IQ8dDIRcdV9xnC8XEnZ7cfQ';
-const uContract = 'KTzTXT_ANmF84fWEKHzWURD1LWd9QaFR9yfYUwH2Lxw';
 
 async function runListener() {
   logger.info('🚀🚀🚀 Starting execution node');
@@ -107,7 +104,7 @@ async function runListener() {
     if (failedReason.includes('[MaxStateSizeError]')) {
       await doBlacklist(nodeDb, contractTxId, config.workersConfig.maxFailures);
     } else {
-      if (contractTxId != uContract) {
+      if (contractTxId != uContract && contractTxId != zarContract) {
         if (!nonBlacklistErrors.some((e) => failedReason.includes(e))) {
           await upsertBlacklist(nodeDb, contractTxId);
         }
@@ -191,32 +188,9 @@ async function runListener() {
 
   await subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updateQueue, registerQueue);
 
-  await polluj();
+  await pollGateway(warp);
 
   logger.info(`Listening on port ${port}`);
-}
-
-async function polluj() {
-  const uContractId = "";
-  LoggerFactory.INST.logLevel('none');
-  LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
-  const contract = warp.contract(uContractId).setEvaluationOptions(config.evaluationOptions);
-
-  (function workerLoop() {
-    setTimeout(async function () {
-        logger.info(`Starting ${name} task.`);
-        try {
-          const result = await contract.readState();
-          checkStateSize(result.cachedValue.state);
-          storeAndPublish(logger, false, uContractId, result).finally(() => {
-          });
-          logger.info(`Task ${name} completed.`);
-        } catch (e) {
-          logger.error(e)
-        }
-        workerLoop();
-    }, 10_000);
-  })();
 }
 
 runListener().catch((e) => {
