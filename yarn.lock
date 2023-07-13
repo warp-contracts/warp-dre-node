@@ -5132,10 +5132,10 @@ warp-contracts-sqlite@1.0.2:
     better-sqlite3 "^8.3.0"
     safe-stable-stringify "^2.4.3"
 
-warp-contracts@1.4.14:
-  version "1.4.14"
-  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.4.14.tgz#0a14428229736f568cdd54723dfa903dfe86ccfc"
-  integrity sha512-5tJzD1biarpXLJRxneEB7thWCqRdZXYhPr77XJxY9oveLANryibYJSEtUbrycHcLurSAQ+Vyd2qd5JHq8TAC4A==
+warp-contracts@1.4.15-beta.1:
+  version "1.4.15-beta.1"
+  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.4.15-beta.1.tgz#a7effec7d45df60c52148aeea8cdb98a1aab751f"
+  integrity sha512-rA4fD0hMBt6+RLyRoC3VRvEGlAqsndqk2Q7vbRHwziELezPzehCXO3Bkw5QltnlfyOsQOkd4/06WDws8K29zbQ==
   dependencies:
     archiver "^5.3.0"
     arweave "1.13.7"

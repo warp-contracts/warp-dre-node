@@ -45,8 +45,8 @@ const nonBlacklistErrors = [
   'SkipUnsafeError'
 ];
 
-const bazarContract = 'aJIOMmqqpZ63V_SsBuSKWRILBYKIH967eFzMPHA8GYo';
-const uContract = 'FYJOKdtNKl18QgblxgLEZUfJMFUv6tZTQqGTtY-D6jQ';
+const zarContract = 'pKAUV26rFgG13XwS7oZ1IQ8dDIRcdV9xnC8XEnZ7cfQ';
+const uContract = 'KTzTXT_ANmF84fWEKHzWURD1LWd9QaFR9yfYUwH2Lxw';
 
 async function runListener() {
   logger.info('🚀🚀🚀 Starting execution node');
@@ -105,8 +105,10 @@ async function runListener() {
     if (failedReason.includes('[MaxStateSizeError]')) {
       await doBlacklist(nodeDb, contractTxId, config.workersConfig.maxFailures);
     } else {
-      if (!nonBlacklistErrors.some((e) => failedReason.includes(e))) {
-        await upsertBlacklist(nodeDb, contractTxId);
+      if (contractTxId != uContract) {
+        if (!nonBlacklistErrors.some((e) => failedReason.includes(e))) {
+          await upsertBlacklist(nodeDb, contractTxId);
+        }
       }
     }
     events.failure(nodeDbEvents, contractTxId, failedReason);
@@ -328,7 +330,7 @@ async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueu
       });
       subscriber.on('message', async (channel, message) => {
         const msgObj = JSON.parse(message);
-        if (msgObj.contractTxId != uContract && msgObj.contractTxId != bazarContract) {
+        if (msgObj.contractTxId != uContract && msgObj.contractTxId != zarContract) {
           return;
         }
         logger.info(`From channel '${channel}'`);
