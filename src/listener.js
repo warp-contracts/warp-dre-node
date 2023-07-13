@@ -27,6 +27,8 @@ const exitHook = require('async-exit-hook');
 const warp = require('./warp');
 const { execSync } = require('child_process');
 const fs = require('fs');
+const { LoggerFactory } = require("warp-contracts");
+const { checkStateSize, storeAndPublish } = require("./workers/common");
 
 let isTestInstance = config.env === 'test';
 let port = 8080;
@@ -189,7 +191,32 @@ async function runListener() {
 
   await subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updateQueue, registerQueue);
 
+  await polluj();
+
   logger.info(`Listening on port ${port}`);
+}
+
+async function polluj() {
+  const uContractId = "";
+  LoggerFactory.INST.logLevel('none');
+  LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
+  const contract = warp.contract(uContractId).setEvaluationOptions(config.evaluationOptions);
+
+  (function workerLoop() {
+    setTimeout(async function () {
+        logger.info(`Starting ${name} task.`);
+        try {
+          const result = await contract.readState();
+          checkStateSize(result.cachedValue.state);
+          storeAndPublish(logger, false, uContractId, result).finally(() => {
+          });
+          logger.info(`Task ${name} completed.`);
+        } catch (e) {
+          logger.error(e)
+        }
+        workerLoop();
+    }, 10_000);
+  })();
 }
 
 runListener().catch((e) => {
