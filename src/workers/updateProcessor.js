@@ -3,6 +3,7 @@ const { LoggerFactory } = require('warp-contracts');
 const { storeAndPublish, checkStateSize } = require('./common');
 const { config } = require('../config');
 const { uContract } = require('../constants');
+const { KnownErrors } = require('warp-contracts');
 
 LoggerFactory.INST.logLevel('none');
 LoggerFactory.INST.logLevel('info', 'interactionsProcessor');
@@ -45,6 +46,9 @@ module.exports = async (job) => {
   } catch (e) {
     logger.error('Exception in update processor', e);
 
+    if (e.name == KnownErrors.NetworkCommunicationError) {
+      return;
+    }
     throw new Error(`${contractTxId}|${interaction.id}|${e}`);
   }
 };

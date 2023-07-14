@@ -43,8 +43,7 @@ let registerWorker;
 
 const nonBlacklistErrors = [
   'Unable to retrieve transactions. Warp gateway responded with status',
-  'Trying to use testnet contract in a non-testnet env. Use the "forTestnet" factory method.',
-  'SkipUnsafeError'
+  'Trying to use testnet contract in a non-testnet env. Use the "forTestnet" factory method.'
 ];
 
 async function runListener() {
