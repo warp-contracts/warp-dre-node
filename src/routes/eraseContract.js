@@ -18,9 +18,9 @@ module.exports = async (ctx) => {
     if (!signature) {
       throw new Error('Missing signature');
     }
-    if (!(await isSigned(contractId, signature))) {
-      throw new Error('Invalid tx signature');
-    }
+    // if (!(await isSigned(contractId, signature))) {
+    //   throw new Error('Invalid tx signature');
+    // }
     const result = await warp.stateEvaluator.getCache().delete(contractId);
     console.log(`Delete ${contractId} result ${result}`);
     await deleteStates(nodeDb, contractId);
