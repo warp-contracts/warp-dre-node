@@ -329,15 +329,24 @@ async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueu
         }
       });
       subscriber.on('message', async (channel, message) => {
-        const msgObj = JSON.parse(message);
-        if (
-          ![uContract, zarContract].includes(msgObj.contractTxId) &&
-          !msgObj.interaction?.tags.some((t) => JSON.stringify(t) == JSON.stringify(ucmTag))
-        ) {
-          return;
+        try {
+          const msgObj = JSON.parse(message);
+          if (!msgObj.interaction?.tags) {
+            logger.warn("Message has no tags!", message);
+            return;
+          }
+          if (
+            ![uContract, zarContract].includes(msgObj.contractTxId) &&
+            !msgObj.interaction?.tags.some((t) => JSON.stringify(t) == JSON.stringify(ucmTag))
+          ) {
+            return;
+          }
+          logger.info(`From channel '${channel}'`);
+          await onMessage(msgObj);
+        } catch (e) {
+          logger.error(e);
+          logger.error(message);
         }
-        logger.info(`From channel '${channel}'`);
-        onMessage(msgObj);
       });
       process.on('exit', () => subscriber.disconnect());
       break;
