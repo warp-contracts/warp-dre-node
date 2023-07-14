@@ -27,7 +27,7 @@ const exitHook = require('async-exit-hook');
 const warp = require('./warp');
 const { execSync } = require('child_process');
 const fs = require('fs');
-const { zarContract, uContract } = require('./constants');
+const { zarContract, uContract, ucmTag } = require('./constants');
 const pollGateway = require('./workers/pollGateway');
 
 let isTestInstance = config.env === 'test';
@@ -104,7 +104,7 @@ async function runListener() {
     if (failedReason.includes('[MaxStateSizeError]')) {
       await doBlacklist(nodeDb, contractTxId, config.workersConfig.maxFailures);
     } else {
-      if (contractTxId != uContract && contractTxId != zarContract) {
+      if (![zarContract, uContract].includes(contractTxId)) {
         if (!nonBlacklistErrors.some((e) => failedReason.includes(e))) {
           await upsertBlacklist(nodeDb, contractTxId);
         }
@@ -188,7 +188,7 @@ async function runListener() {
 
   await subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updateQueue, registerQueue);
 
-  await pollGateway(warp);
+  await pollGateway(warp, uContract);
 
   logger.info(`Listening on port ${port}`);
 }
@@ -331,7 +331,10 @@ async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueu
       });
       subscriber.on('message', async (channel, message) => {
         const msgObj = JSON.parse(message);
-        if (msgObj.contractTxId != uContract && msgObj.contractTxId != zarContract) {
+        if (
+          ![uContract, zarContract].includes(msgObj.contractTxId) &&
+          !msgObj.interaction?.tags.some((t) => JSON.stringify(t) == JSON.stringify(ucmTag))
+        ) {
           return;
         }
         logger.info(`From channel '${channel}'`);
