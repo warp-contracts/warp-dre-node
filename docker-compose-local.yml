@@ -10,8 +10,8 @@ services:
       - '80:8080'
 
     volumes:
-      - dre-sqlite:/app/sqlite
-      - dre-cache:/app/cache
+      - dre-cache:/app/sqlite
+      - warp-cache:/app/cache
   bullmq:
     image: redis:7.0-alpine
     restart: always
@@ -19,11 +19,11 @@ services:
       - '127.0.0.1:6379:6379'
     command: redis-server --save 20 1 --loglevel warning --maxmemory-policy noeviction
     volumes:
-      - cache:/data
+      - bullmq-cache:/data
 volumes:
-  cache:
-    driver: local
-  dre-sqlite:
+  bullmq-cache:
     driver: local
   dre-cache:
+    driver: local
+  warp-cache:
     driver: local
