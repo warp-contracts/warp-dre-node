@@ -331,13 +331,14 @@ async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueu
       subscriber.on('message', async (channel, message) => {
         try {
           const msgObj = JSON.parse(message);
-          if (!msgObj.interaction?.tags) {
+          const tags = msgObj.interaction?.tags || msgObj.tags;
+          if (!tags) {
             logger.warn("Message has no tags!", message);
             return;
           }
           if (
             ![uContract, zarContract].includes(msgObj.contractTxId) &&
-            !msgObj.interaction?.tags.some((t) => JSON.stringify(t) == JSON.stringify(ucmTag))
+            !tags.some((t) => JSON.stringify(t) == JSON.stringify(ucmTag))
           ) {
             return;
           }
