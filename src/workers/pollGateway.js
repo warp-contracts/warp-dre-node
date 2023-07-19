@@ -7,6 +7,7 @@ module.exports = async function (warp, contractId) {
   const logger = LoggerFactory.INST.create('pollGatewayWorker');
   LoggerFactory.INST.logLevel('info', 'pollGatewayWorker');
   LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
+  LoggerFactory.INST.logLevel('debug', 'WarpGatewayInteractionsLoader');
   const contract = warp.contract(contractId).setEvaluationOptions(config.evaluationOptions);
   (function workerLoop() {
     setTimeout(async function () {
