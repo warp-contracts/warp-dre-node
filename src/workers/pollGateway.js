@@ -13,7 +13,7 @@ module.exports = async function (warp, contractId) {
     setTimeout(async function () {
       logger.info(`Polling contract from gateway: ${contractId}.`);
       try {
-        const result = await contract.readState();
+        const result = await contract.readState("000001223770,0000000000000,6effd24608d85a06f0b1f27aee9a1cb9f3322778ab8c7c236b4f044427aca421");
         checkStateSize(result.cachedValue.state);
         storeAndPublish(logger, false, contractId, result).finally(() => {});
         logger.info(`Polling from gateway completed.`);
