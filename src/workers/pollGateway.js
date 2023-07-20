@@ -3,7 +3,7 @@ const { config } = require('../config');
 const { storeAndPublish, checkStateSize } = require('./common');
 
 module.exports = async function (warp, contractId) {
-  LoggerFactory.INST.logLevel('none');
+  LoggerFactory.INST.logLevel('debug');
   const logger = LoggerFactory.INST.create('pollGatewayWorker');
   LoggerFactory.INST.logLevel('info', 'pollGatewayWorker');
   LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
