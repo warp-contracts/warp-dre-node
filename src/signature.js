@@ -29,8 +29,8 @@ module.exports = {
   }
 };
 
-function hashElement(elementToToHash) {
-  const stringified = typeof elementToHash != 'string' ? stringify(elementToToHash) : elementToToHash;
+function hashElement(elementToHash) {
+  const stringified = typeof elementToHash != 'string' ? stringify(elementToHash) : elementToHash;
   const hash = crypto.createHash('sha256');
   hash.update(stringified);
   return hash.digest('hex');

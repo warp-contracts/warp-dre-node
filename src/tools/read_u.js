@@ -7,6 +7,7 @@ const { SqliteContractCache } = require("warp-contracts-sqlite");
 const { defaultCacheOptions, WarpGatewayInteractionsLoader, LoggerFactory, WarpFactory } = require("warp-contracts");
 const stringify = require("safe-stable-stringify");
 const fs = require("fs");
+const crypto = require("crypto");
 
 (async function() {
 
