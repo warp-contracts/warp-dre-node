@@ -82,7 +82,7 @@ const fs = require("fs");
       cacheEveryNInteractions: 100
     });
 
-  const evalResult = await contract.readState("000001223371,0000000000000,5b63267ff12efc2ce440e403516024c1b48bd26b709ec2c16ea945c28e7411d4");
+  const evalResult = await contract.readState("000001223770,0000000000000,6effd24608d85a06f0b1f27aee9a1cb9f3322778ab8c7c236b4f044427aca421");
   // const evalResult = await contract.readState("000001207142,0000000000000,a53b31607b8bfb30223a53799e7e71ade1518780b335a0d59bf6bf667fd15e2a");
   const evalState = evalResult.cachedValue.state;
   const sortKey = evalResult.sortKey;
