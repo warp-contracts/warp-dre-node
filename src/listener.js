@@ -185,7 +185,7 @@ async function runListener() {
   app.context.nodeDbEvents = nodeDbEvents;
   app.listen(port);
 
-  await subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updateQueue, registerQueue);
+  // await subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updateQueue, registerQueue);
 
   await pollGateway(warp, uContract);
 
@@ -337,7 +337,7 @@ async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueu
             return;
           }
           if (
-            ![uContract, zarContract].includes(msgObj.contractTxId) &&
+            ![zarContract].includes(msgObj.contractTxId) &&
             !tags.some((t) => JSON.stringify(t) == JSON.stringify(ucmTag))
           ) {
             return;
