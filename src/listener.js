@@ -185,7 +185,7 @@ async function runListener() {
   app.context.nodeDbEvents = nodeDbEvents;
   app.listen(port);
 
-  // await subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updateQueue, registerQueue);
+  await subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updateQueue, registerQueue);
 
   await pollGateway(warp, uContract);
 
