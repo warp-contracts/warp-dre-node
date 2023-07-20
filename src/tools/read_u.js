@@ -4,10 +4,11 @@ const { VM2Plugin } = require("warp-contracts-plugin-vm2");
 const { VRFPlugin } = require("warp-contracts-plugin-vrf");
 const { LmdbCache } = require("warp-contracts-lmdb");
 const { SqliteContractCache } = require("warp-contracts-sqlite");
-const { defaultCacheOptions, WarpGatewayInteractionsLoader, LoggerFactory, WarpFactory } = require("warp-contracts");
+const { defaultCacheOptions, LoggerFactory, WarpFactory } = require("warp-contracts");
 const stringify = require("safe-stable-stringify");
 const fs = require("fs");
-const crypto = require("crypto");
+const { EvmSignatureVerificationServerPlugin } = require('warp-contracts-plugin-signature/server');
+const { JWTVerifyPlugin } = require("@othent/warp-contracts-plugin-jwt-verify");
 
 (async function() {
 
@@ -26,7 +27,7 @@ const crypto = require("crypto");
           dbLocation: `./cache/warp/sqlite/state`
         },
         {
-          maxEntriesPerContract: 200
+          maxEntriesPerContract: 1000
         }
       )
     )
@@ -65,11 +66,12 @@ const crypto = require("crypto");
           }
         )
     )
-    // .use(new NlpExtension())
-    // .use(new EvmSignatureVerificationServerPlugin())
-    // .use(new EthersExtension())
+    .use(new NlpExtension())
+    .use(new EvmSignatureVerificationServerPlugin())
+    .use(new EthersExtension())
     .use(new VM2Plugin())
-    .use(new VRFPlugin());
+    .use(new VRFPlugin())
+    .use(new JWTVerifyPlugin());
 // .use(new JWTVerifyPlugin());
 
 
@@ -80,7 +82,7 @@ const crypto = require("crypto");
       maxCallDepth: 666,
       maxInteractionEvaluationTimeSeconds: 20000,
       unsafeClient: "skip",
-      cacheEveryNInteractions: 100
+      cacheEveryNInteractions: 2000
     });
 
   const evalResult = await contract.readState("000001223770,0000000000000,6effd24608d85a06f0b1f27aee9a1cb9f3322778ab8c7c236b4f044427aca421");

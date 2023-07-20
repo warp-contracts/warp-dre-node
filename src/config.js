@@ -21,12 +21,12 @@ let warpSdkConfig = {
   '@othent/warp-contracts-plugin-jwt-verify': pjson.dependencies['@othent/warp-contracts-plugin-jwt-verify']
 };
 const evaluationOptions = {
-  maxCallDepth: parseInt(process.env.EVALUATION_MAXCALLDEPTH),
-  maxInteractionEvaluationTimeSeconds: parseInt(process.env.EVALUATION_MAXINTERACTIONEVALUATIONTIMESECONDS),
+  maxCallDepth: 666,
+  maxInteractionEvaluationTimeSeconds: 20000,
   allowBigInt: process.env.EVALUATION_ALLOWBIGINT === 'true',
   unsafeClient: process.env.EVALUATION_UNSAFECLIENT,
   internalWrites: process.env.EVALUATION_INTERNALWRITES === 'true',
-  cacheEveryNInteractions: 4000
+  cacheEveryNInteractions: 2000
 };
 
 function getGwPubSubConfig() {
