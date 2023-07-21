@@ -26,7 +26,8 @@ const evaluationOptions = {
   allowBigInt: process.env.EVALUATION_ALLOWBIGINT === 'true',
   unsafeClient: process.env.EVALUATION_UNSAFECLIENT,
   internalWrites: process.env.EVALUATION_INTERNALWRITES === 'true',
-  cacheEveryNInteractions: 2000
+  cacheEveryNInteractions: 2000,
+  useKVStorage: false
 };
 
 function getGwPubSubConfig() {
