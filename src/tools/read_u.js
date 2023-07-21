@@ -85,7 +85,7 @@ const { JWTVerifyPlugin } = require("@othent/warp-contracts-plugin-jwt-verify");
       cacheEveryNInteractions: 2000
     });
 
-  const evalResult = await contract.readState("000001223770,0000000000000,6effd24608d85a06f0b1f27aee9a1cb9f3322778ab8c7c236b4f044427aca421");
+  const evalResult = await contract.readState("000001224381,0000000000000,e6ec7c68821a1e3182d3613b9785eb0841237d470d3b2d7dc44493365b2fcc20");
   // const evalResult = await contract.readState("000001207142,0000000000000,a53b31607b8bfb30223a53799e7e71ade1518780b335a0d59bf6bf667fd15e2a");
   const evalState = evalResult.cachedValue.state;
   const sortKey = evalResult.sortKey;
