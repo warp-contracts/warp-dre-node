@@ -279,6 +279,7 @@ async function processContractData(msgObj, nodeDb, nodeDbEvents, registerQueue, 
         },
         { jobId }
       );
+      logger.info('Published to update queue', jobId);
     }
   }
 

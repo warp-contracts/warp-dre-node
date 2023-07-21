@@ -29,7 +29,7 @@ module.exports = async (job) => {
     let result = null;
 
     const lastCachedKey = (await warp.stateEvaluator.latestAvailableState(contractTxId))?.sortKey;
-    if (lastCachedKey?.localeCompare(interaction.lastSortKey) === 0) {
+    if (interaction.lastSortKey && lastCachedKey?.localeCompare(interaction.lastSortKey) === 0) {
       logger.debug('Safe to use latest interaction');
       lastSortKey = interaction.lastSortKey;
       result = await contract.readStateFor(lastSortKey, [interaction]);
