@@ -42,21 +42,23 @@ module.exports = async (job) => {
 
     if (!isTest) {
       const tags = interaction.tags;
-      const interactWritesTags = tags.filter((t) => t.name == 'Interact-Write');
-      if (interactWritesTags) {
-        const interactWritesContracts = interactWritesTags.map((t) => t.value);
-        for (const contract1 of interactWritesContracts) {
-          const interactWriteContractResult = await warp.stateEvaluator.latestAvailableState(contract1);
+      if (tags) {
+        const interactWritesTags = tags.filter((t) => t.name == 'Interact-Write');
+        if (interactWritesTags) {
+          const interactWritesContracts = interactWritesTags.map((t) => t.value);
+          for (const contract1 of interactWritesContracts) {
+            const interactWriteContractResult = await warp.stateEvaluator.latestAvailableState(contract1);
 
-          await publishToRedis(logger, contract1, {
-            contractTxId: contract1,
-            sortKey: interactWriteContractResult.sortKey,
-            state: interactWriteContractResult.cachedValue.state,
-            node: null,
-            signature: null,
-            manifest: null,
-            stateHash: null
-          }).finally(() => {});
+            await publishToRedis(logger, contract1, {
+              contractTxId: contract1,
+              sortKey: interactWriteContractResult.sortKey,
+              state: interactWriteContractResult.cachedValue.state,
+              node: null,
+              signature: null,
+              manifest: null,
+              stateHash: null
+            });
+          }
         }
       }
     }
