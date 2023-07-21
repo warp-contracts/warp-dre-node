@@ -270,7 +270,7 @@ async function processContractData(msgObj, nodeDb, nodeDbEvents, registerQueue, 
         { jobId: contractTxId }
       );
     } else {
-      const jobId = msgObj.contractTxId;
+      const jobId = `${msgObj.contractTxId}|${timestamp}`;
       await updatedQueue.add(
         'evaluateInteraction',
         {
