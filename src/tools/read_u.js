@@ -92,7 +92,7 @@ const { JWTVerifyPlugin } = require("@othent/warp-contracts-plugin-jwt-verify");
 
   console.log(`SortKey: ${sortKey}`);
 
-  fs.writeFileSync(`u_${Date.now()}.json`, stringify(evalResult));
+  fs.writeFileSync(`u_${Date.now()}.json`, JSON.stringify(evalResult, null ,2));
 
   // console.dir(evalResult, { depth: null });
   // console.dir(contract.getCallStack(), { depth: null });

@@ -185,9 +185,9 @@ async function runListener() {
   app.context.nodeDbEvents = nodeDbEvents;
   app.listen(port);
 
-  await subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updateQueue, registerQueue);
-
-  await pollGateway(warp, uContract);
+  const onMessage = async (data) => await processContractData(data, nodeDb, nodeDbEvents, registerQueue, updateQueue);
+  await subscribeToGatewayNotifications(onMessage);
+  await pollGateway(uContract, onMessage);
 
   logger.info(`Listening on port ${port}`);
 }
@@ -270,7 +270,7 @@ async function processContractData(msgObj, nodeDb, nodeDbEvents, registerQueue, 
         { jobId: contractTxId }
       );
     } else {
-      const jobId = `${msgObj.contractTxId}|${timestamp}`;
+      const jobId = msgObj.contractTxId;
       await updatedQueue.add(
         'evaluateInteraction',
         {
@@ -290,8 +290,7 @@ async function processContractData(msgObj, nodeDb, nodeDbEvents, registerQueue, 
   }
 }
 
-async function subscribeToGatewayNotifications(nodeDb, nodeDbEvents, updatedQueue, registerQueue) {
-  const onMessage = async (data) => await processContractData(data, nodeDb, nodeDbEvents, registerQueue, updatedQueue);
+async function subscribeToGatewayNotifications(onMessage) {
   const onError = (err) => logger.error('Failed to subscribe:', err);
 
   let pubsubType = config.pubsub.type;

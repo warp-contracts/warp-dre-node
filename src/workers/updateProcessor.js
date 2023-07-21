@@ -6,9 +6,9 @@ const { uContract } = require('../constants');
 const { KnownErrors } = require('warp-contracts');
 const { publishToRedis } = require('../workers/publish');
 
-LoggerFactory.INST.logLevel('none');
+LoggerFactory.INST.logLevel('debug');
 LoggerFactory.INST.logLevel('info', 'interactionsProcessor');
-LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
+// LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
 const logger = LoggerFactory.INST.create('interactionsProcessor');
 LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
 
@@ -49,11 +49,11 @@ module.exports = async (job) => {
       const interactWritesTags = tags.filter((t) => t.name == 'Interact-Write');
       if (interactWritesTags) {
         const interactWritesContracts = interactWritesTags.map((t) => t.value);
-        interactWritesContracts.forEach(async (contract) => {
-          const interactWriteContractResult = await warp.stateEvaluator.latestAvailableState(contract);
+        for (const contract1 of interactWritesContracts) {
+          const interactWriteContractResult = await warp.stateEvaluator.latestAvailableState(contract1);
 
-          await publishToRedis(logger, contract, {
-            contractTxId: contract,
+          await publishToRedis(logger, contract1, {
+            contractTxId: contract1,
             sortKey: interactWriteContractResult.sortKey,
             state: interactWriteContractResult.cachedValue.state,
             node: null,
@@ -61,7 +61,7 @@ module.exports = async (job) => {
             manifest: null,
             stateHash: null
           }).finally(() => {});
-        });
+        }
       }
     }
 

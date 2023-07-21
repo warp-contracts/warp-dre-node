@@ -3,7 +3,7 @@ const crypto = require("crypto");
 const fs = require("fs");
 
 function hashState() {
-  const fileName = "u_1689863054795.json";
+  const fileName = "u_1689931278070.json";
   const evalResult = JSON.parse(fs.readFileSync(fileName, "utf-8"));
 
   const state = evalResult.cachedValue.state;
