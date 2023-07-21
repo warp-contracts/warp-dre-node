@@ -11,7 +11,7 @@ const redisPublisher = new Redis({
 });
 
 module.exports = {
-  publishToRedis: (logger, contractTxId, resultToBePublished) => {
+  publishToRedis: async (logger, contractTxId, resultToBePublished) => {
     try {
       redisPublisher.publish('states', JSON.stringify(resultToBePublished));
       logger.debug('Published to Redis', contractTxId);

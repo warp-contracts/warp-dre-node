@@ -52,7 +52,7 @@ module.exports = async (job) => {
         interactWritesContracts.forEach(async (contract) => {
           const interactWriteContractResult = await warp.stateEvaluator.latestAvailableState(contract);
 
-          publishToRedis(logger, contract, {
+          await publishToRedis(logger, contract, {
             contractTxId: contract,
             sortKey: interactWriteContractResult.sortKey,
             state: interactWriteContractResult.cachedValue.state,

@@ -5,11 +5,11 @@ const { config } = require('../config');
 module.exports = {
   storeAndPublish: async (logger, isTest, contractTxId, result) => {
     insertState(connect(), contractTxId, result)
-      .then((dbResult) => {
+      .then(async (dbResult) => {
         logger.info('State stored in sqlite', contractTxId);
 
         if (!isTest) {
-          publishToRedis(logger, contractTxId, {
+          await publishToRedis(logger, contractTxId, {
             contractTxId: dbResult.contract_tx_id,
             sortKey: dbResult.sort_key,
             state: dbResult.state,
