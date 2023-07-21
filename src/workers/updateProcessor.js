@@ -7,7 +7,7 @@ const { KnownErrors } = require('warp-contracts');
 const { publishToRedis } = require('../workers/publish');
 
 LoggerFactory.INST.logLevel('debug');
-LoggerFactory.INST.logLevel('info', 'interactionsProcessor');
+LoggerFactory.INST.logLevel('debug', 'interactionsProcessor');
 // LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
 const logger = LoggerFactory.INST.create('interactionsProcessor');
 LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
