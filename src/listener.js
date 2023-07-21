@@ -259,28 +259,18 @@ async function processContractData(msgObj, nodeDb, nodeDbEvents, registerQueue, 
       logger.warn(`${contractTxId} is currently being registered, skipping update`);
       return;
     }
-    if (!isRegistered) {
-      logger.warn('Contract not registered, adding to register queue', contractTxId);
-      await registerQueue.add(
-        'initContract',
-        {
-          ...baseMessage,
-          force: true
-        },
-        { jobId: contractTxId }
-      );
-    } else {
-      const jobId = `${msgObj.contractTxId}|${timestamp}`;
-      await updatedQueue.add(
-        'evaluateInteraction',
-        {
-          ...baseMessage,
-          interaction: msgObj.interaction
-        },
-        { jobId }
-      );
-      logger.info('Published to update queue', jobId);
-    }
+
+    const jobId = `${msgObj.contractTxId}|${timestamp}`;
+    await updatedQueue.add(
+      'evaluateInteraction',
+      {
+        ...baseMessage,
+        // this forces to poll gateway for interactions
+        interaction: {} //msgObj.interaction
+      },
+      { jobId }
+    );
+    logger.info('Published to update queue', jobId);
   }
 
   async function isRegisteringContract(registerQueue, contractTxId) {
@@ -333,7 +323,7 @@ async function subscribeToGatewayNotifications(onMessage) {
           const msgObj = JSON.parse(message);
           const tags = msgObj.interaction?.tags || msgObj.tags;
           if (!tags) {
-            logger.warn("Message has no tags!", message);
+            logger.warn('Message has no tags!', message);
             return;
           }
           if (
@@ -342,6 +332,19 @@ async function subscribeToGatewayNotifications(onMessage) {
           ) {
             return;
           }
+          const iwTags = tags.filter((t) => t.name === 'Interact-Write').map((t) => t.value?.trim());
+          logger.info('IW tags in interaction', iwTags);
+          if (iwTags && iwTags.length) {
+            for (const iwTag of iwTags) {
+              logger.info('Generating message for IW, contract', iwTag);
+              await onMessage({
+                contractTxId: iwTag,
+                interaction: { originalContractTxId: msgObj.contractTxId }
+              });
+            }
+            return;
+          }
+
           logger.info(`From channel '${channel}'`);
           await onMessage(msgObj);
         } catch (e) {

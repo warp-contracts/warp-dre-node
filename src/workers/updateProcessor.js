@@ -61,6 +61,20 @@ module.exports = async (job) => {
           }
         }
       }
+      if (interaction.originalContractTxId) {
+        const ogContractTxId = interaction.originalContractTxId;
+        const ogContractResult = await warp.stateEvaluator.latestAvailableState(ogContractTxId);
+
+        await publishToRedis(logger, ogContractTxId, {
+          contractTxId: ogContractTxId,
+          sortKey: ogContractResult.sortKey,
+          state: ogContractResult.cachedValue.state,
+          node: null,
+          signature: null,
+          manifest: null,
+          stateHash: null
+        });
+      }
     }
 
     return { lastSortKey };
