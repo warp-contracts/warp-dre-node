@@ -8,6 +8,7 @@ const errors = require('./routes/errors');
 const scheduleSync = require('./routes/scheduleSync');
 const kv = require('./routes/kv');
 const eraseContract = require('./routes/eraseContract');
+const eraseSortKeyCache = require('./routes/eraseSortKeyCache');
 const validity = require('./routes/validity');
 
 const router = new Router();
@@ -22,5 +23,6 @@ router.get('/sync', scheduleSync);
 router.get('/kv', kv);
 router.get('/validity', validity);
 router.delete('/contract/:id', eraseContract);
+router.delete('/contracts', eraseSortKeyCache);
 
 module.exports = router;

@@ -7,6 +7,7 @@ const stateDbConfig = require('../../knexConfigStateDb');
 
 let eventsDb = null;
 let stateDb = null;
+let warpStateDb = null;
 
 module.exports = {
   createNodeDbEventsTables: async (knex) => {
@@ -102,6 +103,19 @@ module.exports = {
     return eventsDb;
   },
 
+  connectWarpState: () => {
+    if (warpStateDb == null) {
+      warpStateDb = knex({
+        client: 'better-sqlite3',
+        connection: {
+          filename: `cache/bazar/sqlite/state.db`
+        },
+        useNullAsDefault: true
+      });
+    }
+    return warpStateDb;
+  },
+
   insertFailure: async (nodeDb, failureInfo) => {
     await nodeDb('errors').insert(failureInfo).onConflict(['job_id']).ignore();
   },
@@ -133,8 +147,18 @@ module.exports = {
     return entry;
   },
 
+  eraseWarpSortKeyCacheFrom: async (warpStateCache, sortKey) => {
+    sortKey = sortKey || '0';
+    await warpStateCache.raw(`DELETE FROM sort_key_cache WHERE sort_key > ?;`, [sortKey]);
+  },
+
   deleteStates: async (nodeDb, contractTxId) => {
     await nodeDb.raw(`DELETE FROM states WHERE contract_tx_id = ?;`, [contractTxId]);
+  },
+
+  deleteStatesFrom: async (nodeDb, sortKey) => {
+    sortKey = sortKey || '0';
+    await nodeDb.raw(`DELETE FROM states WHERE sort_key > ?;`, [sortKey]);
   },
 
   upsertBlacklist: async (nodeDb, contractTxId) => {
