@@ -9,6 +9,7 @@ const stringify = require("safe-stable-stringify");
 const fs = require("fs");
 const { EvmSignatureVerificationServerPlugin } = require('warp-contracts-plugin-signature/server');
 const { JWTVerifyPlugin } = require("@othent/warp-contracts-plugin-jwt-verify");
+const crypto = require("crypto");
 
 (async function() {
 
@@ -85,9 +86,8 @@ const { JWTVerifyPlugin } = require("@othent/warp-contracts-plugin-jwt-verify");
       cacheEveryNInteractions: 2000
     });
 
-  // dre-6 a55a7cb597b2f6beb36a2b77b93b4cabc4383542761741708daa33285aa0e125
-  // dre-5 66a77e284adb34b6d3f8495a655a99d4f23069f5b8e8634cf11d10d869b22c85
-  const evalResult = await contract.readState("000001224512,0000000000000,f7071c8cde26e34282bab15f9ab33f7fea5f4efbf655a41f9a914977b5a40962");
+  // 74c1dc08ded96c7cc5520903933163485217e1972cfc50ac577df75692f8d9a7
+  const evalResult = await contract.readState("000001227059,0000000000000,ff059e01277a48e2301c4e50ce2d8ebf836a607c422b86f758f5afb04cb00169");
   // const evalResult = await contract.readState("000001207142,0000000000000,a53b31607b8bfb30223a53799e7e71ade1518780b335a0d59bf6bf667fd15e2a");
   const evalState = evalResult.cachedValue.state;
   const sortKey = evalResult.sortKey;
@@ -96,10 +96,18 @@ const { JWTVerifyPlugin } = require("@othent/warp-contracts-plugin-jwt-verify");
 
   fs.writeFileSync(`u_${Date.now()}.json`, JSON.stringify(evalResult, null ,2));
 
+  console.log('State hash', hashElement(evalState));
+  console.log('Validity count', Object.keys(evalResult.cachedValue.validity).length);
+  console.log('Validity hash', hashElement(evalResult.cachedValue.validity));
+
   // console.dir(evalResult, { depth: null });
   // console.dir(contract.getCallStack(), { depth: null });
 
-
-
-
 })();
+
+function hashElement(elementToHash) {
+  const stringified = typeof elementToHash != 'string' ? stringify(elementToHash) : elementToHash;
+  const hash = crypto.createHash('sha256');
+  hash.update(stringified);
+  return hash.digest('hex');
+}

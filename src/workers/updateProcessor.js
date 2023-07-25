@@ -2,9 +2,9 @@ const warp = require('../warp');
 const { LoggerFactory } = require('warp-contracts');
 const { storeAndPublish, checkStateSize } = require('./common');
 const { config } = require('../config');
-const { uContract } = require('../constants');
 const { KnownErrors } = require('warp-contracts');
 const { publishToRedis } = require('../workers/publish');
+const stableHeight = require("../stableHeight");
 
 LoggerFactory.INST.logLevel('debug');
 LoggerFactory.INST.logLevel('debug', 'interactionsProcessor');
@@ -33,7 +33,8 @@ module.exports = async (job) => {
 
     if (result == null) {
       logger.debug('Not safe to use latest interaction, reading via Warp GW.');
-      result = await contract.readState();
+      const height = await stableHeight();
+      result = await contract.readState(height);
     }
 
     logger.info(`Evaluated ${contractTxId} @ ${result.sortKey}`, contract.lastReadStateStats());
@@ -49,6 +50,7 @@ module.exports = async (job) => {
           for (const contract1 of interactWritesContracts) {
             const interactWriteContractResult = await warp.stateEvaluator.latestAvailableState(contract1);
 
+            logger.debug("Publishing to agg node for IW contract", contract1);
             await publishToRedis(logger, contract1, {
               contractTxId: contract1,
               sortKey: interactWriteContractResult.sortKey,
@@ -61,10 +63,10 @@ module.exports = async (job) => {
           }
         }
       }
-      if (interaction.originalContractTxId) {
+      /*if (interaction.originalContractTxId) {
         const ogContractTxId = interaction.originalContractTxId;
         const ogContractResult = await warp.stateEvaluator.latestAvailableState(ogContractTxId);
-
+        logger.debug("Publishing to agg node for original contract", ogContractTxId);
         await publishToRedis(logger, ogContractTxId, {
           contractTxId: ogContractTxId,
           sortKey: ogContractResult.sortKey,
@@ -74,7 +76,7 @@ module.exports = async (job) => {
           manifest: null,
           stateHash: null
         });
-      }
+      }*/
     }
 
     return { lastSortKey };
