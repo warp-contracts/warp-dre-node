@@ -20,6 +20,7 @@ const crypto = require("crypto");
   LoggerFactory.INST.logLevel("debug", 'WarpGatewayInteractionsLoader');
   const zarContract = "iAGHqY1TNC8AmLkTHi3bo-WDExJUbCbmPTYy1bHiHwE";
   const uContract = "KTzTXT_ANmF84fWEKHzWURD1LWd9QaFR9yfYUwH2Lxw";
+  const stContract = "StMM-bgVW6s_19TMLh5cf-BjRI9Ue0N0KNjirfgb4H4";
 
   const warp = WarpFactory.forMainnet()
     .useStateCache(
@@ -87,7 +88,8 @@ const crypto = require("crypto");
       cacheEveryNInteractions: 2000
     });
 
-  const evalResult = await contract.readState("000001227096,0000000000000,e6076824e99dfe137d8ff423987019c90b6070a5bb29307ed18cb40ec29cb872");
+  // 69d74c598dd822c1557de3bb045bd11e94344d72127f0dc96767b405df98a844
+  const evalResult = await contract.readState("000001205830,1687540433680,2298cc0fa076c17a6f3b951264a101972822614121182e56f54b2312377bacb5");
   const evalState = evalResult.cachedValue.state;
   const sortKey = evalResult.sortKey;
 

@@ -1,0 +1,18 @@
+{
+  "errorMessages": {
+    "KqnPtanQb7_0WhybPM9geD_zlPeYa3wDiPtQ-ZbcdCA": "Claim not addressed to caller.",
+    "gHJUCI_tEWlszBrTCPf3m-3Fq0X9mS641MNJ6xFD20Q": "Not enough tokens for transfer.",
+    "ssa3u7JVUTE_uMgBYkPva_oDIzEOsy_5f35VS8uOJec": "Internal write auto error for call [{\"from\":\"StMM-bgVW6s_19TMLh5cf-BjRI9Ue0N0KNjirfgb4H4\",\"to\":\"KTzTXT_ANmF84fWEKHzWURD1LWd9QaFR9yfYUwH2Lxw\",\"input\":{\"function\":\"claim\",\"txID\":\"gHJUCI_tEWlszBrTCPf3m-3Fq0X9mS641MNJ6xFD20Q\",\"qty\":2000000}}]: There must be 1 claimable with this tx id."
+  },
+  "validity": {
+    "2VdRby5n6W7ZHpxbJRz9P2cxSbtTTfQTfoX8bjWRAS0": true,
+    "BssJ-yOyWO9QBMpxuGHpOncwWQLB5QjPvQLLTT7_0jU": true,
+    "CAxocaUNrWzNk81X7TZ7yuahFOD-b34s1W9p1DYzDx8": true,
+    "KqnPtanQb7_0WhybPM9geD_zlPeYa3wDiPtQ-ZbcdCA": false,
+    "gHJUCI_tEWlszBrTCPf3m-3Fq0X9mS641MNJ6xFD20Q": false,
+    "jQRMgzqKd4FHtnSZ08ZV-1zkFz9nr9wnFLZZWoTA1jg": true,
+    "jywrHJv1PuYZ3KrwkTGqBNGNoSLy5TtNBltdOtmVrLE": true,
+    "qD9w_ToKllTf27lwYQyFyZ7nLrvuhdk96tbqlVjk6dE": true,
+    "ssa3u7JVUTE_uMgBYkPva_oDIzEOsy_5f35VS8uOJec": false
+  }
+}

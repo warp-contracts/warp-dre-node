@@ -47,7 +47,7 @@
     "koa-compress": "^5.1.0",
     "node-nlp": "^4.24.0",
     "safe-stable-stringify": "^2.4.3",
-    "warp-contracts": "1.4.15-beta.12",
+    "warp-contracts": "1.4.15-beta.13",
     "warp-contracts-evaluation-progress-plugin": "1.0.17",
     "warp-contracts-lmdb": "1.1.10",
     "warp-contracts-sqlite": "1.0.3-beta.1",
