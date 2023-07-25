@@ -18,7 +18,8 @@ const crypto = require("crypto");
 // 000001207142,0000000000000,a53b31607b8bfb30223a53799e7e71ade1518780b335a0d59bf6bf667fd15e2a
   LoggerFactory.INST.logLevel("debug");
   LoggerFactory.INST.logLevel("debug", 'WarpGatewayInteractionsLoader');
-  const contractTxId = "KTzTXT_ANmF84fWEKHzWURD1LWd9QaFR9yfYUwH2Lxw";
+  const zarContract = "iAGHqY1TNC8AmLkTHi3bo-WDExJUbCbmPTYy1bHiHwE";
+  const uContract = "KTzTXT_ANmF84fWEKHzWURD1LWd9QaFR9yfYUwH2Lxw";
 
   const warp = WarpFactory.forMainnet()
     .useStateCache(
@@ -76,7 +77,7 @@ const crypto = require("crypto");
 // .use(new JWTVerifyPlugin());
 
 
-  const contract = warp.contract(contractTxId)
+  const contract = warp.contract(uContract)
     .setEvaluationOptions({
       allowBigInt: true,
       internalWrites: true,
@@ -86,9 +87,7 @@ const crypto = require("crypto");
       cacheEveryNInteractions: 2000
     });
 
-  // 74c1dc08ded96c7cc5520903933163485217e1972cfc50ac577df75692f8d9a7
-  const evalResult = await contract.readState("000001227059,0000000000000,ff059e01277a48e2301c4e50ce2d8ebf836a607c422b86f758f5afb04cb00169");
-  // const evalResult = await contract.readState("000001207142,0000000000000,a53b31607b8bfb30223a53799e7e71ade1518780b335a0d59bf6bf667fd15e2a");
+  const evalResult = await contract.readState("000001227096,0000000000000,e6076824e99dfe137d8ff423987019c90b6070a5bb29307ed18cb40ec29cb872");
   const evalState = evalResult.cachedValue.state;
   const sortKey = evalResult.sortKey;
 
@@ -99,10 +98,6 @@ const crypto = require("crypto");
   console.log('State hash', hashElement(evalState));
   console.log('Validity count', Object.keys(evalResult.cachedValue.validity).length);
   console.log('Validity hash', hashElement(evalResult.cachedValue.validity));
-
-  // console.dir(evalResult, { depth: null });
-  // console.dir(contract.getCallStack(), { depth: null });
-
 })();
 
 function hashElement(elementToHash) {
