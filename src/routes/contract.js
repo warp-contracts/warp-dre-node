@@ -41,9 +41,11 @@ module.exports = async (ctx) => {
             response.state = parsed ? result.state : JSON.parse(result.state);
           }
         }
+        const parsedValidity = parsed ? result.validity : JSON.parse(result.validity);
         if (showValidity) {
-          response.validity = parsed ? result.validity : JSON.parse(result.validity);
+          response.validity = parsedValidity;
         }
+        response.validityCount = Object.keys(parsedValidity).length;
         if (showErrorMessages) {
           response.errorMessages = parsed ? result.error_messages : JSON.parse(result.error_messages);
         }

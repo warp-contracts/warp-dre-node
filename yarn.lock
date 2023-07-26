@@ -5124,10 +5124,10 @@ warp-contracts-pubsub@^1.0.6:
     isomorphic-ws "^5.0.0"
     ws "^8.11.0"
 
-warp-contracts-sqlite@1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/warp-contracts-sqlite/-/warp-contracts-sqlite-1.0.2.tgz#f690f3ad5832b8522baed2420437d1aa5214bab1"
-  integrity sha512-mBDTfexgBTEeUhddC3P438y03T4mEfDadzC32cyYOE8jQE1wfYF3GTFhTkz0eT+Z5o+DAT+4Ed+2Mxk5BSQMmw==
+warp-contracts-sqlite@1.0.3-beta.1:
+  version "1.0.3-beta.1"
+  resolved "https://registry.yarnpkg.com/warp-contracts-sqlite/-/warp-contracts-sqlite-1.0.3-beta.1.tgz#dbacb6dd5ff1c1b5e0647d3ae79f20d49214e364"
+  integrity sha512-0YDO60LIau8D9UQzSKLkLSAlSpMyi9vEo7x72/Rt7vMMvVHp8J9af3eG7LZ+yT+29LJlWzCWkMTTYE3koYViCA==
   dependencies:
     better-sqlite3 "^8.3.0"
     safe-stable-stringify "^2.4.3"

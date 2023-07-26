@@ -29,6 +29,8 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const { zarContract, uContract, ucmTag } = require('./constants');
 const pollGateway = require('./workers/pollGateway');
+const { storeAndPublish } = require("./workers/common");
+const stableHeight = require("./stableHeight");
 
 let isTestInstance = config.env === 'test';
 let port = 8080;
@@ -185,12 +187,25 @@ async function runListener() {
   app.context.nodeDbEvents = nodeDbEvents;
   app.listen(port);
 
+  const sHeight = await stableHeight();
+  logger.info("Initial read at stable height", sHeight);
+
+  await initialContractEval(uContract, sHeight);
+  await initialContractEval(zarContract, sHeight);
+
   const onMessage = async (data) => await processContractData(data, nodeDb, nodeDbEvents, registerQueue, updateQueue);
-  await subscribeToGatewayNotifications(onMessage);
+  // await subscribeToGatewayNotifications(onMessage);
   await pollGateway(uContract, onMessage);
 
   logger.info(`Listening on port ${port}`);
+  async function initialContractEval(contractTxId, height) {
+    logger.info("Initial evaluation", contractTxId);
+    const contract = warp.contract(contractTxId).setEvaluationOptions(config.evaluationOptions);
+    const result = await contract.readState(height);
+    await storeAndPublish(logger, false, contractTxId, result);
+  }
 }
+
 
 runListener().catch((e) => {
   logger.error(e);
@@ -255,36 +270,31 @@ async function processContractData(msgObj, nodeDb, nodeDbEvents, registerQueue, 
     );
     logger.info('Published to contracts queue', jobId);
   } else if (msgObj.interaction) {
-    if (await isRegisteringContract(registerQueue, contractTxId)) {
-      logger.warn(`${contractTxId} is currently being registered, skipping update`);
+    if (await isProcessingContract(registerQueue, contractTxId)) {
+      logger.warn(`${contractTxId} is currently being registered, skipping`);
       return;
     }
-    if (!isRegistered) {
-      logger.warn('Contract not registered, adding to register queue', contractTxId);
-      await registerQueue.add(
-        'initContract',
-        {
-          ...baseMessage,
-          force: true
-        },
-        { jobId: contractTxId }
-      );
-    } else {
-      const jobId = `${msgObj.contractTxId}|${timestamp}`;
-      await updatedQueue.add(
-        'evaluateInteraction',
-        {
-          ...baseMessage,
-          interaction: msgObj.interaction
-        },
-        { jobId }
-      );
-      logger.info('Published to update queue', jobId);
+
+    if (await isProcessingContract(updatedQueue, contractTxId)) {
+      logger.warn(`${contractTxId} is currently being updated, skipping`);
+      return;
     }
+
+    const jobId = `${msgObj.contractTxId}|${timestamp}`;
+    await updatedQueue.add(
+      'evaluateInteraction',
+      {
+        ...baseMessage,
+        // this forces to poll gateway for interactions
+        interaction: {} //msgObj.interaction
+      },
+      { jobId }
+    );
+    logger.info('Published to update queue', jobId);
   }
 
-  async function isRegisteringContract(registerQueue, contractTxId) {
-    const jobState = await registerQueue.getJobState(contractTxId);
+  async function isProcessingContract(queue, contractTxId) {
+    const jobState = await queue.getJobState(contractTxId);
     // https://api.docs.bullmq.io/classes/Queue.html#getJobState
     const inProgressStates = ['delayed', 'active', 'waiting', 'waiting-children'];
     return inProgressStates.includes(jobState);
@@ -333,7 +343,7 @@ async function subscribeToGatewayNotifications(onMessage) {
           const msgObj = JSON.parse(message);
           const tags = msgObj.interaction?.tags || msgObj.tags;
           if (!tags) {
-            logger.warn("Message has no tags!", message);
+            logger.warn('Message has no tags!', message);
             return;
           }
           if (
@@ -342,6 +352,19 @@ async function subscribeToGatewayNotifications(onMessage) {
           ) {
             return;
           }
+          /*const iwTags = tags.filter((t) => t.name === 'Interact-Write').map((t) => t.value?.trim());
+          logger.info('IW tags in interaction', iwTags);
+          if (iwTags && iwTags.length) {
+            for (const iwTag of iwTags) {
+              logger.info('Generating message for IW, contract', iwTag);
+              await onMessage({
+                contractTxId: iwTag,
+                interaction: { originalContractTxId: msgObj.contractTxId }
+              });
+            }
+            return;
+          }*/
+
           logger.info(`From channel '${channel}'`);
           await onMessage(msgObj);
         } catch (e) {
@@ -394,7 +417,7 @@ async function cleanup(callback) {
   logger.info('Interrupted');
   await updateWorker?.close();
   await registerWorker?.close();
-  await warp.close();
+  await close();
   logger.info('Clean up finished');
   callback();
 }
