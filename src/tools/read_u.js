@@ -9,6 +9,7 @@ const stringify = require("safe-stable-stringify");
 const fs = require("fs");
 const { EvmSignatureVerificationServerPlugin } = require('warp-contracts-plugin-signature/server');
 const { JWTVerifyPlugin } = require("@othent/warp-contracts-plugin-jwt-verify");
+const crypto = require("crypto");
 
 (async function() {
 
@@ -17,7 +18,8 @@ const { JWTVerifyPlugin } = require("@othent/warp-contracts-plugin-jwt-verify");
 // 000001207142,0000000000000,a53b31607b8bfb30223a53799e7e71ade1518780b335a0d59bf6bf667fd15e2a
   LoggerFactory.INST.logLevel("debug");
   LoggerFactory.INST.logLevel("debug", 'WarpGatewayInteractionsLoader');
-  const contractTxId = "KTzTXT_ANmF84fWEKHzWURD1LWd9QaFR9yfYUwH2Lxw";
+  const zarContract = "iAGHqY1TNC8AmLkTHi3bo-WDExJUbCbmPTYy1bHiHwE";
+  const uContract = "KTzTXT_ANmF84fWEKHzWURD1LWd9QaFR9yfYUwH2Lxw";
 
   const warp = WarpFactory.forMainnet()
     .useStateCache(
@@ -75,7 +77,7 @@ const { JWTVerifyPlugin } = require("@othent/warp-contracts-plugin-jwt-verify");
 // .use(new JWTVerifyPlugin());
 
 
-  const contract = warp.contract(contractTxId)
+  const contract = warp.contract(uContract)
     .setEvaluationOptions({
       allowBigInt: true,
       internalWrites: true,
@@ -85,10 +87,7 @@ const { JWTVerifyPlugin } = require("@othent/warp-contracts-plugin-jwt-verify");
       cacheEveryNInteractions: 2000
     });
 
-  // dre-6 a55a7cb597b2f6beb36a2b77b93b4cabc4383542761741708daa33285aa0e125
-  // dre-5 66a77e284adb34b6d3f8495a655a99d4f23069f5b8e8634cf11d10d869b22c85
-  const evalResult = await contract.readState("000001224512,0000000000000,f7071c8cde26e34282bab15f9ab33f7fea5f4efbf655a41f9a914977b5a40962");
-  // const evalResult = await contract.readState("000001207142,0000000000000,a53b31607b8bfb30223a53799e7e71ade1518780b335a0d59bf6bf667fd15e2a");
+  const evalResult = await contract.readState("000001227096,0000000000000,e6076824e99dfe137d8ff423987019c90b6070a5bb29307ed18cb40ec29cb872");
   const evalState = evalResult.cachedValue.state;
   const sortKey = evalResult.sortKey;
 
@@ -96,10 +95,14 @@ const { JWTVerifyPlugin } = require("@othent/warp-contracts-plugin-jwt-verify");
 
   fs.writeFileSync(`u_${Date.now()}.json`, JSON.stringify(evalResult, null ,2));
 
-  // console.dir(evalResult, { depth: null });
-  // console.dir(contract.getCallStack(), { depth: null });
-
-
-
-
+  console.log('State hash', hashElement(evalState));
+  console.log('Validity count', Object.keys(evalResult.cachedValue.validity).length);
+  console.log('Validity hash', hashElement(evalResult.cachedValue.validity));
 })();
+
+function hashElement(elementToHash) {
+  const stringified = typeof elementToHash != 'string' ? stringify(elementToHash) : elementToHash;
+  const hash = crypto.createHash('sha256');
+  hash.update(stringified);
+  return hash.digest('hex');
+}
