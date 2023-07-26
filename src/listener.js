@@ -334,9 +334,7 @@ async function subscribeToGatewayNotifications(onMessage) {
           const tags = msgObj.interaction?.tags || msgObj.tags;
           if (!tags) {
             logger.warn("Message has no tags!", message);
-            return;
-          }
-          if (
+          } else if (
             ![zarContract].includes(msgObj.contractTxId) &&
             !tags.some((t) => JSON.stringify(t) == JSON.stringify(ucmTag))
           ) {
