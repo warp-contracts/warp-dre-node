@@ -2037,10 +2037,10 @@ better-sqlite3@^8.0.1:
     bindings "^1.5.0"
     prebuild-install "^7.1.0"
 
-better-sqlite3@^8.3.0:
-  version "8.3.0"
-  resolved "https://registry.yarnpkg.com/better-sqlite3/-/better-sqlite3-8.3.0.tgz#3873ddfd9f2af90b628657e8ff221786c93d1984"
-  integrity sha512-JTmvBZL/JLTc+3Msbvq6gK6elbU9/wVMqiudplHrVJpr7sVMR9KJrNhZAbW+RhXKlpMcuEhYkdcHa3TXKNXQ1w==
+better-sqlite3@^8.5.0:
+  version "8.5.0"
+  resolved "https://registry.yarnpkg.com/better-sqlite3/-/better-sqlite3-8.5.0.tgz#b13d12d0e477be69191a39628fc8b723ee1c79d4"
+  integrity sha512-vbPcv/Hx5WYdyNg/NbcfyaBZyv9s/NVbxb7yCeC5Bq1pVocNxeL2tZmSu3Rlm4IEOTjYdGyzWQgyx0OSdORBzw==
   dependencies:
     bindings "^1.5.0"
     prebuild-install "^7.1.0"
@@ -5124,18 +5124,18 @@ warp-contracts-pubsub@^1.0.6:
     isomorphic-ws "^5.0.0"
     ws "^8.11.0"
 
-warp-contracts-sqlite@1.0.3-beta.1:
-  version "1.0.3-beta.1"
-  resolved "https://registry.yarnpkg.com/warp-contracts-sqlite/-/warp-contracts-sqlite-1.0.3-beta.1.tgz#dbacb6dd5ff1c1b5e0647d3ae79f20d49214e364"
-  integrity sha512-0YDO60LIau8D9UQzSKLkLSAlSpMyi9vEo7x72/Rt7vMMvVHp8J9af3eG7LZ+yT+29LJlWzCWkMTTYE3koYViCA==
+warp-contracts-sqlite@1.0.3-beta.4:
+  version "1.0.3-beta.4"
+  resolved "https://registry.yarnpkg.com/warp-contracts-sqlite/-/warp-contracts-sqlite-1.0.3-beta.4.tgz#4dddd2c9d6fd5acae6c1abd812440710a51d11e0"
+  integrity sha512-j62Ga/3iW7DaVHCgcaNV0jWAdiv/mlZyaneV8u5VPTSknWCM+IJKYZ/k1ckQ0nGgd0nwjqdxyt+35NqwN0eZhw==
   dependencies:
-    better-sqlite3 "^8.3.0"
+    better-sqlite3 "^8.5.0"
     safe-stable-stringify "^2.4.3"
 
-warp-contracts@1.4.15-beta.12:
-  version "1.4.15-beta.12"
-  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.4.15-beta.12.tgz#83ccf821ac76e358a1cc78ee6146790e571878bc"
-  integrity sha512-EApxhLhEARWvoCXcM9N37/0Uzw3dzEZAnasTWZrjagc3AAkDKiTMtHVOUQZ/BzYHsTxiHQGDSpYX3zUOZLjtRg==
+warp-contracts@1.4.15-beta.14:
+  version "1.4.15-beta.14"
+  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.4.15-beta.14.tgz#bbdb787c5186294a110b79bf6d5a5cb5044cd082"
+  integrity sha512-yu73mndtXuJUkR4wWfzd6DmRroo8CR520eXF0bYqGOm2NYB0+4b4TTao0gR4VantrHUCRJIhDPljRpxLwrVRGA==
   dependencies:
     archiver "^5.3.0"
     arweave "1.13.7"
