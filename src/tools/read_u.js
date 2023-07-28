@@ -26,7 +26,7 @@ const crypto = require("crypto");
       new SqliteContractCache(
         {
           ...defaultCacheOptions,
-          dbLocation: `./cache/warp/sqlite/state`
+          dbLocation: `./cache/warp/sqlite/state/sortKey-10.1`
         },
         {
           maxEntriesPerContract: 1000
@@ -87,7 +87,7 @@ const crypto = require("crypto");
       cacheEveryNInteractions: 2000
     });
 
-  const evalResult = await contract.readState("000001227096,0000000000000,e6076824e99dfe137d8ff423987019c90b6070a5bb29307ed18cb40ec29cb872");
+  const evalResult = await contract.readState("000001205830,1687540433680,2298cc0fa076c17a6f3b951264a101972822614121182e56f54b2312377bacb5");
   const evalState = evalResult.cachedValue.state;
   const sortKey = evalResult.sortKey;
 
