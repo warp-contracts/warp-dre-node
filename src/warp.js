@@ -24,7 +24,7 @@ const warp = WarpFactory.forMainnet()
     new SqliteContractCache(
       {
         ...defaultCacheOptions,
-        dbLocation: `./cache/bazar/sqlite/state`
+        dbLocation: `./cache/warp/sqlite/state`
       },
       {
         maxEntriesPerContract: 1000

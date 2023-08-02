@@ -1,6 +1,5 @@
-const Redis = require('ioredis');
-const { config } = require('../config');
-
+const warp = require('../warp');
+const { config } = require("../config");
 const updates = new Map();
 
 const chillOutTimeSeconds = 10;
@@ -15,16 +14,9 @@ module.exports = async (ctx) => {
     if (updates.has(contractTxId) && (now - updates.get(contractTxId)) / 1000 < chillOutTimeSeconds) {
       throw new Error(`Chill out and wait ${chillOutTimeSeconds}s`);
     }
-    const test = ctx.query.test !== 'false';
-    const connectionOptions = config.gwPubSubConfig;
 
-    const publisher = new Redis(connectionOptions);
-    await publisher.connect();
-    const channel = 'contracts';
-
-    const message = { contractTxId, test, interaction: {} };
-    publisher.publish(channel, JSON.stringify(message));
-    updates.set(contractTxId, now);
+    const contract = warp.contract(contractTxId).connect(config.nodeJwk);
+    await contract.writeInteraction({ function: 'registerDre' });
 
     ctx.body = 'Scheduled for update';
     ctx.status = 200;

@@ -26,7 +26,9 @@ module.exports = {
     const sig = arweave.utils.bufferTob64Url(rawSig);
 
     return { sig, stateHash, validityHash };
-  }
+  },
+
+  hashElement: hashElement
 };
 
 function hashElement(elementToHash) {

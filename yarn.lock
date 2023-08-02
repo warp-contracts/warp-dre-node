@@ -2029,18 +2029,10 @@ bech32@1.1.4:
   resolved "https://registry.npmjs.org/bech32/-/bech32-1.1.4.tgz"
   integrity sha512-s0IrSOzLlbvX7yp4WBfPITzpAU8sqQcpsmwXDiKwrG4r491vwCO/XpejasRNl0piBMe/DvP4Tz0mIS/X1DPJBQ==
 
-better-sqlite3@^8.0.1:
-  version "8.0.1"
-  resolved "https://registry.yarnpkg.com/better-sqlite3/-/better-sqlite3-8.0.1.tgz#3a596d21fbcefadf36f94e126c5cf24d5697d0b8"
-  integrity sha512-JhTZjpyapA1icCEjIZB4TSSgkGdFgpWZA2Wszg7Cf4JwJwKQmbvuNnJBeR+EYG/Z29OXvR4G//Rbg31BW/Z7Yg==
-  dependencies:
-    bindings "^1.5.0"
-    prebuild-install "^7.1.0"
-
-better-sqlite3@^8.3.0:
-  version "8.3.0"
-  resolved "https://registry.yarnpkg.com/better-sqlite3/-/better-sqlite3-8.3.0.tgz#3873ddfd9f2af90b628657e8ff221786c93d1984"
-  integrity sha512-JTmvBZL/JLTc+3Msbvq6gK6elbU9/wVMqiudplHrVJpr7sVMR9KJrNhZAbW+RhXKlpMcuEhYkdcHa3TXKNXQ1w==
+better-sqlite3@^8.5.0:
+  version "8.5.0"
+  resolved "https://registry.yarnpkg.com/better-sqlite3/-/better-sqlite3-8.5.0.tgz#b13d12d0e477be69191a39628fc8b723ee1c79d4"
+  integrity sha512-vbPcv/Hx5WYdyNg/NbcfyaBZyv9s/NVbxb7yCeC5Bq1pVocNxeL2tZmSu3Rlm4IEOTjYdGyzWQgyx0OSdORBzw==
   dependencies:
     bindings "^1.5.0"
     prebuild-install "^7.1.0"
@@ -5124,22 +5116,23 @@ warp-contracts-pubsub@^1.0.6:
     isomorphic-ws "^5.0.0"
     ws "^8.11.0"
 
-warp-contracts-sqlite@1.0.3-beta.1:
-  version "1.0.3-beta.1"
-  resolved "https://registry.yarnpkg.com/warp-contracts-sqlite/-/warp-contracts-sqlite-1.0.3-beta.1.tgz#dbacb6dd5ff1c1b5e0647d3ae79f20d49214e364"
-  integrity sha512-0YDO60LIau8D9UQzSKLkLSAlSpMyi9vEo7x72/Rt7vMMvVHp8J9af3eG7LZ+yT+29LJlWzCWkMTTYE3koYViCA==
+warp-contracts-sqlite@1.0.3-beta.8:
+  version "1.0.3-beta.8"
+  resolved "https://registry.yarnpkg.com/warp-contracts-sqlite/-/warp-contracts-sqlite-1.0.3-beta.8.tgz#bda8aa269d651ae5d499776171e8d493916235c4"
+  integrity sha512-igB1siKeDwRCPnkGoO7/i65tTfltFqmHCzF7IVnRahr9oPScQbxeC7Efkb/toqFoWBqKZx2mTjr0xHQ5G/vJBA==
   dependencies:
-    better-sqlite3 "^8.3.0"
+    better-sqlite3 "^8.5.0"
     safe-stable-stringify "^2.4.3"
 
-warp-contracts@1.4.15-beta.12:
-  version "1.4.15-beta.12"
-  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.4.15-beta.12.tgz#83ccf821ac76e358a1cc78ee6146790e571878bc"
-  integrity sha512-EApxhLhEARWvoCXcM9N37/0Uzw3dzEZAnasTWZrjagc3AAkDKiTMtHVOUQZ/BzYHsTxiHQGDSpYX3zUOZLjtRg==
+warp-contracts@1.4.15-rc.2:
+  version "1.4.15-rc.2"
+  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.4.15-rc.2.tgz#52acb392cbe41678478e8dc5094308387c633376"
+  integrity sha512-DzE8bWOnDER0wt9e08lVwNfz4L39lswSLowOI8bO8C4RbNEsDX1T7RKAel9bR5o9nTsxO1fk4IOfdeAjRyLhdg==
   dependencies:
     archiver "^5.3.0"
     arweave "1.13.7"
     async-mutex "^0.4.0"
+    better-sqlite3 "^8.5.0"
     bignumber.js "9.1.1"
     events "3.3.0"
     fast-copy "^3.0.0"

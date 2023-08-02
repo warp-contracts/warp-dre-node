@@ -27,7 +27,16 @@ const evaluationOptions = {
   unsafeClient: process.env.EVALUATION_UNSAFECLIENT,
   internalWrites: process.env.EVALUATION_INTERNALWRITES === 'true',
   cacheEveryNInteractions: 2000,
-  useKVStorage: false
+  whitelistSources: [
+    // https://docs.google.com/spreadsheets/d/1F9T1Vyk3geEsrU8wVSdsPj9drO48Ae9f2UpkuE0ralI/edit#gid=0
+    "Of9pi--Gj7hCTawhgxOwbuWnFI1h24TTgO5pw8ENJNQ", // Atomic Asset
+    "kP1Ed8AMvaaBrEFjatP4pSmiE_fsRrGS0EcBMQYYiyc", // STAMP
+    "mGxosQexdvrvzYCshzBvj18Xh1QmZX16qFJBuh4qobo", // U
+    "7qv5x9A0NgAlTdMnBc1H2HFvN-te0kzzuT9RNt_66g8",  // UCM contract
+    "eIAyBgHH-H7Qzw9fj7Austj30QKPQn27eaakvpOUSR8", // Facts
+    "Of9pi--Gj7hCTawhgxOwbuWnFI1h24TTgO5pw8ENJNQ", // Pages
+    "_z0ch80z_daDUFqC9jHjfOL8nekJcok4ZRkE_UesYsk"  // VouchDAO
+  ]
 };
 
 function getGwPubSubConfig() {

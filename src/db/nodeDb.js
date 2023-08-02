@@ -73,6 +73,19 @@ module.exports = {
       });
     }
 
+    const hasSyncLogTable = await knex.schema.hasTable('sync_log');
+    if (!hasSyncLogTable) {
+      await knex.schema.createTable('sync_log', function (t) {
+        t.integer('start_timestamp').notNullable();
+        t.integer('end_timestamp').index().notNullable();
+        t.integer('response_length').notNullable();
+        t.string('response_hash').notNullable();
+        t.string('response_first_sortkey');
+        t.string('response_last_sortkey');
+        t.jsonb('errors');
+      });
+    }
+
     // Trigger for ensuring only the newest state is stored
     await knex.raw(`
     CREATE TRIGGER IF NOT EXISTS reject_outdated_state
@@ -104,6 +117,19 @@ module.exports = {
 
   insertFailure: async (nodeDb, failureInfo) => {
     await nodeDb('errors').insert(failureInfo).onConflict(['job_id']).ignore();
+  },
+
+  insertSyncLog: async(nodeDb, data) => {
+    await nodeDb("sync_log").insert(data);
+  },
+
+  lastSyncTimestamp: async(nodeDb) => {
+    const result = await nodeDb.raw('SELECT max(end_timestamp) as "lastTimestamp" from sync_log');
+    if (result && result.length) {
+      return result[0].lastTimestamp;
+    } else {
+      return null;
+    }
   },
 
   insertState: async (nodeDb, contractTxId, readResult) => {
