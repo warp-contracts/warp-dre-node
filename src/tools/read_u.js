@@ -20,13 +20,14 @@ const crypto = require("crypto");
   LoggerFactory.INST.logLevel("debug", 'WarpGatewayInteractionsLoader');
   const zarContract = "iAGHqY1TNC8AmLkTHi3bo-WDExJUbCbmPTYy1bHiHwE";
   const uContract = "KTzTXT_ANmF84fWEKHzWURD1LWd9QaFR9yfYUwH2Lxw";
+  const stmmContract = "StMM-bgVW6s_19TMLh5cf-BjRI9Ue0N0KNjirfgb4H4";
 
   const warp = WarpFactory.forMainnet()
     .useStateCache(
       new SqliteContractCache(
         {
           ...defaultCacheOptions,
-          dbLocation: `./cache/warp/sqlite/state/sortKey-10.1`
+          dbLocation: `./cache/warp/sqlite/state/u/`
         },
         {
           maxEntriesPerContract: 1000
@@ -84,10 +85,11 @@ const crypto = require("crypto");
       maxCallDepth: 666,
       maxInteractionEvaluationTimeSeconds: 20000,
       unsafeClient: "skip",
-      cacheEveryNInteractions: 2000
+      cacheEveryNInteractions: 2000,
     });
 
-  const evalResult = await contract.readState("000001205830,1687540433680,2298cc0fa076c17a6f3b951264a101972822614121182e56f54b2312377bacb5");
+  // 0684540cf22fbe09cedad87ce3d3e7bb5ad779e23602dfb035ca19812b6f4a15
+  const evalResult = await contract.readState("000001205822,1687539817259,d073bc313825a24c7e3251471919c814a4db0a37ecdc0d28898581a6ab443912");
   const evalState = evalResult.cachedValue.state;
   const sortKey = evalResult.sortKey;
 
