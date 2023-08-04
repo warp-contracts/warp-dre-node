@@ -6,6 +6,7 @@ module.exports = async (startTimestamp, endTimestamp, whiteListedSources) => {
     src_ids: whiteListedSources
   });
 
+  console.log(response);
   if (response && response.ok) {
     return await response.json();
   } else {

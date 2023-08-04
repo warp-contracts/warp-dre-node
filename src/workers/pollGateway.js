@@ -22,6 +22,7 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
       let result;
       try {
         result = await loadInteractions(startTimestamp, endTimestamp, whitelistedSources);
+        logger.info("Raw response", result);
         if (!result) {
           throw new Error("Result is null or undefined");
         }
