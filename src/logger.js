@@ -1,12 +1,12 @@
 const { LoggerFactory } = require('warp-contracts');
 
 module.exports = (name) => {
-  const level = 'debug';
-  LoggerFactory.INST.logLevel(level);
+  LoggerFactory.INST.logLevel('info');
 
   const logger = LoggerFactory.INST.create(name);
-  LoggerFactory.INST.logLevel(level, 'listener');
-  LoggerFactory.INST.logLevel(level, 'interactionsProcessor');
-  LoggerFactory.INST.logLevel(level, 'contractsProcessor');
+  LoggerFactory.INST.logLevel('debug', 'listener');
+  LoggerFactory.INST.logLevel('debug', 'interactionsProcessor');
+  LoggerFactory.INST.logLevel('debug', "EvaluationProgressPlugin");
+  LoggerFactory.INST.logLevel('debug', "WarpGatewayInteractionsLoader");
   return logger;
 };

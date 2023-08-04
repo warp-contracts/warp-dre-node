@@ -30,6 +30,7 @@ const fs = require('fs');
 const { zarContract, uContract, ucmTag } = require('./constants');
 const pollGateway = require('./workers/pollGateway');
 const { storeAndPublish } = require("./workers/common");
+const { LoggerFactory } = require("warp-contracts");
 
 let isTestInstance = config.env === 'test';
 let port = 8080;
@@ -38,6 +39,9 @@ const registerQueueName = 'register';
 
 let updateWorker;
 let registerWorker;
+
+let nodeDb;
+let nodeDbEvents;
 
 const nonBlacklistErrors = [
   'Unable to retrieve transactions. Warp gateway responded with status',
@@ -48,8 +52,8 @@ async function runListener() {
   logger.info('🚀🚀🚀 Starting execution node');
   await logConfig();
 
-  const nodeDb = connect();
-  const nodeDbEvents = connectEvents();
+  nodeDb = connect();
+  nodeDbEvents = connectEvents();
 
   await createNodeDbTables(nodeDb);
   await createNodeDbEventsTables(nodeDbEvents);
@@ -131,22 +135,26 @@ async function runListener() {
       await next();
       ctx.redirect('/status');
     });
-  app.context.updateQueue = updateQueue;
   app.context.registerQueue = registerQueue;
   app.context.nodeDb = nodeDb;
   app.context.nodeDbEvents = nodeDbEvents;
   app.listen(port);
 
-  const initialSyncHeight = 1233311;
 
-  // the min timestamp of an interaction with sortKey starting one block after 'initialSyncHeight'
-  const initialSyncTimestamp = 1691083016820;
+  const initialSyncHeight = 1233790;
+
+  // the min timestamp of an interaction with sortKey starting one block after 'initialSyncHeight',
+  // e.g. (assuming initialSyncHeight = 1233790):
+  // select min(sync_timestamp) from interactions where sort_key like '000001233791,%';
+  const initialSyncTimestamp = 1691145726064;
 
   const lastTimestamp = await lastSyncTimestamp(nodeDb);
   logger.info('Last sync timestamp result', lastTimestamp);
   if (!lastTimestamp) {
-    logger.info("Initial read at height", initialSyncHeight);
+    logger.info("Initial U read at height", initialSyncHeight);
     await initialContractEval(uContract, initialSyncHeight);
+
+    logger.info("Initial non-U contracts read at timestamp", initialSyncTimestamp);
     await pollGateway(
       nodeDb,
       config.evaluationOptions.whitelistSources.filter(s => s != "mGxosQexdvrvzYCshzBvj18Xh1QmZX16qFJBuh4qobo"),
@@ -162,7 +170,7 @@ async function runListener() {
   //await pollGateway(nodeDb, config.evaluationOptions.whitelistSources, startTimestamp, windowSizeMs);
 
   const onMessage = async (data) => await processContractData(data, nodeDb, nodeDbEvents, registerQueue);
-  await subscribeToGatewayNotifications(onMessage)
+  // await subscribeToGatewayNotifications(onMessage)
 
   logger.info(`Listening on port ${port}`);
   async function initialContractEval(contractTxId, height) {
@@ -308,6 +316,8 @@ async function cleanup(callback) {
   await updateWorker?.close();
   await registerWorker?.close();
   await warp.close();
+  nodeDb.destroy();
+  nodeDbEvents.destroy();
   logger.info('Clean up finished');
   callback();
 }

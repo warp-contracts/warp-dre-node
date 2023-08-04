@@ -4,8 +4,6 @@ const { storeAndPublish, checkStateSize } = require('./common');
 const { config } = require('../config');
 const { publishToRedis } = require('../workers/publish');
 
-LoggerFactory.INST.logLevel('info');
-LoggerFactory.INST.logLevel('info', 'interactionsProcessor');
 // LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
 const logger = LoggerFactory.INST.create('interactionsProcessor');
 LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');

@@ -20,7 +20,7 @@ module.exports = async (job) => {
 
     storeAndPublish(logger, isTest, contractTxId, result).finally(() => {});
   } catch (e) {
-    logger.error('Exception in register processor', e);
+    // logger.error('Exception in register processor', e);
     throw new Error(e);
   }
 };
