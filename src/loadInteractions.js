@@ -7,11 +7,17 @@ module.exports = async (startTimestamp, endTimestamp, whiteListedSources) => {
   });
 
   console.log(response);
-  if (response && response.ok) {
-    return await response.json();
+  if (response) {
+    if (response.status == 204) {
+      throw new Error("Blocks not yet ready for this timestamp, wait!");
+    } else if (response.ok) {
+      return await response.json();
+    } else {
+      const text = await response.text();
+      throw new Error(`Wrong response code: ${response.status}. ${text}`);
+    }
   } else {
-    const text = await response.text();
-    throw new Error(`Wrong response code: ${response.status}. ${text}`);
+    throw new Error("Response null or undefined");
   }
 };
 
