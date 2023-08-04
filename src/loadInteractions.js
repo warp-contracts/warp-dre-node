@@ -9,7 +9,7 @@ module.exports = async (startTimestamp, endTimestamp, whiteListedSources) => {
   console.log(response);
   if (response) {
     if (response.status == 204) {
-      throw new Error("Blocks not yet ready for this timestamp, wait!");
+      throw new Error("Blocks not yet ready for this timestamp range, wait!");
     } else if (response.ok) {
       return await response.json();
     } else {

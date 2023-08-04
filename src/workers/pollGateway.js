@@ -35,6 +35,7 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
         // - so no 'startTimestamp' update here
         if (windowSize) {
           workerLoop();
+          return;
         }
       }
       if (result && result.interactions) {
