@@ -8,13 +8,16 @@ async function main() {
     // https://docs.google.com/spreadsheets/d/1F9T1Vyk3geEsrU8wVSdsPj9drO48Ae9f2UpkuE0ralI/edit#gid=0
     "Of9pi--Gj7hCTawhgxOwbuWnFI1h24TTgO5pw8ENJNQ", // Atomic Asset
     "kP1Ed8AMvaaBrEFjatP4pSmiE_fsRrGS0EcBMQYYiyc", // STAMP
+    "mGxosQexdvrvzYCshzBvj18Xh1QmZX16qFJBuh4qobo", // U
     "7qv5x9A0NgAlTdMnBc1H2HFvN-te0kzzuT9RNt_66g8", // UCM contract - TBD,
     "eIAyBgHH-H7Qzw9fj7Austj30QKPQn27eaakvpOUSR8", // Facts
     "Of9pi--Gj7hCTawhgxOwbuWnFI1h24TTgO5pw8ENJNQ", // Pages
     "_z0ch80z_daDUFqC9jHjfOL8nekJcok4ZRkE_UesYsk"  // VouchDAO
   ]
 
-  const result = await loadInteractions(0, 1691083016820, srcIds);
+  const result = await loadInteractions(1691146501064, 1691148301064, srcIds);
+
+  console.log(result);
 
 
   const interactions = result.interactions;

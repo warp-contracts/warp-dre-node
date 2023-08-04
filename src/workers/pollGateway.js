@@ -63,7 +63,7 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
               }
             });
           } catch (e) {
-            evaluationErrors[`${interaction.contractTxId} | ${interaction.interaction.id}`] = {
+            evaluationErrors[`${interaction.contractTxId}|${interaction.interaction.id}`] = {
               sortKey: interaction.sortKey,
               error: e?.toString()
             };
@@ -93,11 +93,7 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
 
       startTimestamp = endTimestamp;
 
-      logger.info(`====== Loading interactions end.`, {
-        startTimestamp,
-        endTimestamp,
-        fromDate: new Date(startTimestamp)
-      });
+      logger.info(`====== Loading interactions end.`);
 
       if (windowSize) {
         workerLoop();
