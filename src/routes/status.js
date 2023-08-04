@@ -1,9 +1,12 @@
 const { config } = require('../config');
+const { lastSyncTimestamp } = require("../db/nodeDb");
 module.exports = async (ctx) => {
-  const { registerQueue } = ctx;
+  const { registerQueue, nodeDb } = ctx;
   const response = {};
 
   try {
+    response.lastSyncTimestamp = await lastSyncTimestamp(nodeDb);
+
     response.manifest = await config.nodeManifest;
     response.workersConfig = config.workersConfig;
 

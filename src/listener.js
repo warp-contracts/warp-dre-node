@@ -140,7 +140,6 @@ async function runListener() {
   app.context.nodeDbEvents = nodeDbEvents;
   app.listen(port);
 
-
   const initialSyncHeight = 1233972;
 
   // the min timestamp of an interaction with sortKey starting one block after 'initialSyncHeight',
