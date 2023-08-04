@@ -167,10 +167,10 @@ async function runListener() {
     : initialSyncTimestamp;
 
   const windowSizeMs = 25 * 1000;
-  //await pollGateway(nodeDb, config.evaluationOptions.whitelistSources, startTimestamp, windowSizeMs);
+  await pollGateway(nodeDb, config.evaluationOptions.whitelistSources, startTimestamp, windowSizeMs);
 
   const onMessage = async (data) => await processContractData(data, nodeDb, nodeDbEvents, registerQueue);
-  // await subscribeToGatewayNotifications(onMessage)
+  await subscribeToGatewayNotifications(onMessage)
 
   logger.info(`Listening on port ${port}`);
   async function initialContractEval(contractTxId, height) {
@@ -266,8 +266,8 @@ async function subscribeToGatewayNotifications(onMessage) {
   subscriber.on('message', async (channel, message) => {
     try {
       const msgObj = JSON.parse(message);
-      if (msgObj.initialState) {
-        logger.info(`Register contract from channel '${channel}'`);
+      if (msgObj.initialState && msgObj.srcTxId && config.evaluationOptions.whitelistSources.includes(msgObj.srcTxId)) {
+        logger.info(`Registering contract ${msgObj.contractTxId}[${msgObj.srcTxId}] from channel '${channel}'`);
         await onMessage(msgObj);
       }
     } catch (e) {
