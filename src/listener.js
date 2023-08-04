@@ -33,7 +33,7 @@ const { storeAndPublish } = require("./workers/common");
 const { LoggerFactory } = require("warp-contracts");
 
 let isTestInstance = config.env === 'test';
-let port = 80;
+let port = 8080;
 
 const registerQueueName = 'register';
 
