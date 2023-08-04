@@ -154,7 +154,15 @@ module.exports = {
       validity_hash: validityHash
     };
 
-    await nodeDb('states').insert(entry).onConflict(['contract_tx_id']).merge();
+    try {
+      await nodeDb('states').insert(entry).onConflict(['contract_tx_id']).merge();
+    } catch (e) {
+      if (e && e.code) {
+        throw new Error(`SqliteError ${contractTxId}@${readResult.sortKey}: ${e.code}`);
+      } else {
+        throw new Error(`Unknown error ${contractTxId}@${readResult.sortKey}`);
+      }
+    }
 
     return entry;
   },

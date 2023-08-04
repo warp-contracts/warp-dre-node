@@ -32,7 +32,7 @@ module.exports = async (job) => {
 
     logger.info(`Evaluated ${contractTxId} @ ${result.sortKey}`, contract.lastReadStateStats());
     checkStateSize(result.cachedValue.state);
-    storeAndPublish(logger, isTest, contractTxId, result).finally(() => {});
+    await storeAndPublish(logger, isTest, contractTxId, result);
 
     if (!isTest) {
       const tags = interaction.tags;
