@@ -1,0 +1,9 @@
+{
+  "name": "Warp Test",
+  "ticker": "ATOMIC",
+  "balances": {
+    "jnioZFibZSCcV8o-HkBXYPYEYNib4tqfexP0kCBXX_M": 1000
+  },
+  "claimable": [],
+  "description": "Warp Heavy Testing."
+}
