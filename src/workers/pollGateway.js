@@ -14,7 +14,11 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
   (function workerLoop() {
     setTimeout(async function() {
       const endTimestamp = forceEndTimestamp ? forceEndTimestamp : startTimestamp + windowSize;
-      logger.info(`Loading interactions for`, { startTimestamp, endTimestamp });
+      logger.info(`====== Loading interactions for`, {
+        startTimestamp,
+        endTimestamp,
+        fromDate: new Date(startTimestamp)
+      });
       let result;
       try {
         result = await loadInteractions(startTimestamp, endTimestamp, whitelistedSources);
@@ -66,7 +70,7 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
           }
         }
 
-        logger.info("Update completed");
+        logger.info("====== Update completed");
 
         const syncLogData = {
           start_timestamp: startTimestamp,
@@ -89,10 +93,15 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
 
       startTimestamp = endTimestamp;
 
-      logger.info(`Loading interactions end.`);
+      logger.info(`====== Loading interactions end.`, {
+        startTimestamp,
+        endTimestamp,
+        fromDate: new Date(startTimestamp)
+      });
+
       if (windowSize) {
         workerLoop();
       }
-    }, windowSize);
+    }, 2000);
   })();
 };
