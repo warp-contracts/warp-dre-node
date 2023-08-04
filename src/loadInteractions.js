@@ -6,7 +6,6 @@ module.exports = async (startTimestamp, endTimestamp, whiteListedSources) => {
     src_ids: whiteListedSources
   });
 
-  console.log(response);
   if (response) {
     if (response.status == 204) {
       throw new Error("Blocks not yet ready for this timestamp range, wait!");
