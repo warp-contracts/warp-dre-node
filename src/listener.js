@@ -146,11 +146,11 @@ async function runListener() {
   // the min timestamp of an interaction with sortKey starting one block after 'initialSyncHeight',
   // e.g. (assuming initialSyncHeight = 1233790):
   // select min(sync_timestamp) from interactions where sort_key like '000001233791,%';
-  const initialSyncTimestamp = 1691158864919;
+  const initialSyncTimestamp = 1691169770730;
 
   const lastTimestamp = await lastSyncTimestamp(nodeDb);
   logger.info('Last sync timestamp result', lastTimestamp);
-  // if (!lastTimestamp) {
+  if (!lastTimestamp) {
     logger.info("Initial U read at height", initialSyncHeight);
     await initialContractEval(uContract, initialSyncHeight);
 
@@ -158,19 +158,19 @@ async function runListener() {
     await pollGateway(
       nodeDb,
       config.evaluationOptions.whitelistSources.filter(s => s != "mGxosQexdvrvzYCshzBvj18Xh1QmZX16qFJBuh4qobo"),
-      initialSyncTimestamp,
       0,
-      1691169770730);
-  // }
+      0,
+      initialSyncTimestamp);
+  }
   const startTimestamp = lastTimestamp
     ? lastTimestamp
     : initialSyncTimestamp;
 
   const windowSizeMs = 25 * 1000;
-  // await pollGateway(nodeDb, config.evaluationOptions.whitelistSources, startTimestamp, windowSizeMs);
+  await pollGateway(nodeDb, config.evaluationOptions.whitelistSources, startTimestamp, windowSizeMs);
 
   const onMessage = async (data) => await processContractData(data, nodeDb, nodeDbEvents, registerQueue);
-  // await subscribeToGatewayNotifications(onMessage)
+  await subscribeToGatewayNotifications(onMessage)
 
   logger.info(`Listening on port ${port}`);
   async function initialContractEval(contractTxId, height) {
