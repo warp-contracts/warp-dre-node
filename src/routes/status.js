@@ -5,6 +5,7 @@ module.exports = async (ctx) => {
   const response = {};
 
   try {
+    response.node = config.dreName;
     response.lastSyncTimestamp = await lastSyncTimestamp(nodeDb);
 
     response.manifest = await config.nodeManifest;
