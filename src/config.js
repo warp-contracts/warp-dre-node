@@ -32,7 +32,8 @@ const evaluationOptions = {
     "Of9pi--Gj7hCTawhgxOwbuWnFI1h24TTgO5pw8ENJNQ", // Atomic Asset
     "kP1Ed8AMvaaBrEFjatP4pSmiE_fsRrGS0EcBMQYYiyc", // STAMP
     "mGxosQexdvrvzYCshzBvj18Xh1QmZX16qFJBuh4qobo", // U
-    "LBcYEl2zwKDApj1Cow1_BYyiicxVV7OCZTexsjk6mB4",  // UCM contract
+    "LBcYEl2zwKDApj1Cow1_BYyiicxVV7OCZTexsjk6mB4",  // UCM contract new
+    "XW_z0WhM5PsVD-nmyNm1pCK1za9uysu1vco1HS8DpIo",  // UCM contract old
     "eIAyBgHH-H7Qzw9fj7Austj30QKPQn27eaakvpOUSR8", // Facts
     "Of9pi--Gj7hCTawhgxOwbuWnFI1h24TTgO5pw8ENJNQ", // Pages
     "_z0ch80z_daDUFqC9jHjfOL8nekJcok4ZRkE_UesYsk"  // VouchDAO
