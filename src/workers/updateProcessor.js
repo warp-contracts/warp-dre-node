@@ -5,8 +5,13 @@ const { config } = require('../config');
 const { publishToRedis } = require('../workers/publish');
 
 // LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
+LoggerFactory.INST.logLevel('debug', 'interactionsProcessor');
+LoggerFactory.INST.logLevel('debug', "EvaluationProgressPlugin");
+LoggerFactory.INST.logLevel('debug', "WarpGatewayInteractionsLoader");
+LoggerFactory.INST.logLevel('debug', "ContractHandler");
+LoggerFactory.INST.logLevel('debug', "HandlerBasedContract");
+LoggerFactory.INST.logLevel('info', "DefaultStateEvaluator");
 const logger = LoggerFactory.INST.create('interactionsProcessor');
-LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
 
 module.exports = async (job) => {
   const { contractTxId, isTest, interaction } = job.data;
