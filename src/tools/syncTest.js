@@ -15,7 +15,7 @@ async function main() {
     "_z0ch80z_daDUFqC9jHjfOL8nekJcok4ZRkE_UesYsk"  // VouchDAO
   ]
 
-  const result = await loadInteractions(1691419820730, 1691419845730, srcIds);
+  const result = await loadInteractions(1691500370730, 1691500395730, srcIds);
 
   console.log(result);
 

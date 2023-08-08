@@ -9,10 +9,12 @@ const scheduleSync = require('./routes/scheduleSync');
 const kv = require('./routes/kv');
 const eraseContract = require('./routes/eraseContract');
 const validity = require('./routes/validity');
+const alive = require('./routes/alive');
 
 const router = new Router();
 
 router.get('/contract', contract);
+router.get('/alive', alive);
 router.get('/contract/view-state', contractViewState);
 router.get('/status', status);
 router.get('/blacklist', blacklisted);
