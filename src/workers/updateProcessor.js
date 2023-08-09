@@ -13,6 +13,7 @@ LoggerFactory.INST.logLevel('debug', "HandlerBasedContract");
 LoggerFactory.INST.logLevel('info', "DefaultStateEvaluator");
 LoggerFactory.INST.logLevel('debug', "SqliteContractCache");
 LoggerFactory.INST.logLevel('debug', "WarpGatewayContractDefinitionLoader");
+LoggerFactory.INST.logLevel('debug', "SqliteContractCache");
 const logger = LoggerFactory.INST.create('interactionsProcessor');
 
 module.exports = async (job) => {
