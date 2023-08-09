@@ -102,6 +102,6 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
       if (windowSize) {
         workerLoop();
       }
-    }, 2000);
+    }, 1000);
   })();
 };
