@@ -39,7 +39,7 @@ async function publish() {
     await appSyncPublish(
       `states/${config.dreName}/${contractTxId}`,
       toPublish,
-      "da2-xb3gor3tjnc4dd5tqtz52hc7ja"
+      ""
     );
   } catch (e) {
     console.error(e);
