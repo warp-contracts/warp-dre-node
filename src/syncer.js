@@ -110,7 +110,7 @@ async function runSyncer() {
     ? lastTimestamp
     : initialSyncTimestamp;
 
-  const windowSizeMs = 25 * 1000;
+  const windowSizeMs = 2 * 1000;
   await pollGateway(nodeDb, config.evaluationOptions.whitelistSources, startTimestamp, windowSizeMs);
 
   const onMessage = async (data) => await processContractData(data, nodeDb, nodeDbEvents, registerQueue);
