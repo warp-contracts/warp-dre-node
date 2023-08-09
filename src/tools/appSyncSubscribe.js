@@ -13,7 +13,8 @@ async function sub() {
     ({ data }) => {
       const newState = JSON.parse(data);
       console.log('\n ==== new message ==== ', newState.sortKey);
-      console.dir(newState);
+      console.log(new Date());
+      //console.dir(newState);
       prevState = newState.state;
     },
     console.error

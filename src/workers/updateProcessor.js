@@ -11,6 +11,7 @@ LoggerFactory.INST.logLevel('debug', "WarpGatewayInteractionsLoader");
 LoggerFactory.INST.logLevel('debug', "ContractHandler");
 LoggerFactory.INST.logLevel('debug', "HandlerBasedContract");
 LoggerFactory.INST.logLevel('info', "DefaultStateEvaluator");
+LoggerFactory.INST.logLevel('debug', "WarpGatewayContractDefinitionLoader");
 const logger = LoggerFactory.INST.create('interactionsProcessor');
 
 module.exports = async (job) => {
