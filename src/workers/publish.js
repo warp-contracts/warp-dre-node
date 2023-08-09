@@ -22,11 +22,12 @@ module.exports = {
   publishToAppSync: (logger, contractTxId, result, dbResult) => {
     logger.info('Publishing to appSync');
     appSyncPublish(
-      `states/${contractTxId}`,
+      `states/${config.dreName}/${contractTxId}`,
       JSON.stringify({
         sortKey: result.sortKey,
         state: result.cachedValue.state,
-        signature: dbResult.signature
+        signature: dbResult.signature,
+        dre: config.dreName
       }),
       config.appSync.key
     )

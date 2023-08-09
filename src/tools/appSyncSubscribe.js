@@ -9,7 +9,7 @@ async function sub() {
   let prevState = {};
 
   const subscription = await subscribe(
-    contractTxId,
+    'states/LOCAL-TEST/xyz',
     ({ data }) => {
       const newState = JSON.parse(data);
       console.log('\n ==== new message ==== ', newState.sortKey);
