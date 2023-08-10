@@ -3,6 +3,7 @@ const loadInteractions = require("../loadInteractions");
 const { hashElement } = require("../signature");
 const updateProcessor = require("./updateProcessor");
 const { insertSyncLog } = require("../db/nodeDb");
+const { partition } = require("../common");
 
 module.exports = async function(nodeDb, whitelistedSources, initialStartTimestamp, windowSize, forceEndTimestamp) {
   LoggerFactory.INST.logLevel("info");
@@ -19,6 +20,7 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
         endTimestamp,
         fromDate: new Date(startTimestamp)
       });
+      
       let result;
       try {
         result = await loadInteractions(startTimestamp, endTimestamp, whitelistedSources);
@@ -38,6 +40,7 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
           return;
         }
       }
+
       if (result && result.interactions) {
         const interactions = result.interactions;
         const responseHash = hashElement(interactions);
@@ -55,14 +58,17 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
 
         let evaluationErrors = {};
 
-        for (let i = 0; i < resultLength; i++) {
-          const interaction = interactions[i];
+        const groupedInteractions = partition(interactions);
+        const groupedInteractionsLength = groupedInteractions.length;
+
+        for (let i = 0; i < groupedInteractionsLength; i++) {
+          const interactionsGroup = groupedInteractions[i];
           try {
             await updateProcessor({
               data: {
                 contractTxId: interaction.contractTxId,
                 isTest: false,
-                interaction: interaction.interaction
+                interactions: interactionsGroup
               }
             });
           } catch (e) {
