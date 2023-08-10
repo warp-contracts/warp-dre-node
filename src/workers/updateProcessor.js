@@ -17,7 +17,7 @@ LoggerFactory.INST.logLevel('debug', "SqliteContractCache");
 const logger = LoggerFactory.INST.create('interactionsProcessor');
 
 module.exports = async (job) => {
-  const { contractTxId, isTest, interaction } = job.data;
+  const { contractTxId, isTest, interactions } = job.data;
 
   // workaround for https://github.com/taskforcesh/bullmq/issues/1557
   try {
