@@ -22,7 +22,7 @@ module.exports = async (startTimestamp, endTimestamp, whiteListedSources) => {
 
 
 async function postData(data = {}) {
-  return await fetch('http://35.246.150.123/v1/ro/interactions', {
+  return await fetch('http://35.246.150.123/v1/interactions', {
     method: "POST",
     cache: "no-store",
     headers: {
