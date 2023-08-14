@@ -3,6 +3,7 @@ const { LoggerFactory, genesisSortKey } = require('warp-contracts');
 const { storeAndPublish, checkStateSize } = require('./common');
 const { config } = require('../config');
 const { publishToRedis } = require('../workers/publish');
+const { publishToAppSync } = require("./publish");
 
 // LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
 LoggerFactory.INST.logLevel('debug', 'interactionsProcessor');
@@ -45,18 +46,22 @@ module.exports = async (job) => {
         const interactWritesTags = tags.filter((t) => t.name == 'Interact-Write');
         if (interactWritesTags) {
           const interactWritesContracts = interactWritesTags.map((t) => t.value);
-          for (const contract1 of interactWritesContracts) {
-            const interactWriteContractResult = await warp.stateEvaluator.latestAvailableState(contract1);
+          for (const iwContract of interactWritesContracts) {
+            const interactWriteContractResult = await warp.stateEvaluator.latestAvailableState(iwContract);
 
-            logger.debug("Publishing to agg node for IW contract", contract1);
-            await publishToRedis(logger, contract1, {
-              contractTxId: contract1,
+            logger.debug("Publishing to agg node for IW contract", iwContract);
+            await publishToRedis(logger, iwContract, {
+              contractTxId: iwContract,
               sortKey: interactWriteContractResult.sortKey,
               state: interactWriteContractResult.cachedValue.state,
               node: null,
               signature: null,
               manifest: null,
               stateHash: null
+            });
+
+            publishToAppSync(logger, iwContract, interactWriteContractResult, {
+              signature: null
             });
           }
         }
