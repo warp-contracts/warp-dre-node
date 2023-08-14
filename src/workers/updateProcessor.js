@@ -2,8 +2,7 @@ const warp = require('../warp');
 const { LoggerFactory, genesisSortKey } = require('warp-contracts');
 const { storeAndPublish, checkStateSize } = require('./common');
 const { config } = require('../config');
-const { publishToRedis } = require('../workers/publish');
-const { publishToAppSync } = require("./publish");
+const { publishToRedis, publishToAppSync } = require('../workers/publish');
 
 // LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
 LoggerFactory.INST.logLevel('debug', 'interactionsProcessor');
