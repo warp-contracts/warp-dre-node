@@ -9,6 +9,7 @@ let eventsDb = null;
 let stateDb = null;
 
 module.exports = {
+  // remove
   createNodeDbEventsTables: async (knex) => {
     const hasEventsTable = await knex.schema.hasTable('events');
     if (!hasEventsTable) {
@@ -21,6 +22,7 @@ module.exports = {
     }
   },
 
+  // remove
   createNodeDbTables: async (knex) => {
     const hasErrorsTable = await knex.schema.hasTable('errors');
     if (!hasErrorsTable) {
@@ -33,6 +35,7 @@ module.exports = {
         t.timestamp('timestamp').defaultTo(knex.fn.now());
       });
     }
+
 
     const hasBlacklistTable = await knex.schema.hasTable('black_list');
     if (!hasBlacklistTable) {
@@ -58,6 +61,7 @@ module.exports = {
         t.unique(['contract_tx_id', 'sort_key']);
       });
     }
+
 
     const hasViewStateTable = await knex.schema.hasTable('view_state');
     if (!hasViewStateTable) {
