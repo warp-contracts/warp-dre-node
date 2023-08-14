@@ -13,7 +13,7 @@ const {
   lastSyncTimestamp
 } = require('./db/nodeDb');
 
-const logger = require('./logger')('listener');
+const logger = require('./logger')('syncer');
 const exitHook = require('async-exit-hook');
 const warp = require('./warp');
 const { uContract } = require('./constants');
@@ -29,6 +29,7 @@ let nodeDbEvents;
 
 async function runSyncer() {
   logger.info('🚀🚀🚀 Starting syncer node');
+  await logConfig();
 
   nodeDb = connect();
   nodeDbEvents = connectEvents();

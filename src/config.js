@@ -30,13 +30,16 @@ const evaluationOptions = {
   whitelistSources: [
     // https://docs.google.com/spreadsheets/d/1F9T1Vyk3geEsrU8wVSdsPj9drO48Ae9f2UpkuE0ralI/edit#gid=0
     "Of9pi--Gj7hCTawhgxOwbuWnFI1h24TTgO5pw8ENJNQ", // Atomic Asset
-    "kP1Ed8AMvaaBrEFjatP4pSmiE_fsRrGS0EcBMQYYiyc", // STAMP
+    "W78KEzU8vIODFHzwa9ab7SS7Pjchc7KenivCiwSHxBY", // STAMP
+    "kP1Ed8AMvaaBrEFjatP4pSmiE_fsRrGS0EcBMQYYiyc", // STAMP-evolve
     "mGxosQexdvrvzYCshzBvj18Xh1QmZX16qFJBuh4qobo", // U
-    "LBcYEl2zwKDApj1Cow1_BYyiicxVV7OCZTexsjk6mB4",  // UCM contract new
-    "XW_z0WhM5PsVD-nmyNm1pCK1za9uysu1vco1HS8DpIo",  // UCM contract old
+    "7qv5x9A0NgAlTdMnBc1H2HFvN-te0kzzuT9RNt_66g8", // UCM contract old
     "eIAyBgHH-H7Qzw9fj7Austj30QKPQn27eaakvpOUSR8", // Facts
     "Of9pi--Gj7hCTawhgxOwbuWnFI1h24TTgO5pw8ENJNQ", // Pages
-    "_z0ch80z_daDUFqC9jHjfOL8nekJcok4ZRkE_UesYsk"  // VouchDAO
+    "ovWCp0xKuHtq-bADXbtiNr6umwb_AE73kVZWtfHlX3w", // VouchDAO
+    "1hDZBRSptTNgnACuO9qGHLbaOfnAcMBKCHcHPRhMWUY", // VouchDAO-evolve
+    "LBcYEl2zwKDApj1Cow1_BYyiicxVV7OCZTexsjk6mB4", // UCM contract new
+    // "37n5Z9NZUUPuXPdbbjXa2iYb9Wl39nAjkaSoz5DsxZQ", // FAIR - needs fixes and audit
   ]
 };
 
