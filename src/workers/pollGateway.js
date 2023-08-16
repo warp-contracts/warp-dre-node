@@ -47,7 +47,6 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
         logger.info("Loaded interactions info", {
           startTimestamp,
           endTimestamp,
-          whitelistedSources,
           responseHash,
           resultLength,
           firstSortKey,
