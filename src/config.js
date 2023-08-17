@@ -109,7 +109,8 @@ const config = {
     jobIdRefreshSeconds: parseInt(process.env.WORKERS_JOB_ID_REFRESH_SECONDS),
     maxFailures: parseInt(process.env.WORKERS_MAX_FAILURES),
     maxStateSizeB: parseInt(process.env.WORKERS_MAX_STATESIZE)
-  }
+  },
+  syncWindowSeconds: parseInt(process.env.SYNC_WINDOW_SECONDS)
 };
 
 validate(config);
@@ -185,7 +186,7 @@ async function logConfig(config) {
   logger.info('---------');
   logger.info('evaluationOptions', config.evaluationOptions);
   logger.info('workersConfig', config.workersConfig);
-  logger.info('streamr', config.streamr);
+  logger.info('syncWindowSeconds', config.syncWindowSeconds);
 }
 
 module.exports.config = config;

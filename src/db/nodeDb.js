@@ -2,26 +2,11 @@ const knex = require('knex');
 const { signState } = require('../signature');
 const { config } = require('../config');
 const logger = require('../logger')('node-db');
-const eventsDbConfig = require('../../knexConfigEventsDb');
 const stateDbConfig = require('../../knexConfigStateDb');
 
-let eventsDb = null;
 let stateDb = null;
 
 module.exports = {
-  // remove
-  createNodeDbEventsTables: async (knex) => {
-    const hasEventsTable = await knex.schema.hasTable('events');
-    if (!hasEventsTable) {
-      await knex.schema.createTable('events', function (t) {
-        t.string('contract_tx_id').notNullable().index();
-        t.string('event').notNullable().index();
-        t.timestamp('timestamp').defaultTo(knex.fn.now()).index();
-        t.string('message');
-      });
-    }
-  },
-
   // remove
   createNodeDbTables: async (knex) => {
     const hasErrorsTable = await knex.schema.hasTable('errors');
@@ -111,13 +96,6 @@ module.exports = {
     return stateDb;
   },
 
-  connectEvents: () => {
-    if (eventsDb == null) {
-      eventsDb = knex(eventsDbConfig);
-    }
-
-    return eventsDb;
-  },
 
   insertFailure: async (nodeDb, failureInfo) => {
     await nodeDb('errors').insert(failureInfo).onConflict(['job_id']).ignore();
@@ -127,7 +105,7 @@ module.exports = {
     await nodeDb("sync_log").insert(data);
   },
 
-  lastSyncTimestamp: async(nodeDb) => {
+  getLastSyncTimestamp: async(nodeDb) => {
     const result = await nodeDb.raw('SELECT max(end_timestamp) as "lastTimestamp" from sync_log');
     if (result && result.length) {
       return result[0].lastTimestamp;
@@ -235,10 +213,6 @@ module.exports = {
     await nodeDb.raw(`DELETE FROM errors WHERE contract_tx_id = ?;`, [contractTxId]);
   },
 
-  deleteEvents: async (contractTxId) => {
-    await eventsDb.raw('DELETE FROM events WHERE contract_tx_id = ?;', [contractTxId]);
-  },
-
   getLastStateFromDreCache: async (nodeDb, contractTxId) => {
     const result = await nodeDb('states')
       .where({
@@ -304,50 +278,4 @@ module.exports = {
     );
   },
 
-  events: {
-    register: (nodeDb, contractTxId, message) => {
-      insertEvent(nodeDb, 'REQUEST_REGISTER', contractTxId, message).finally(() => {});
-    },
-    update: (nodeDb, contractTxId, message) => {
-      insertEvent(nodeDb, 'REQUEST_UPDATE', contractTxId, message).finally(() => {});
-    },
-    reject: (nodeDb, contractTxId, message) => {
-      insertEvent(nodeDb, 'REJECT', contractTxId, message).finally(() => {});
-    },
-    failure: (nodeDb, contractTxId, message) => {
-      insertEvent(nodeDb, 'FAILURE', contractTxId, message).finally(() => {});
-    },
-    updated: (nodeDb, contractTxId, message) => {
-      insertEvent(nodeDb, 'UPDATED', contractTxId, message).finally(() => {});
-    },
-    evaluated: (nodeDb, contractTxId, message) => {
-      insertEvent(nodeDb, 'EVALUATED', contractTxId, message).finally(() => {});
-    },
-    blacklisted: (nodeDb, contractTxId, message) => {
-      insertEvent(nodeDb, 'BLACKLISTED', contractTxId, message).finally(() => {});
-    },
-    progress: (contractTxId, message) => {
-      insertEvent(module.exports.connectEvents(), 'PROGRESS', contractTxId, message).finally(() => {});
-    },
-    loadForContract: async (nodeDb, contractTxId) => {
-      return nodeDb('events')
-        .where({
-          contract_tx_id: contractTxId
-        })
-        .select('*')
-        .orderBy('timestamp', 'desc');
-    }
-  }
 };
-
-async function insertEvent(nodeDb, event, contractTxId, message) {
-  nodeDb('events')
-    .insert({
-      contract_tx_id: contractTxId,
-      event: event,
-      message: message
-    })
-    .catch(() => {
-      logger.error('Error while storing event', { event, contractTxId, message });
-    });
-}

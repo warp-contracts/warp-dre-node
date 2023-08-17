@@ -2,7 +2,7 @@ module.exports = async (startTimestamp, endTimestamp, whiteListedSources) => {
   const response = await postData({
     start: startTimestamp,
     end: endTimestamp,
-    limit: 10000,
+    limit: 15000,
     src_ids: whiteListedSources
   });
 

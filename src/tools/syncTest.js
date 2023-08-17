@@ -19,7 +19,7 @@ async function main() {
 
   const result = await loadInteractions(1692111085730, 1692111087730, srcIds);
 
-  console.log(result);
+  console.dir(result, {depth: null});
 
   /*console.log(result.interactions.map(i => {
     return {
@@ -42,7 +42,6 @@ async function main() {
 
   // 1692213749730 1692213751730
   // 1692221847730 1692221849730
-  console.log('Length', gaContractInteractions.length);
 }
 
 main().finally();
