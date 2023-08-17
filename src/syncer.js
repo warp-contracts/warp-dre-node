@@ -6,130 +6,48 @@ const {
   insertFailure,
   getFailures,
   connect,
-  events,
   hasContract,
-  connectEvents,
   doBlacklist,
-  lastSyncTimestamp
+  getLastSyncTimestamp
 } = require('./db/nodeDb');
 
 const logger = require('./logger')('syncer');
 const exitHook = require('async-exit-hook');
 const warp = require('./warp');
-const { uContract } = require('./constants');
 const pollGateway = require('./workers/pollGateway');
-const { storeAndPublish } = require("./workers/common");
 
 let isTestInstance = config.env === 'test';
 const registerQueueName = 'register';
 let registerWorker;
 
 let nodeDb;
-let nodeDbEvents;
 
 async function runSyncer() {
   logger.info('🚀🚀🚀 Starting syncer node');
   await logConfig();
-
   nodeDb = connect();
-  nodeDbEvents = connectEvents();
 
-  const registerQueue = new Queue(registerQueueName, {
-    connection: config.bullMqConnection,
-    defaultJobOptions: {
-      removeOnComplete: {
-        age: 3600
-      },
-      removeOnFail: true
-    }
-  });
+  const registerQueue = await configureRegisterQueue();
 
-  const registerEvents = new QueueEvents(registerQueueName, { connection: config.bullMqConnection });
+  const theVeryFirstTimestamp = 1680632007383;
+  const lastSyncTimestamp = await getLastSyncTimestamp(nodeDb);
+  logger.info('Last sync timestamp result', lastSyncTimestamp);
+  const startTimestamp = lastSyncTimestamp
+    ? lastSyncTimestamp
+    : theVeryFirstTimestamp;
 
-  async function onFailedJob(contractTxId, jobId, failedReason) {
-    await insertFailure(nodeDb, {
-      contract_tx_id: contractTxId,
-      evaluation_options: config.evaluationOptions,
-      sdk_config: config.warpSdkConfig,
-      job_id: jobId,
-      failure: failedReason
-    });
-    if (failedReason.includes('[MaxStateSizeError]')) {
-      await doBlacklist(nodeDb, contractTxId, config.workersConfig.maxFailures);
-    }
-    events.failure(nodeDbEvents, contractTxId, failedReason);
-  }
-
-  registerEvents.on('failed', async ({ jobId, failedReason }) => {
-    logger.error('Register job failed', { jobId, failedReason });
-    const contractTxId = jobId;
-
-    await onFailedJob(contractTxId, jobId, failedReason);
-  });
-  registerEvents.on('added', async ({ jobId }) => {
-    logger.info('Job added to register queue', jobId);
-    events.register(nodeDbEvents, jobId);
-  });
-  registerEvents.on('completed', async ({ jobId }) => {
-    logger.info('Register job completed', jobId);
-    events.evaluated(nodeDbEvents, jobId);
-  });
-
-  await clearQueue(registerQueue);
-
-  const registerProcessor = path.join(__dirname, 'workers', 'registerProcessor');
-  registerWorker = new Worker(registerQueueName, registerProcessor, {
-    concurrency: config.workersConfig.register,
-    connection: config.bullMqConnection,
-    metrics: {
-      maxDataPoints: MetricsTime.ONE_WEEK
-    }
-  });
-
-  const initialSyncHeight = 1233972;
-
-  // the min timestamp of an interaction with sortKey starting one block after 'initialSyncHeight',
-  // e.g. (assuming initialSyncHeight = 1233790):
-  // select min(sync_timestamp) from interactions where sort_key like '000001233791,%';
-  const initialSyncTimestamp = 1691169770730;
-
-  const lastTimestamp = await lastSyncTimestamp(nodeDb);
-  logger.info('Last sync timestamp result', lastTimestamp);
-  if (!lastTimestamp) {
-    logger.info("Initial U read at height", initialSyncHeight);
-    await initialContractEval(uContract, initialSyncHeight);
-
-    logger.info("Initial non-U contracts read at timestamp", initialSyncTimestamp);
-    await pollGateway(
-      nodeDb,
-      config.evaluationOptions.whitelistSources.filter(s => s != "mGxosQexdvrvzYCshzBvj18Xh1QmZX16qFJBuh4qobo"),
-      0,
-      0,
-      initialSyncTimestamp);
-  }
-  const startTimestamp = lastTimestamp
-    ? lastTimestamp
-    : initialSyncTimestamp;
-
-  const windowSizeMs = 2 * 1000;
+  const windowSizeMs = config.syncWindowSeconds * 1000;
   await pollGateway(nodeDb, config.evaluationOptions.whitelistSources, startTimestamp, windowSizeMs);
 
-  const onMessage = async (data) => await processContractData(data, nodeDb, nodeDbEvents, registerQueue);
+  const onMessage = async (data) => await processContractData(data, nodeDb, registerQueue);
   await subscribeToGatewayNotifications(onMessage)
-
-  async function initialContractEval(contractTxId, height) {
-    logger.info("Initial evaluation", contractTxId);
-    const contract = warp.contract(contractTxId).setEvaluationOptions(config.evaluationOptions);
-    const result = await contract.readState(height);
-    await storeAndPublish(logger, false, contractTxId, result);
-  }
 }
 
 runSyncer().catch((e) => {
   logger.error(e);
 });
 
-async function processContractData(msgObj, nodeDb, nodeDbEvents, registerQueue) {
+async function processContractData(msgObj, nodeDb, registerQueue) {
   logger.info(`Received '${msgObj.contractTxId}'`);
 
   let validationMessage = null;
@@ -158,7 +76,6 @@ async function processContractData(msgObj, nodeDb, nodeDbEvents, registerQueue) 
 
   if (validationMessage !== null) {
     logger.warn('Message rejected:', validationMessage);
-    events.reject(nodeDbEvents, msgObj.contractTxId, validationMessage);
     return;
   }
 
@@ -174,7 +91,6 @@ async function processContractData(msgObj, nodeDb, nodeDbEvents, registerQueue) 
     if (isRegistered) {
       validationMessage = 'Contract already registered';
       logger.warn(validationMessage);
-      events.reject(nodeDbEvents, msgObj.contractTxId, validationMessage);
       return;
     }
     const jobId = msgObj.contractTxId;
@@ -231,13 +147,66 @@ function isTxIdValid(txId) {
   return validTxIdRegex.test(txId);
 }
 
+async function configureRegisterQueue() {
+  const registerQueue = new Queue(registerQueueName, {
+    connection: config.bullMqConnection,
+    defaultJobOptions: {
+      removeOnComplete: {
+        age: 3600
+      },
+      removeOnFail: true
+    }
+  });
+
+  const registerEvents = new QueueEvents(registerQueueName, { connection: config.bullMqConnection });
+
+  async function onFailedJob(contractTxId, jobId, failedReason) {
+    await insertFailure(nodeDb, {
+      contract_tx_id: contractTxId,
+      evaluation_options: config.evaluationOptions,
+      sdk_config: config.warpSdkConfig,
+      job_id: jobId,
+      failure: failedReason
+    });
+    if (failedReason.includes("[MaxStateSizeError]")) {
+      await doBlacklist(nodeDb, contractTxId, config.workersConfig.maxFailures);
+    }
+  }
+
+  registerEvents.on("failed", async ({ jobId, failedReason }) => {
+    logger.error("Register job failed", { jobId, failedReason });
+    const contractTxId = jobId;
+
+    await onFailedJob(contractTxId, jobId, failedReason);
+  });
+  registerEvents.on("added", async ({ jobId }) => {
+    logger.info("Job added to register queue", jobId);
+  });
+  registerEvents.on("completed", async ({ jobId }) => {
+    logger.info("Register job completed", jobId);
+  });
+
+  await clearQueue(registerQueue);
+
+  const registerProcessor = path.join(__dirname, "workers", "registerProcessor");
+  registerWorker = new Worker(registerQueueName, registerProcessor, {
+    concurrency: config.workersConfig.register,
+    connection: config.bullMqConnection,
+    metrics: {
+      maxDataPoints: MetricsTime.ONE_WEEK
+    }
+  });
+
+  return registerQueue;
+}
+
+
 // Graceful shutdown
 async function cleanup(callback) {
   logger.info('Interrupted');
   await registerWorker?.close();
   await warp.close();
   nodeDb.destroy();
-  nodeDbEvents.destroy();
   logger.info('Clean up finished');
   callback();
 }

@@ -1,5 +1,5 @@
 const { JSONPath } = require("jsonpath-plus");
-const { getContractErrors, events } = require("../db/nodeDb");
+const { getContractErrors } = require("../db/nodeDb");
 const { getContractState } = require("../common");
 const { LoggerFactory } = require("warp-contracts");
 
@@ -20,9 +20,8 @@ module.exports = async (ctx) => {
   const showValidity = ctx.query.validity === "true";
   const showErrorMessages = ctx.query.errorMessages === "true";
   const showErrors = ctx.query.errors === "true";
-  const showEvents = ctx.query.events === "true";
   const query = ctx.query.query;
-  const { nodeDb, nodeDbEvents } = ctx;
+  const { nodeDb } = ctx;
 
   logger.info("New 'contract' request", {
     contractId, showState, showValidity
@@ -67,9 +66,7 @@ module.exports = async (ctx) => {
         throw new Error("No info about contract");
       }
     }
-    if (showEvents) {
-      response.events = await events.loadForContract(nodeDbEvents, contractId);
-    }
+
     ctx.body = response;
     ctx.status = 200;
   } catch (e) {

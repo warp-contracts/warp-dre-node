@@ -3,7 +3,35 @@ const loadInteractions = require("../loadInteractions");
 const { hashElement } = require("../signature");
 const updateProcessor = require("./updateProcessor");
 const { insertSyncLog } = require("../db/nodeDb");
-const { partition } = require("../common");
+const { isTxIdValid } = require("../common");
+const { partition } = require("./common");
+
+function validate(entries) {
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i];
+    if (!entry.contractTxId || !isTxIdValid(entry.contractTxId)) {
+      throw new Error(`No valid 'contractTxId' in entry: ${JSON.stringify(entry)}`);
+    }
+    if (!entry.sortKey) {
+      throw new Error(`No 'sortKey' in entry: ${JSON.stringify(entry)}`);
+    }
+    if (!entry.interaction) {
+      throw new Error(`No 'interaction' in entry: ${JSON.stringify(entry)}`);
+    }
+    if (entry.interaction.sortKey != entry.sortKey) {
+      throw new Error(`sortKey wrongly set: ${JSON.stringify(entry)}`);
+    }
+
+    // note: entry.lastSortKey = null means that it's a very first interaction with this contract
+    if (entry.lastSortKey === undefined) {
+      throw new Error(`No 'lastSortKey' in entry: ${JSON.stringify(entry)}`);
+    }
+  }
+}
+
+function sort(entries) {
+  entries.sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+}
 
 module.exports = async function(nodeDb, whitelistedSources, initialStartTimestamp, windowSize, forceEndTimestamp) {
   LoggerFactory.INST.logLevel("info");
@@ -20,7 +48,7 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
         endTimestamp,
         fromDate: new Date(startTimestamp)
       });
-      
+
       let result;
       try {
         result = await loadInteractions(startTimestamp, endTimestamp, whitelistedSources);
@@ -28,6 +56,10 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
         if (!result) {
           throw new Error("Result is null or undefined");
         }
+        if (!result.interactions) {
+          throw new Error("Result does not contain 'interactions' field");
+        }
+        validate(result.interactions);
       } catch (e) {
         logger.error("Error while loading interactions", {
           startTimestamp, endTimestamp
@@ -41,63 +73,66 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
         }
       }
 
-      if (result && result.interactions) {
-        const interactions = result.interactions;
-        const responseHash = hashElement(interactions);
-        const resultLength = interactions.length;
-        const firstSortKey = resultLength ? interactions[0].sortKey : null;
-        const lastSortKey = resultLength ? interactions[resultLength - 1].sortKey : null;
-        logger.info("Loaded interactions info", {
-          startTimestamp,
-          endTimestamp,
-          responseHash,
-          resultLength,
-          firstSortKey,
-          lastSortKey
-        });
+      const interactions = result.interactions;
+      const responseHash = hashElement(interactions);
+      const resultLength = interactions.length;
+      const firstSortKey = resultLength ? interactions[0].sortKey : null;
+      const lastSortKey = resultLength ? interactions[resultLength - 1].sortKey : null;
+      logger.info("Loaded interactions info", {
+        startTimestamp,
+        endTimestamp,
+        responseHash,
+        resultLength,
+        firstSortKey,
+        lastSortKey
+      });
 
-        let evaluationErrors = {};
+      let evaluationErrors = {};
 
-        const groupedInteractions = partition(interactions);
-        const groupedInteractionsLength = groupedInteractions.length;
+      // just in case stringify/parse during http communication would fuck up the order...
+      sort(interactions);
 
-        for (let i = 0; i < groupedInteractionsLength; i++) {
-          const interactionsGroup = groupedInteractions[i];
-          try {
-            await updateProcessor({
-              data: {
-                contractTxId: interaction.contractTxId,
-                isTest: false,
-                interactions: interactionsGroup
-              }
-            });
-          } catch (e) {
-            evaluationErrors[`${interaction.contractTxId}|${interaction.interaction.id}`] = {
-              sortKey: interaction.sortKey,
-              error: e?.toString()
-            };
-          }
-        }
+      const partitioned = partition(interactions);
+      const partitionsLength = partitioned.length;
 
-        logger.info("====== Update completed");
+      logger.info("Partitions length", partitionsLength);
 
-        const syncLogData = {
-          start_timestamp: startTimestamp,
-          end_timestamp: endTimestamp,
-          response_length: resultLength,
-          response_hash: responseHash,
-          response_first_sortkey: firstSortKey,
-          response_last_sortkey: lastSortKey,
-          errors: JSON.stringify(evaluationErrors)
-        };
+      for (let i = 0; i < partitionsLength; i++) {
+        const partition = partitioned[i];
+        // validatePartition(partition);
         try {
-          await insertSyncLog(nodeDb, syncLogData);
+          await updateProcessor({
+            data: {
+              contractTxId: partition[0].contractTxId,
+              isTest: false,
+              partition
+            }
+          });
         } catch (e) {
-          logger.error("Error while storing sync log for", syncLogData);
-          logger.error(e);
-          // brutal...
-          process.exit(0);
+          evaluationErrors[`${partition[0].contractTxId}|${partition[0].interaction.id}`] = {
+            error: e?.toString()
+          };
         }
+      }
+
+      logger.info("====== Update completed");
+
+      const syncLogData = {
+        start_timestamp: startTimestamp,
+        end_timestamp: endTimestamp,
+        response_length: resultLength,
+        response_hash: responseHash,
+        response_first_sortkey: firstSortKey,
+        response_last_sortkey: lastSortKey,
+        errors: JSON.stringify(evaluationErrors)
+      };
+      try {
+        await insertSyncLog(nodeDb, syncLogData);
+      } catch (e) {
+        logger.error("Error while storing sync log for", syncLogData);
+        logger.error(e);
+        // brutal...
+        process.exit(0);
       }
 
       startTimestamp = endTimestamp;

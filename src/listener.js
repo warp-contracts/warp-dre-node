@@ -8,8 +8,6 @@ const { logConfig } = require('./config');
 const {
   createNodeDbTables,
   connect,
-  connectEvents,
-  createNodeDbEventsTables
 } = require('./db/nodeDb');
 
 const logger = require('./logger')('listener');
@@ -20,17 +18,14 @@ const fs = require('fs');
 let port = 8080;
 
 let nodeDb;
-let nodeDbEvents;
 
 async function runListener() {
   logger.info('🚀🚀🚀 Starting listener node');
   await logConfig();
 
   nodeDb = connect();
-  nodeDbEvents = connectEvents();
 
   await createNodeDbTables(nodeDb);
-  await createNodeDbEventsTables(nodeDbEvents);
 
   if (fs.existsSync('./src/db/migrations/stateDb')) {
     execSync('npx knex --knexfile=knexConfigStateDb.js migrate:latest');
@@ -52,7 +47,6 @@ async function runListener() {
       ctx.redirect('/status');
     });
   app.context.nodeDb = nodeDb;
-  app.context.nodeDbEvents = nodeDbEvents;
   app.listen(port);
 }
 
@@ -84,7 +78,6 @@ async function cleanup(callback) {
   logger.info('Interrupted');
   await warp.close();
   nodeDb.destroy();
-  nodeDbEvents.destroy();
   logger.info('Clean up finished');
   callback();
 }
