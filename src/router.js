@@ -14,8 +14,8 @@ const syncLog = require('./routes/syncLog');
 
 const router = new Router();
 
-router.get('/contract', contract);
-router.get('/alive', alive);
+// router.get('/contract', contract);
+// router.get('/alive', alive);
 router.get('/contract/view-state', contractViewState);
 router.get('/status', status);
 router.get('/blacklist', blacklisted);
@@ -25,6 +25,6 @@ router.get('/sync', scheduleSync);
 router.get('/kv', kv);
 router.get('/validity', validity);
 router.get('/sync-log', syncLog);
-router.delete('/contract/:id', eraseContract);
+// router.delete('/contract/:id', eraseContract);
 
 module.exports = router;
