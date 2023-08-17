@@ -10,6 +10,7 @@ const kv = require('./routes/kv');
 const eraseContract = require('./routes/eraseContract');
 const validity = require('./routes/validity');
 const alive = require('./routes/alive');
+const syncLog = require('./routes/syncLog');
 
 const router = new Router();
 
@@ -23,6 +24,7 @@ router.get('/errors', errors);
 router.get('/sync', scheduleSync);
 router.get('/kv', kv);
 router.get('/validity', validity);
+router.get('/sync-log', syncLog);
 router.delete('/contract/:id', eraseContract);
 
 module.exports = router;

@@ -250,6 +250,17 @@ module.exports = {
     return result;
   },
 
+  getSyncLog: async (nodeDb, start, end) => {
+    const result = await nodeDb('sync_log')
+      .where({
+        start_timestamp: start,
+        end_timestamp: end
+      })
+      .first('*');
+
+    return result;
+  },
+
   getCachedViewState: async (nodeDb, contractTxId, sortKey, input, caller) => {
     caller = caller || '';
     const result = await nodeDb.raw(
