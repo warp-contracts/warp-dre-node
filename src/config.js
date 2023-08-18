@@ -40,6 +40,7 @@ const evaluationOptions = {
     "1hDZBRSptTNgnACuO9qGHLbaOfnAcMBKCHcHPRhMWUY", // VouchDAO-evolve
     "LBcYEl2zwKDApj1Cow1_BYyiicxVV7OCZTexsjk6mB4", // UCM contract new
     "dRTFmLwJ3cNqdNvFK4yUvwc13CrJtFOmLymLxL4HWOE", // UCM contract evolve
+    "yXPm9-9VyxH9otGf7xim0EJsnt21IJN8qJjanFTC_kc", // UCM contract evolve
     // "37n5Z9NZUUPuXPdbbjXa2iYb9Wl39nAjkaSoz5DsxZQ", // FAIR - needs fixes and audit
   ]
 };
