@@ -18,12 +18,13 @@ async function main() {
   }
 
 
-  const response = await fetch("http://35.246.161.86:8080/contract?id=KTzTXT_ANmF84fWEKHzWURD1LWd9QaFR9yfYUwH2Lxw&validity=true&state=false");
+  // const response = await fetch("http://35.246.161.86:8080/contract?id=KTzTXT_ANmF84fWEKHzWURD1LWd9QaFR9yfYUwH2Lxw&validity=true&state=false");
+  const response = await fetch("http://35.246.161.86:8080/contract?id=tfalT8Z-88riNtoXdF5ldaBtmsfcSmbMqWLh2DHJIbg&validity=true&state=false");
   const result = await response.json();
 
   const validity = result.validity;
 
-  console.log('kQvtNPnGf3oEZoDb0TKtVWbt0XkT8cgD84-ZLNhDtEg:', validity['kQvtNPnGf3oEZoDb0TKtVWbt0XkT8cgD84-ZLNhDtEg']);
+  console.log('KDoXaqaNgy4eeXYQsU2FW_4M4UpyjEmRGtiT_iRF2Hk', validity['KDoXaqaNgy4eeXYQsU2FW_4M4UpyjEmRGtiT_iRF2Hk']);
 
 
 
