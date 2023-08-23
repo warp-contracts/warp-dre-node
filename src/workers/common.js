@@ -1,12 +1,12 @@
-const { insertState, connect } = require('../db/nodeDb');
-const { publishToRedis, publishToAppSync } = require('./publish');
-const { config } = require('../config');
+const { insertState, connect } = require("../db/nodeDb");
+const { publishToRedis, publishToAppSync } = require("./publish");
+const { config } = require("../config");
 
 module.exports = {
   storeAndPublish: async (logger, isTest, contractTxId, result) => {
     insertState(connect(), contractTxId, result)
       .then(async (dbResult) => {
-        logger.info('State stored in sqlite', contractTxId);
+        logger.info("State stored in sqlite", contractTxId);
 
         if (!isTest) {
           await publishToRedis(logger, contractTxId, {
@@ -20,19 +20,35 @@ module.exports = {
           });
 
           if (config.appSync.publishState) {
-            publishToAppSync(logger, contractTxId, result, dbResult);
+            await publishToAppSync(logger, contractTxId, result, dbResult);
           }
         }
       })
       .catch((e) => {
-        logger.error('Error while storing in sqlite', e);
+        logger.error("Error while storing in sqlite", e);
       });
   },
+  publish: async (logger, contractTxId, state, sortKey, stateHash, sig) => {
+    await publishToRedis(logger, contractTxId, {
+      contractTxId: contractTxId,
+      sortKey: sortKey,
+      state: state,
+      node: config.nodeJwk.n,
+      signature: sig,
+      stateHash: stateHash
+    });
+    logger.debug("Published to Redis");
+
+    if (config.appSync.publishState) {
+      await publishToAppSync(logger, contractTxId, sortKey, state, sig);
+    }
+  },
+
   checkStateSize: (state) => {
     const maxSize = config.workersConfig.maxStateSizeB;
     const stateSize = Buffer.byteLength(JSON.stringify(state));
     if (stateSize > maxSize) {
-      throw new Error('[MaxStateSizeError] State too big');
+      throw new Error("[MaxStateSizeError] State too big");
     }
   },
 

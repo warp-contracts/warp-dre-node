@@ -9,36 +9,47 @@ async function main() {
   const srcIds =  [
     // https://docs.google.com/spreadsheets/d/1F9T1Vyk3geEsrU8wVSdsPj9drO48Ae9f2UpkuE0ralI/edit#gid=0
     "Of9pi--Gj7hCTawhgxOwbuWnFI1h24TTgO5pw8ENJNQ", // Atomic Asset
-    "kP1Ed8AMvaaBrEFjatP4pSmiE_fsRrGS0EcBMQYYiyc", // STAMP
+    "W78KEzU8vIODFHzwa9ab7SS7Pjchc7KenivCiwSHxBY", // STAMP
+    "kP1Ed8AMvaaBrEFjatP4pSmiE_fsRrGS0EcBMQYYiyc", // STAMP-evolve
     "mGxosQexdvrvzYCshzBvj18Xh1QmZX16qFJBuh4qobo", // U
-    "7qv5x9A0NgAlTdMnBc1H2HFvN-te0kzzuT9RNt_66g8", // UCM contract - TBD,
+    "7qv5x9A0NgAlTdMnBc1H2HFvN-te0kzzuT9RNt_66g8", // UCM contract old
     "eIAyBgHH-H7Qzw9fj7Austj30QKPQn27eaakvpOUSR8", // Facts
     "Of9pi--Gj7hCTawhgxOwbuWnFI1h24TTgO5pw8ENJNQ", // Pages
-    "_z0ch80z_daDUFqC9jHjfOL8nekJcok4ZRkE_UesYsk"  // VouchDAO
+    "ovWCp0xKuHtq-bADXbtiNr6umwb_AE73kVZWtfHlX3w", // VouchDAO
+    "1hDZBRSptTNgnACuO9qGHLbaOfnAcMBKCHcHPRhMWUY", // VouchDAO-evolve
+    "LBcYEl2zwKDApj1Cow1_BYyiicxVV7OCZTexsjk6mB4", // UCM contract new
+    "dRTFmLwJ3cNqdNvFK4yUvwc13CrJtFOmLymLxL4HWOE", // UCM contract evolve
+    "yXPm9-9VyxH9otGf7xim0EJsnt21IJN8qJjanFTC_kc", // UCM contract evolve
   ]
 
-  const result = await loadInteractions(1692111085730, 1692111087730, srcIds);
+  //const result = await loadInteractions(1692111085730, 1692111087730, srcIds);
 
-  console.dir(result, {depth: null});
+  console.time("fetch");
+  //const result = await loadInteractions(1666220657408, 1666220657408 + 150 * 24 * 3600 * 1000, srcIds);
+  /*const result = await loadInteractions(
+    1666220657408 + 150 * 24 * 3600 * 1000,
+    1666220657408 + 200 * 24 * 3600 * 1000,
+    srcIds);*/
 
-  /*console.log(result.interactions.map(i => {
-    return {
-    "contractTxId": i.contractTxId, "interactionId": i.interaction.id,
-      sortKey: i.sortKey
-  }}));
-*/
+  const now = Date.now();
 
-  const interactions = result.interactions;
-  console.log("hash", hashElement(interactions));
+  const result = await loadInteractions(now - 4000, now - 2000, srcIds);
+  console.timeLog("fetch");
 
-  const resultLength = interactions.length;
-  const firstSortKey = resultLength ? interactions[0].sortKey : null;
-  const lastSortKey = resultLength ? interactions[resultLength - 1].sortKey : null;
-  console.log("Loaded interactions info", {
-    resultLength,
-    firstSortKey,
-    lastSortKey
-  });
+  //console.dir(result, {depth: null});
+  console.log("result length", result.interactions.length);
+
+  console.time("mapping entries");
+  const contractInteractions = result.interactions.map(e => e.interaction);
+  console.timeLog("mapping entries");
+
+  console.time("stringify");
+  const stringifiedInteractions = stringify(contractInteractions);
+  console.timeLog("stringify");
+
+  console.time("hash");
+  const hash = hashElement(stringifiedInteractions);
+  console.timeLog("hash");
 
   // 1692213749730 1692213751730
   // 1692221847730 1692221849730

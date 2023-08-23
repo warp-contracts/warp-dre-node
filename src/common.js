@@ -1,4 +1,3 @@
-const { getLastStateFromDreCache, insertState } = require('./db/nodeDb');
 const warp = require('./warp');
 
 module.exports.isTxIdValid = (txId) => {
@@ -6,14 +5,8 @@ module.exports.isTxIdValid = (txId) => {
   return validTxIdRegex.test(txId);
 };
 
-module.exports.getContractState = async (contractId, nodeDb) => {
+module.exports.getContractState = async (contractId) => {
   const warpState = await warp.stateEvaluator.latestAvailableState(contractId);
-  let result = await getLastStateFromDreCache(nodeDb, contractId);
-  let parsed = false;
-  if (warpState && (!result || result.sort_key.localeCompare(warpState.sortKey) < 0)) {
-    result = await insertState(nodeDb, contractId, warpState);
-    parsed = true;
-  }
 
   return { result, parsed };
 };

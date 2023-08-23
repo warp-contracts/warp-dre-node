@@ -1,7 +1,6 @@
 const knex = require('knex');
 const { signState } = require('../signature');
 const { config } = require('../config');
-const logger = require('../logger')('node-db');
 const stateDbConfig = require('../../knexConfigStateDb');
 
 let stateDb = null;
@@ -30,24 +29,6 @@ module.exports = {
       });
     }
 
-    const hasStatesTable = await knex.schema.hasTable('states');
-    if (!hasStatesTable) {
-      await knex.schema.createTable('states', function (t) {
-        t.string('contract_tx_id').unique();
-        t.jsonb('manifest').notNullable();
-        t.string('bundle_tx_id');
-        t.string('sort_key');
-        t.string('signature').notNullable();
-        t.string('state_hash').notNullable();
-        t.timestamp('timestamp').defaultTo(knex.fn.now());
-        t.jsonb('state').notNullable();
-        t.jsonb('validity').notNullable();
-        t.jsonb('error_messages').notNullable();
-        t.unique(['contract_tx_id', 'sort_key']);
-      });
-    }
-
-
     const hasViewStateTable = await knex.schema.hasTable('view_state');
     if (!hasViewStateTable) {
       await knex.schema.createTable('view_state', function (t) {
@@ -74,18 +55,6 @@ module.exports = {
         t.jsonb('errors');
       });
     }
-
-    // Trigger for ensuring only the newest state is stored
-    await knex.raw(`
-    CREATE TRIGGER IF NOT EXISTS reject_outdated_state
-    BEFORE UPDATE
-      ON states
-    BEGIN
-      SELECT CASE
-      WHEN (EXISTS (SELECT 1 FROM states WHERE states.contract_tx_id = NEW.contract_tx_id AND states.sort_key > NEW.sort_key))
-      THEN RAISE(ABORT, 'Outdated sort_key')
-      END;
-    END;`);
   },
 
   connect: () => {
@@ -114,41 +83,7 @@ module.exports = {
     }
   },
 
-  insertState: async (nodeDb, contractTxId, readResult) => {
-    const manifest = await config.nodeManifest;
-    const { sig, stateHash, validityHash } = await signState(
-      contractTxId,
-      readResult.sortKey,
-      readResult.cachedValue.state,
-      manifest,
-      readResult.cachedValue.validity
-    );
-
-    const entry = {
-      contract_tx_id: contractTxId,
-      manifest: manifest,
-      sort_key: readResult.sortKey,
-      signature: sig,
-      state_hash: stateHash,
-      state: readResult.cachedValue.state,
-      validity: readResult.cachedValue.validity,
-      error_messages: readResult.cachedValue.errorMessages,
-      validity_hash: validityHash
-    };
-
-    try {
-      await nodeDb('states').insert(entry).onConflict(['contract_tx_id']).merge();
-    } catch (e) {
-      if (e && e.code) {
-        throw new Error(`SqliteError ${contractTxId}@${readResult.sortKey}: ${e.code}`);
-      } else {
-        throw new Error(`Unknown error ${contractTxId}@${readResult.sortKey}`);
-      }
-    }
-
-    return entry;
-  },
-
+  // TODO
   deleteStates: async (nodeDb, contractTxId) => {
     await nodeDb.raw(`DELETE FROM states WHERE contract_tx_id = ?;`, [contractTxId]);
   },
@@ -213,17 +148,6 @@ module.exports = {
     await nodeDb.raw(`DELETE FROM errors WHERE contract_tx_id = ?;`, [contractTxId]);
   },
 
-  getLastStateFromDreCache: async (nodeDb, contractTxId) => {
-    const result = await nodeDb('states')
-      .where({
-        contract_tx_id: contractTxId
-      })
-      .first('*')
-      .orderBy('sort_key', 'desc');
-
-    return result;
-  },
-
   getSyncLog: async (nodeDb, start, end) => {
     const result = await nodeDb('sync_log')
       .where({
@@ -262,20 +186,6 @@ module.exports = {
     await nodeDb('view_state').insert(entry).onConflict(['contract_tx_id', 'input', 'caller']).merge();
 
     return entry;
-  },
-
-  getAllContracts: async (nodeDb) => {
-    return nodeDb('states').distinct('contract_tx_id').pluck('contract_tx_id');
-  },
-
-  hasContract: async (nodeDb, contractTxId) => {
-    return (
-      (await nodeDb('states')
-        .where({
-          contract_tx_id: contractTxId
-        })
-        .first()) != null
-    );
   },
 
 };

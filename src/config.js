@@ -108,11 +108,13 @@ const config = {
   workersConfig: {
     register: parseInt(process.env.WORKERS_REGISTER),
     update: parseInt(process.env.WORKERS_UPDATE),
+    signature: parseInt(process.env.WORKERS_SIGNATURE),
     jobIdRefreshSeconds: parseInt(process.env.WORKERS_JOB_ID_REFRESH_SECONDS),
     maxFailures: parseInt(process.env.WORKERS_MAX_FAILURES),
     maxStateSizeB: parseInt(process.env.WORKERS_MAX_STATESIZE)
   },
-  syncWindowSeconds: parseInt(process.env.SYNC_WINDOW_SECONDS)
+  syncWindowSeconds: parseInt(process.env.SYNC_WINDOW_SECONDS),
+  firstInteractionTimestamp: parseInt(process.env.FIRST_INTERACTION_TIMESTAMP)
 };
 
 validate(config);

@@ -6,6 +6,9 @@ const { insertSyncLog } = require("../db/nodeDb");
 const { isTxIdValid } = require("../common");
 const { partition } = require("./common");
 
+const logger = LoggerFactory.INST.create("syncer");
+LoggerFactory.INST.logLevel("info", "syncer");
+
 function validate(entries) {
   for (let i = 0; i < entries.length; i++) {
     const entry = entries[i];
@@ -33,10 +36,19 @@ function sort(entries) {
   entries.sort((a, b) => a.sortKey.localeCompare(b.sortKey));
 }
 
-module.exports = async function(nodeDb, whitelistedSources, initialStartTimestamp, windowSize, forceEndTimestamp) {
-  LoggerFactory.INST.logLevel("info");
-  const logger = LoggerFactory.INST.create("syncer");
-  LoggerFactory.INST.logLevel("info", "syncer");
+function logPartitionData(partitioned) {
+  logger.info("Partitions length", partitioned.length);
+  if (partitioned.length > 0) {
+    const partitionsData = {};
+    partitioned.forEach(p, index => {
+      partitionsData[index] = p.length;
+    });
+    logger.info("Partitions", partitionsData);
+  }
+}
+
+module.exports = async function(
+  nodeDb, whitelistedSources, initialStartTimestamp, windowSize, forceEndTimestamp, signatureQueue) {
 
   let startTimestamp = initialStartTimestamp;
 
@@ -46,7 +58,8 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
       logger.info(`====== Loading interactions for`, {
         startTimestamp,
         endTimestamp,
-        fromDate: new Date(startTimestamp)
+        fromDate: new Date(startTimestamp),
+        toDate: new Date(endTimestamp)
       });
 
       let result;
@@ -93,9 +106,9 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
       sort(interactions);
 
       const partitioned = partition(interactions);
-      const partitionsLength = partitioned.length;
+      logPartitionData(logger,partitioned);
 
-      logger.info("Partitions length", partitionsLength);
+      const partitionsLength = partitioned.length;
 
       for (let i = 0; i < partitionsLength; i++) {
         const partition = partitioned[i];
@@ -105,13 +118,20 @@ module.exports = async function(nodeDb, whitelistedSources, initialStartTimestam
             data: {
               contractTxId: partition[0].contractTxId,
               isTest: false,
-              partition
-            }
+              partition,
+              signatureQueue
+            },
+
           });
         } catch (e) {
+          logger.error(e);
           evaluationErrors[`${partition[0].contractTxId}|${partition[0].interaction.id}`] = {
             error: e?.toString()
           };
+          if (e.name == "CacheConsistencyError") {
+            logger.warn("Cache consistency error, stopping node!");
+            process.exit(0);
+          }
         }
       }
 

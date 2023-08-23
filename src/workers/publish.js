@@ -16,26 +16,25 @@ module.exports = {
       redisPublisher.publish('states/u', JSON.stringify(resultToBePublished));
       logger.debug('Published to Redis', contractTxId);
     } catch (e) {
-      logger.error('Error while publishing to Redis');
+      logger.error('Error while publishing to Redis', e);
     }
   },
-  publishToAppSync: (logger, contractTxId, result, dbResult) => {
+  publishToAppSync: async (logger, contractTxId, sortKey, state, sig) => {
     logger.info('Publishing to appSync');
-    appSyncPublish(
-      `states/${config.dreName}/${contractTxId}`,
-      JSON.stringify({
-        sortKey: result.sortKey,
-        state: result.cachedValue.state,
-        signature: dbResult.signature,
-        dre: config.dreName
-      }),
-      config.appSync.key
-    )
-      .then(() => {
-        logger.debug(`Published to appSync ${contractTxId}`);
-      })
-      .catch((e) => {
-        logger.error('Error while publishing to AppSync', e);
-      });
+    try {
+      await appSyncPublish(
+        `states/${config.dreName}/${contractTxId}`,
+        JSON.stringify({
+          sortKey: sortKey,
+          state: state,
+          signature: sig,
+          dre: config.dreName
+        }),
+        config.appSync.key
+      );
+      logger.debug(`Published to appSync ${contractTxId}`);
+    } catch(e) {
+      logger.error("Error while publishing to AppSync", e);
+    }
   }
 };
