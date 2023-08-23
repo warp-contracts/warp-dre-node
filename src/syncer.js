@@ -17,8 +17,7 @@ const warp = require('./warp');
 const pollGateway = require('./workers/pollGateway');
 
 let isTestInstance = config.env === 'test';
-const registerQueueName = 'register';
-let registerWorker;
+const queues = [];
 
 let nodeDb;
 
@@ -27,9 +26,10 @@ async function runSyncer() {
   await logConfig();
   nodeDb = connect();
 
-  const registerQueue = await configureRegisterQueue();
+  const registerQueue = await configureQueue('register', onFailedRegisterJob);
+  const signatureQueue = await configureQueue('signature');
 
-  const theVeryFirstTimestamp = 1680632007383;
+  const theVeryFirstTimestamp = config.firstInteractionTimestamp;
   const lastSyncTimestamp = await getLastSyncTimestamp(nodeDb);
   logger.info('Last sync timestamp result', lastSyncTimestamp);
   const startTimestamp = lastSyncTimestamp
@@ -37,7 +37,13 @@ async function runSyncer() {
     : theVeryFirstTimestamp;
 
   const windowSizeMs = config.syncWindowSeconds * 1000;
-  await pollGateway(nodeDb, config.evaluationOptions.whitelistSources, startTimestamp, windowSizeMs);
+  await pollGateway(
+    nodeDb,
+    config.evaluationOptions.whitelistSources,
+    startTimestamp,
+    windowSizeMs,
+    false,
+    signatureQueue);
 
   const onMessage = async (data) => await processContractData(data, nodeDb, registerQueue);
   await subscribeToGatewayNotifications(onMessage)
@@ -46,6 +52,19 @@ async function runSyncer() {
 runSyncer().catch((e) => {
   logger.error(e);
 });
+
+async function onFailedRegisterJob(contractTxId, jobId, failedReason) {
+  await insertFailure(nodeDb, {
+    contract_tx_id: contractTxId,
+    evaluation_options: config.evaluationOptions,
+    sdk_config: config.warpSdkConfig,
+    job_id: jobId,
+    failure: failedReason
+  });
+  if (failedReason.includes("[MaxStateSizeError]")) {
+    await doBlacklist(nodeDb, contractTxId, config.workersConfig.maxFailures);
+  }
+}
 
 async function processContractData(msgObj, nodeDb, registerQueue) {
   logger.info(`Received '${msgObj.contractTxId}'`);
@@ -80,7 +99,7 @@ async function processContractData(msgObj, nodeDb, registerQueue) {
   }
 
   const contractTxId = msgObj.contractTxId;
-  const isRegistered = await hasContract(nodeDb, contractTxId);
+  const isRegistered = await warp.stateEvaluator.hasContractCached(contractTxId);
 
   const baseMessage = {
     contractTxId,
@@ -137,18 +156,12 @@ async function subscribeToGatewayNotifications(onMessage) {
   process.on('exit', () => subscriber.disconnect());
 }
 
-async function clearQueue(queue) {
-  // await deleteOldActiveJobs(queue);
-  await queue.obliterate({ force: true });
-}
+async function configureQueue(queueName, onFailedJob) {
+  async function clearQueue(queue) {
+    await queue.obliterate({ force: true });
+  }
 
-function isTxIdValid(txId) {
-  const validTxIdRegex = /[a-z0-9_-]{43}/i;
-  return validTxIdRegex.test(txId);
-}
-
-async function configureRegisterQueue() {
-  const registerQueue = new Queue(registerQueueName, {
+  const queue = new Queue(queueName, {
     connection: config.bullMqConnection,
     defaultJobOptions: {
       removeOnComplete: {
@@ -158,53 +171,53 @@ async function configureRegisterQueue() {
     }
   });
 
-  const registerEvents = new QueueEvents(registerQueueName, { connection: config.bullMqConnection });
+  const queueEvents = new QueueEvents(queueName, { connection: config.bullMqConnection });
 
-  async function onFailedJob(contractTxId, jobId, failedReason) {
-    await insertFailure(nodeDb, {
-      contract_tx_id: contractTxId,
-      evaluation_options: config.evaluationOptions,
-      sdk_config: config.warpSdkConfig,
-      job_id: jobId,
-      failure: failedReason
-    });
-    if (failedReason.includes("[MaxStateSizeError]")) {
-      await doBlacklist(nodeDb, contractTxId, config.workersConfig.maxFailures);
-    }
-  }
-
-  registerEvents.on("failed", async ({ jobId, failedReason }) => {
-    logger.error("Register job failed", { jobId, failedReason });
+  queueEvents.on("failed", async ({ jobId, failedReason }) => {
+    logger.error(`${queueName} job failed`, { jobId, failedReason });
     const contractTxId = jobId;
-
-    await onFailedJob(contractTxId, jobId, failedReason);
+    if (onFailedJob) {
+      await onFailedJob(contractTxId, jobId, failedReason);
+    }
   });
-  registerEvents.on("added", async ({ jobId }) => {
-    logger.info("Job added to register queue", jobId);
+  queueEvents.on("added", async ({ jobId }) => {
+    logger.info(`Job added to ${queueName} queue`, jobId);
   });
-  registerEvents.on("completed", async ({ jobId }) => {
-    logger.info("Register job completed", jobId);
+  queueEvents.on("completed", async ({ jobId }) => {
+    logger.info(`${queueName} job completed`, jobId);
   });
 
-  await clearQueue(registerQueue);
+  await clearQueue(queue);
 
-  const registerProcessor = path.join(__dirname, "workers", "registerProcessor");
-  registerWorker = new Worker(registerQueueName, registerProcessor, {
-    concurrency: config.workersConfig.register,
+  const queueProcessor = path.join(__dirname, "workers", `${queueName}Processor`);
+  const queueWorker = new Worker(queueName, queueProcessor, {
+    concurrency: config.workersConfig[queueName],
     connection: config.bullMqConnection,
+    useWorkerThreads: true,
     metrics: {
       maxDataPoints: MetricsTime.ONE_WEEK
-    }
+    },
   });
 
-  return registerQueue;
+  queues.push(queueWorker);
+
+  return queue;
+}
+
+
+
+function isTxIdValid(txId) {
+  const validTxIdRegex = /[a-z0-9_-]{43}/i;
+  return validTxIdRegex.test(txId);
 }
 
 
 // Graceful shutdown
 async function cleanup(callback) {
   logger.info('Interrupted');
-  await registerWorker?.close();
+  for (const queue of queues) {
+    await queue.close()
+  }
   await warp.close();
   nodeDb.destroy();
   logger.info('Clean up finished');

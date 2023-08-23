@@ -1,31 +1,26 @@
 const { config } = require('./config');
-const deepHash = require('arweave/node/lib/deepHash').default;
 const stringify = require('safe-stable-stringify');
 const crypto = require('crypto');
+const { concatBuffers, stringToBuffer, bufferTob64Url } = require("arweave/node/lib/utils");
 
 module.exports = {
-  signState: async (contractTxId, sortKey, state, manifest, validity) => {
-    let validityHash = null;
+  signState: async (contractTxId, sortKey, state) => {
     const owner = config.nodeJwk.n;
     const arweave = config.arweave;
 
     const stateHash = hashElement(state);
-    if (validity) {
-      validityHash = hashElement(validity);
-    }
 
-    const dataToSign = await deepHash([
-      arweave.utils.stringToBuffer(owner),
-      arweave.utils.stringToBuffer(sortKey),
-      arweave.utils.stringToBuffer(contractTxId),
-      arweave.utils.stringToBuffer(stateHash),
-      arweave.utils.stringToBuffer(stringify(manifest))
+    const dataToSign = concatBuffers([
+      stringToBuffer(owner),
+      stringToBuffer(sortKey),
+      stringToBuffer(contractTxId),
+      stringToBuffer(stateHash)
     ]);
+
     const rawSig = await arweave.crypto.sign(config.nodeJwk, dataToSign);
+    const sig = bufferTob64Url(rawSig);
 
-    const sig = arweave.utils.bufferTob64Url(rawSig);
-
-    return { sig, stateHash, validityHash };
+    return { sig, stateHash };
   },
 
   hashElement: hashElement
