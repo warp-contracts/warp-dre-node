@@ -31,10 +31,6 @@ async function runListener() {
     execSync('npx knex --knexfile=knexConfigStateDb.js migrate:latest');
   }
 
-  if (fs.existsSync('./src/db/migrations/eventsDb')) {
-    execSync('npx knex --knexfile=knexConfigEventsDb.js migrate:latest');
-  }
-
   const app = new Koa();
   app
     .use(corsConfig())

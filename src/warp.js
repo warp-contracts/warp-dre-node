@@ -3,7 +3,7 @@ const { LmdbCache } = require('warp-contracts-lmdb');
 const { NlpExtension } = require('warp-contracts-plugin-nlp');
 const { EvaluationProgressPlugin } = require('warp-contracts-evaluation-progress-plugin');
 const { EventEmitter } = require('node:events');
-const { events, connect, getFailures } = require('./db/nodeDb');
+const { connect, getFailures } = require('./db/nodeDb');
 const { EthersExtension } = require('warp-contracts-plugin-ethers');
 const { EvmSignatureVerificationServerPlugin } = require('warp-contracts-plugin-signature/server');
 const { ContractBlacklistPlugin, getDreBlacklistFunction } = require('warp-contracts-plugin-blacklist');
@@ -14,9 +14,6 @@ const { JWTVerifyPlugin } = require('@othent/warp-contracts-plugin-jwt-verify');
 const { SqliteContractCache } = require('warp-contracts-sqlite');
 
 const eventEmitter = new EventEmitter();
-eventEmitter.on('progress-notification', (data) => {
-  events.progress(data.contractTxId, data.message);
-});
 
 const warp = WarpFactory.forMainnet()
   .useGwUrl(config.gwUrl)
