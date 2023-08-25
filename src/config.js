@@ -10,7 +10,7 @@ const arweave = getArweave();
 let warpSdkConfig = {
   'warp-contracts': pjson.dependencies['warp-contracts'],
   'warp-contracts-lmdb': pjson.dependencies['warp-contracts-lmdb'],
-  'warp-contracts-sqlite': pjson.dependencies['warp-contracts-sqlite'],
+  'warp-contracts-postgres': pjson.dependencies['warp-contracts-sqlite'],
   'warp-contracts-evaluation-progress-plugin': pjson.dependencies['warp-contracts-evaluation-progress-plugin'],
   'warp-contracts-plugin-nlp': pjson.dependencies['warp-contracts-plugin-nlp'],
   'warp-contracts-plugin-ethers': pjson.dependencies['warp-contracts-plugin-ethers'],
@@ -37,7 +37,8 @@ function getGwPubSubConfig() {
     username: process.env.GW_USERNAME,
     password: process.env.GW_PASSWORD,
     enableOfflineQueue: process.env.GW_ENABLE_OFFLINE_QUEUE === 'true',
-    lazyConnect: process.env.GW_LAZY_CONNECT === 'true'
+    lazyConnect: process.env.GW_LAZY_CONNECT === 'true',
+    publishState: process.env.REDIS_PUBLISH_STATE === 'true'
   };
   if (process.env.GW_TLS === 'true') {
     if (process.env.GW_TLS_CA_CERT) {

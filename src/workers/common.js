@@ -1,43 +1,19 @@
-const { insertState, connect } = require("../db/nodeDb");
 const { publishToRedis, publishToAppSync } = require("./publish");
 const { config } = require("../config");
 
 module.exports = {
-  storeAndPublish: async (logger, isTest, contractTxId, result) => {
-    insertState(connect(), contractTxId, result)
-      .then(async (dbResult) => {
-        logger.info("State stored in sqlite", contractTxId);
-
-        if (!isTest) {
-          await publishToRedis(logger, contractTxId, {
-            contractTxId: dbResult.contract_tx_id,
-            sortKey: dbResult.sort_key,
-            state: dbResult.state,
-            node: dbResult.manifest.walletAddress,
-            signature: dbResult.signature,
-            manifest: dbResult.manifest,
-            stateHash: dbResult.state_hash
-          });
-
-          if (config.appSync.publishState) {
-            await publishToAppSync(logger, contractTxId, result, dbResult);
-          }
-        }
-      })
-      .catch((e) => {
-        logger.error("Error while storing in sqlite", e);
-      });
-  },
   publish: async (logger, contractTxId, state, sortKey, stateHash, sig) => {
-    await publishToRedis(logger, contractTxId, {
-      contractTxId: contractTxId,
-      sortKey: sortKey,
-      state: state,
-      node: config.nodeJwk.n,
-      signature: sig,
-      stateHash: stateHash
-    });
-    logger.debug("Published to Redis");
+    if (config.gwPubSubConfig.publishState) {
+      await publishToRedis(logger, contractTxId, {
+        contractTxId: contractTxId,
+        sortKey: sortKey,
+        state: state,
+        node: config.nodeJwk.n,
+        signature: sig,
+        stateHash: stateHash
+      });
+      logger.debug("Published to Redis");
+    }
 
     if (config.appSync.publishState) {
       await publishToAppSync(logger, contractTxId, sortKey, state, sig);
