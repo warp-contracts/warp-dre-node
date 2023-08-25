@@ -20,6 +20,18 @@ services:
     command: redis-server --save 20 1 --loglevel warning --maxmemory-policy noeviction
     volumes:
       - bullmq-cache:/data
+
+  postgres:
+    image: postgres:14
+    container_name: dre-postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=dre-u
+    ports:
+      - '21726:5432'
+
 volumes:
   bullmq-cache:
     driver: local

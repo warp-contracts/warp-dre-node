@@ -1,4 +1,4 @@
-const warp = require("../warp");
+const { warp } = require("../warp");
 const { LoggerFactory, genesisSortKey } = require("warp-contracts");
 const { checkStateSize } = require("./common");
 const { config } = require("../config");

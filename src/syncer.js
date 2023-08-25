@@ -13,7 +13,7 @@ const {
 
 const logger = require('./logger')('syncer');
 const exitHook = require('async-exit-hook');
-const warp = require('./warp');
+const { warp, pgClient } = require('./warp');
 const pollGateway = require('./workers/pollGateway');
 
 let isTestInstance = config.env === 'test';
@@ -28,6 +28,7 @@ async function runSyncer() {
 
   const registerQueue = await configureQueue('register', onFailedRegisterJob);
   const signatureQueue = await configureQueue('signature');
+  await pgClient.open();
 
   const theVeryFirstTimestamp = config.firstInteractionTimestamp;
   const lastSyncTimestamp = await getLastSyncTimestamp(nodeDb);
@@ -219,6 +220,7 @@ async function cleanup(callback) {
     await queue.close()
   }
   await warp.close();
+  await pgClient.close();
   nodeDb.destroy();
   logger.info('Clean up finished');
   callback();

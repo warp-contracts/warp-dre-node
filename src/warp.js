@@ -11,23 +11,23 @@ const { config } = require('./config');
 const { VM2Plugin } = require('warp-contracts-plugin-vm2');
 const { VRFPlugin } = require('warp-contracts-plugin-vrf');
 const { JWTVerifyPlugin } = require('@othent/warp-contracts-plugin-jwt-verify');
-const { SqliteContractCache } = require('warp-contracts-sqlite');
+const { PgContractCache } = require('warp-contracts-postgres');
 
 const eventEmitter = new EventEmitter();
 
+const pgClient = new PgContractCache(defaultCacheOptions, {
+  minEntriesPerContract: 10,
+  maxEntriesPerContract: 100,
+  host: 'localhost',
+  user: 'postgres',
+  password: 'postgres',
+  database: 'dre-u',
+  port: 21726
+});
+
 const warp = WarpFactory.forMainnet()
   .useGwUrl(config.gwUrl)
-  .useStateCache(
-    new SqliteContractCache(
-      {
-        ...defaultCacheOptions,
-        dbLocation: `./cache/warp/sqlite/state`
-      },
-      {
-        maxEntriesPerContract: 10
-      }
-    )
-  )
+  .useStateCache(pgClient)
   .useContractCache(
     new LmdbCache(
       {
@@ -78,4 +78,4 @@ const warp = WarpFactory.forMainnet()
   );
 warp.whoAmI = config.dreName || 'DRE';
 
-module.exports = warp;
+module.exports = { warp, pgClient };
