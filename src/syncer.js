@@ -194,10 +194,6 @@ async function configureQueue(queueName, onFailedJob) {
   const queueWorker = new Worker(queueName, queueProcessor, {
     concurrency: config.workersConfig[queueName],
     connection: config.bullMqConnection,
-    useWorkerThreads: true,
-    metrics: {
-      maxDataPoints: MetricsTime.ONE_WEEK
-    },
   });
 
   queues.push(queueWorker);

@@ -40,7 +40,7 @@ function logPartitionData(partitioned) {
   logger.info("Partitions length", partitioned.length);
   if (partitioned.length > 0) {
     const partitionsData = {};
-    partitioned.forEach(p, index => {
+    partitioned.forEach((p, index) => {
       partitionsData[index] = p.length;
     });
     logger.info("Partitions", partitionsData);
@@ -106,7 +106,7 @@ module.exports = async function(
       sort(interactions);
 
       const partitioned = partition(interactions);
-      logPartitionData(logger,partitioned);
+      logPartitionData(partitioned);
 
       const partitionsLength = partitioned.length;
 
