@@ -1,4 +1,4 @@
-const warp = require('../warp');
+const { warp } = require('../warp');
 const { config } = require("../config");
 const updates = new Map();
 

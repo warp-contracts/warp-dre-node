@@ -1,4 +1,4 @@
-const warp = require('../warp');
+const { warp } = require('../warp');
 const { config } = require('../config');
 const { getLastStateFromDreCache, getCachedViewState, insertViewStateIntoCache } = require('../db/nodeDb');
 const { isTxIdValid } = require('../common');

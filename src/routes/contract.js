@@ -1,7 +1,7 @@
 const { JSONPath } = require("jsonpath-plus");
 const { getContractErrors } = require("../db/nodeDb");
 const { LoggerFactory } = require("warp-contracts");
-const warp = require('../warp');
+const { warp } = require('../warp');
 
 const registrationStatus = {
   "not-registered": "not-registered",

@@ -54,7 +54,9 @@ async function signAndPublish(contractTxId, sortKey, state) {
     state
   );
 
+  // logger.info("Signature Processor - before setSignature", contractTxId);
   await warp.stateEvaluator.getCache().setSignature({ key: contractTxId, sortKey }, stateHash, sig);
+  // logger.info("Signature Processor - after setSignature", contractTxId);
 
   await publish(logger, contractTxId, state, stateHash, sig);
 }

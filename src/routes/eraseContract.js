@@ -1,4 +1,4 @@
-const warp = require('../warp');
+const { warp } = require('../warp');
 const Arweave = require('arweave');
 const fs = require('fs');
 const ArweaveUtils = require('arweave/node/lib/utils');

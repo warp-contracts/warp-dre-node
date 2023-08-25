@@ -12,7 +12,7 @@ const {
 
 const logger = require('./logger')('listener');
 const exitHook = require('async-exit-hook');
-const warp = require('./warp');
+const { warp } = require('./warp');
 const { execSync } = require('child_process');
 const fs = require('fs');
 let port = 8080;

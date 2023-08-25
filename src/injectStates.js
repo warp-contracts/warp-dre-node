@@ -1,5 +1,5 @@
 require('dotenv').config();
-const warp = require('./warp');
+const { warp } = require('./warp');
 const { config, logConfig } = require("./config");
 const { LoggerFactory } = require("warp-contracts");
 
