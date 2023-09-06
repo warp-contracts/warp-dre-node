@@ -5,16 +5,11 @@ const compress = require('koa-compress');
 const zlib = require('zlib');
 const router = require('./router');
 const { logConfig } = require('./config');
-const {
-  createNodeDbTables,
-  connect,
-} = require('./db/nodeDb');
+const { createNodeDbTables, connect } = require('./db/nodeDb');
 
 const logger = require('./logger')('listener');
 const exitHook = require('async-exit-hook');
-const { warp } = require('./warp');
-const { execSync } = require('child_process');
-const fs = require('fs');
+const { pgClient, warp } = require('./warp');
 let port = 8080;
 
 let nodeDb;
@@ -24,12 +19,9 @@ async function runListener() {
   await logConfig();
 
   nodeDb = connect();
+  await pgClient.open();
 
   await createNodeDbTables(nodeDb);
-
-  if (fs.existsSync('./src/db/migrations/stateDb')) {
-    execSync('npx knex --knexfile=knexConfigStateDb.js migrate:latest');
-  }
 
   const app = new Koa();
   app
@@ -73,7 +65,8 @@ function corsConfig() {
 async function cleanup(callback) {
   logger.info('Interrupted');
   await warp.close();
-  nodeDb.destroy();
+  await pgClient.close();
+  await nodeDb.close();
   logger.info('Clean up finished');
   callback();
 }

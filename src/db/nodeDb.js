@@ -1,83 +1,101 @@
-const knex = require('knex');
 const { signState } = require('../signature');
 const { config } = require('../config');
-const stateDbConfig = require('../../knexConfigStateDb');
+const dreDbConfig = require('../../postgresConfigDreDb.js');
+const { Pool } = require('pg');
 
 let stateDb = null;
 
 module.exports = {
   // remove
-  createNodeDbTables: async (knex) => {
-    const hasErrorsTable = await knex.schema.hasTable('errors');
-    if (!hasErrorsTable) {
-      await knex.schema.createTable('errors', function (t) {
-        t.string('contract_tx_id').index();
-        t.jsonb('evaluation_options');
-        t.jsonb('sdk_config');
-        t.string('job_id').unique();
-        t.string('failure').notNullable();
-        t.timestamp('timestamp').defaultTo(knex.fn.now());
-      });
-    }
+  createNodeDbTables: async (nodeDb) => {
+    await nodeDb.query(
+      `
+        --------------- errors
+        CREATE TABLE IF NOT EXISTS errors (
+            contract_tx_id text,
+            evaluation_options jsonb,
+            sdk_config jsonb,
+            job_id text unique,
+            failure text not null, 
+            timestamp timestamp with time zone default now()
+        );
+        CREATE INDEX IF NOT EXISTS idx_errors_contract_tx_id ON errors(contract_tx_id);
+        
+        --------------- black_list
+        CREATE TABLE IF NOT EXISTS black_list (
+            contract_tx_id text unique,
+            failures bigint
+        );
+        CREATE INDEX IF NOT EXISTS idx_black_list_contract_id ON black_list(contract_tx_id);
+        
+        --------------- view_state
+        CREATE TABLE IF NOT EXISTS view_state
+        (
+            contract_tx_id text,
+            sort_key       text,
+            caller         text,
+            signature      text,
+            view_hash      text,
+            input          jsonb,
+            result         jsonb,
+            UNIQUE (contract_tx_id, input, caller)
+        );
+        CREATE INDEX IF NOT EXISTS idx_view_state_contract_id ON view_state (contract_tx_id);
 
-
-    const hasBlacklistTable = await knex.schema.hasTable('black_list');
-    if (!hasBlacklistTable) {
-      await knex.schema.createTable('black_list', function (t) {
-        t.string('contract_tx_id').unique();
-        t.integer('failures');
-      });
-    }
-
-    const hasViewStateTable = await knex.schema.hasTable('view_state');
-    if (!hasViewStateTable) {
-      await knex.schema.createTable('view_state', function (t) {
-        t.string('contract_tx_id').index();
-        t.string('sort_key');
-        t.string('caller').notNullable();
-        t.string('signature').notNullable();
-        t.string('view_hash').notNullable();
-        t.jsonb('input').notNullable();
-        t.jsonb('result').notNullable();
-        t.unique(['contract_tx_id', 'input', 'caller']);
-      });
-    }
-
-    const hasSyncLogTable = await knex.schema.hasTable('sync_log');
-    if (!hasSyncLogTable) {
-      await knex.schema.createTable('sync_log', function (t) {
-        t.integer('start_timestamp').notNullable();
-        t.integer('end_timestamp').index().notNullable();
-        t.integer('response_length').notNullable();
-        t.string('response_hash').notNullable();
-        t.string('response_first_sortkey');
-        t.string('response_last_sortkey');
-        t.jsonb('errors');
-      });
-    }
+        --------------- sync_log
+        CREATE TABLE IF NOT EXISTS sync_log (
+            start_timestamp BIGINT,
+            end_timestamp BIGINT,
+            response_length BIGINT,
+            response_hash text,
+            response_first_sortkey text, 
+            response_last_sortkey text,
+            errors jsonb
+        );
+        CREATE INDEX IF NOT EXISTS idx_sync_log_end_timestamp ON sync_log(end_timestamp);
+`
+    );
   },
 
   connect: () => {
     if (stateDb == null) {
-      stateDb = knex(stateDbConfig);
+      stateDb = new Pool(dreDbConfig);
     }
 
     return stateDb;
   },
 
-
-  insertFailure: async (nodeDb, failureInfo) => {
-    await nodeDb('errors').insert(failureInfo).onConflict(['job_id']).ignore();
+  insertFailure: async (nodeDb, data) => {
+    await nodeDb.query(
+      `
+                INSERT INTO errors (contract_tx_id,evaluation_options,sdk_config,job_id,failure,timestamp)
+                VALUES ($1, $2, $3, $4, $5, $6)
+                ON CONFLICT(job_id) DO NOTHING `,
+      [data.contract_tx_id, data.evaluation_options, data.sdk_config, data.job_id, data.failure, data.timestamp]
+    );
   },
 
-  insertSyncLog: async(nodeDb, data) => {
-    await nodeDb("sync_log").insert(data);
+  insertSyncLog: async (nodeDb, data) => {
+    await nodeDb.query(
+      `
+                INSERT INTO sync_log (start_timestamp, end_timestamp, response_length, response_hash, response_first_sortkey, response_last_sortkey, errors)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [
+        data.start_timestamp,
+        data.end_timestamp,
+        data.response_length,
+        data.response_hash,
+        data.response_first_sortkey,
+        data.response_last_sortkey,
+        data.errors
+      ]
+    );
   },
 
-  getLastSyncTimestamp: async(nodeDb) => {
-    const result = await nodeDb.raw('SELECT max(end_timestamp) as "lastTimestamp" from sync_log');
-    if (result && result.length) {
-      return result[0].lastTimestamp;
+  getLastSyncTimestamp: async (nodeDb) => {
+    const result = await nodeDb.query('SELECT max(end_timestamp) as "lastTimestamp" from sync_log');
+    if (result && result.rows && result.rows.length > 0) {
+      return Number(result.rows[0].lastTimestamp);
     } else {
       return null;
     }
@@ -85,63 +103,41 @@ module.exports = {
 
   // TODO
   deleteStates: async (nodeDb, contractTxId) => {
-    await nodeDb.raw(`DELETE FROM states WHERE contract_tx_id = ?;`, [contractTxId]);
-  },
-
-  upsertBlacklist: async (nodeDb, contractTxId) => {
-    await nodeDb.raw(
-      `INSERT OR
-         REPLACE
-         INTO black_list
-        VALUES (?,
-                COALESCE(
-                        (SELECT failures
-                         FROM black_list
-                         WHERE contract_tx_id = ?),
-                        0) + 1);`,
-      [contractTxId, contractTxId]
-    );
+    await nodeDb.raw(`DELETE FROM states WHERE contract_tx_id = $1;`, [contractTxId]);
   },
 
   deleteBlacklist: async (nodeDb, contractTxId) => {
-    await nodeDb.raw(`DELETE FROM black_list WHERE contract_tx_id = ?;`, [contractTxId]);
+    await nodeDb.query(`DELETE FROM black_list WHERE contract_tx_id = $1;`, [contractTxId]);
   },
 
   doBlacklist: async (nodeDb, contractTxId, failures) => {
-    await nodeDb.raw(
-      `INSERT OR
-         REPLACE
-         INTO black_list
-        VALUES (?, ?)`,
+    await nodeDb.query(
+      `INSERT INTO black_list VALUES ($1, $2) ON CONFLICT (contract_tx_id) DO UPDATE SET failures = EXCLUDED.failures `,
       [contractTxId, failures]
     );
   },
 
   getFailures: async (nodeDb, contractTxId) => {
-    const result = await nodeDb('black_list')
-      .where({
-        contract_tx_id: contractTxId
-      })
-      .first('failures');
+    const result = await nodeDb.query(`SELECT * FROM black_list WHERE contract_tx_id = $1`, [contractTxId]);
+    if (result && result.rows && result.rows.length > 0) {
+      return result.rows[0].failures;
+    }
 
-    return result?.failures;
+    return 0;
   },
 
   getAllBlacklisted: async (nodeDb) => {
-    return nodeDb('black_list').select('contract_tx_id', 'failures');
+    return await nodeDb.query(`SELECT * FROM black_list`);
   },
 
   getAllErrors: async (nodeDb) => {
-    return nodeDb('errors').select('*');
+    return await nodeDb.query(`SELECT * FROM errors;`);
   },
 
   getContractErrors: async (nodeDb, contractTxId) => {
-    return nodeDb('errors')
-      .where({
-        contract_tx_id: contractTxId
-      })
-      .select('*')
-      .orderBy('timestamp', 'desc');
+    return await nodeDb.query(`SELECT * FROM errors WHERE contract_tx_id = $1 ORDER BY timestamp DESC;`, [
+      contractTxId
+    ]);
   },
 
   deleteErrors: async (nodeDb, contractTxId) => {
@@ -149,23 +145,19 @@ module.exports = {
   },
 
   getSyncLog: async (nodeDb, start, end) => {
-    const result = await nodeDb('sync_log')
-      .where({
-        start_timestamp: start,
-        end_timestamp: end
-      })
-      .first('*');
-
-    return result;
+    return await nodeDb.query(`SELECT * FROM sync_log WHERE start_timestamp = $1 AND end_timestamp = $2`, [start, end]);
   },
 
   getCachedViewState: async (nodeDb, contractTxId, sortKey, input, caller) => {
     caller = caller || '';
-    const result = await nodeDb.raw(
-      `SELECT * FROM view_state WHERE contract_tx_id = ? AND sort_key = ? AND input = ? AND caller = ?;`,
+    const result = await nodeDb.query(
+      `SELECT * FROM view_state WHERE contract_tx_id = $1 AND sort_key = $2 AND input = $3 AND caller = $4;`,
       [contractTxId, sortKey, input, caller]
     );
-    return result;
+    if (result && result.rows && result.rows.length > 0) {
+      return result.rows[0];
+    }
+    return null;
   },
 
   insertViewStateIntoCache: async (nodeDb, contractTxId, sortKey, input, result, caller) => {
@@ -183,9 +175,36 @@ module.exports = {
       result: result
     };
 
-    await nodeDb('view_state').insert(entry).onConflict(['contract_tx_id', 'input', 'caller']).merge();
+    await nodeDb.query(
+      `
+                INSERT INTO view_state (contract_tx_id, sort_key, caller, signature, view_hash, input, result)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                ON CONFLICT(contract_tx_id, input, caller) DO UPDATE SET result = EXCLUDED.result`,
+      [contractTxId, sortKey, caller, sig, stateHash, input, result]
+    );
 
     return entry;
   },
 
+  getAllContractsIds: async (nodeDb) => {
+    console.log(`getAllContractsIds`);
+    const result = await nodeDb.query(
+      `SELECT count(DISTINCT key) AS total, array_agg(DISTINCT key) AS ids from warp.sort_key_cache;`
+    );
+    if (result && result.rows && result.rows.length > 0) {
+      return result.rows[0];
+    }
+    return null;
+  },
+
+  hasContract: async (nodeDb, contractTxId) => {
+    console.log(`hasContract`);
+    const result = await nodeDb.query(`SELECT count(*) > 0 AS has from warp.sort_key_cache WHERE key = $1;`, [
+      contractTxId
+    ]);
+    if (result && result.rows && result.rows.length > 0) {
+      return result.rows[0].has;
+    }
+    return false;
+  }
 };

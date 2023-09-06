@@ -58,6 +58,7 @@ module.exports = async function(
       logger.info(`====== Loading interactions for`, {
         startTimestamp,
         endTimestamp,
+        windowSize,
         fromDate: new Date(startTimestamp),
         toDate: new Date(endTimestamp)
       });

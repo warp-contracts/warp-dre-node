@@ -2,7 +2,7 @@ const { warp } = require('../warp');
 const { LoggerFactory, genesisSortKey } = require('warp-contracts');
 const { publish, checkStateSize } = require('./common');
 const { config } = require('../config');
-const { signState } = require("../signature");
+const { signState } = require('../signature');
 
 LoggerFactory.INST.logLevel('info', 'contractsProcessor');
 const logger = LoggerFactory.INST.create('contractsProcessor');
@@ -13,21 +13,17 @@ module.exports = async (job) => {
     const contractTxId = job.data.contractTxId;
     logger.info('Register Processor', contractTxId);
 
-    const result = await warp.contract(contractTxId)
+    const result = await warp
+      .contract(contractTxId)
       .setEvaluationOptions(config.evaluationOptions)
       .readState(genesisSortKey);
 
     checkStateSize(result.cachedValue.state);
 
-    const { sig, stateHash } = await signState(
-      contractTxId,
-      result.sortKey,
-      result.cachedValue.state
-    );
+    const { sig, stateHash } = await signState(contractTxId, result.sortKey, result.cachedValue.state);
 
     await warp.stateEvaluator.getCache().setSignature({ key: contractTxId, sortKey: result.sortKey }, stateHash, sig);
     await publish(logger, contractTxId, result.cachedValue.state, stateHash, sig);
-
   } catch (e) {
     logger.error('Exception in register processor', e);
     throw new Error(e);

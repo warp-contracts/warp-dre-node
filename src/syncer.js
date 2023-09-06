@@ -2,14 +2,7 @@ const { Queue, Worker, MetricsTime, QueueEvents } = require('bullmq');
 const path = require('path');
 const Redis = require('ioredis');
 const { config, logConfig } = require('./config');
-const {
-  insertFailure,
-  getFailures,
-  connect,
-  hasContract,
-  doBlacklist,
-  getLastSyncTimestamp
-} = require('./db/nodeDb');
+const { insertFailure, getFailures, connect, doBlacklist, getLastSyncTimestamp } = require('./db/nodeDb');
 
 const logger = require('./logger')('syncer');
 const exitHook = require('async-exit-hook');
@@ -24,18 +17,17 @@ let nodeDb;
 async function runSyncer() {
   logger.info('🚀🚀🚀 Starting syncer node');
   await logConfig();
+
   nodeDb = connect();
+  await pgClient.open();
 
   const registerQueue = await configureQueue('register', onFailedRegisterJob);
   const signatureQueue = await configureQueue('signature');
-  await pgClient.open();
 
   const theVeryFirstTimestamp = config.firstInteractionTimestamp;
   const lastSyncTimestamp = await getLastSyncTimestamp(nodeDb);
   logger.info('Last sync timestamp result', lastSyncTimestamp);
-  const startTimestamp = lastSyncTimestamp
-    ? lastSyncTimestamp
-    : theVeryFirstTimestamp;
+  const startTimestamp = lastSyncTimestamp ? lastSyncTimestamp : theVeryFirstTimestamp;
 
   const windowSizeMs = config.syncWindowSeconds * 1000;
   await pollGateway(
@@ -44,10 +36,11 @@ async function runSyncer() {
     startTimestamp,
     windowSizeMs,
     false,
-    signatureQueue);
+    signatureQueue
+  );
 
   const onMessage = async (data) => await processContractData(data, nodeDb, registerQueue);
-  await subscribeToGatewayNotifications(onMessage)
+  await subscribeToGatewayNotifications(onMessage);
 }
 
 runSyncer().catch((e) => {
@@ -62,7 +55,7 @@ async function onFailedRegisterJob(contractTxId, jobId, failedReason) {
     job_id: jobId,
     failure: failedReason
   });
-  if (failedReason.includes("[MaxStateSizeError]")) {
+  if (failedReason.includes('[MaxStateSizeError]')) {
     await doBlacklist(nodeDb, contractTxId, config.workersConfig.maxFailures);
   }
 }
@@ -174,26 +167,26 @@ async function configureQueue(queueName, onFailedJob) {
 
   const queueEvents = new QueueEvents(queueName, { connection: config.bullMqConnection });
 
-  queueEvents.on("failed", async ({ jobId, failedReason }) => {
+  queueEvents.on('failed', async ({ jobId, failedReason }) => {
     logger.error(`${queueName} job failed`, { jobId, failedReason });
     const contractTxId = jobId;
     if (onFailedJob) {
       await onFailedJob(contractTxId, jobId, failedReason);
     }
   });
-  queueEvents.on("added", async ({ jobId }) => {
+  queueEvents.on('added', async ({ jobId }) => {
     logger.info(`Job added to ${queueName} queue`, jobId);
   });
-  queueEvents.on("completed", async ({ jobId }) => {
+  queueEvents.on('completed', async ({ jobId }) => {
     logger.info(`${queueName} job completed`, jobId);
   });
 
   await clearQueue(queue);
 
-  const queueProcessor = path.join(__dirname, "workers", `${queueName}Processor`);
+  const queueProcessor = path.join(__dirname, 'workers', `${queueName}Processor`);
   const queueWorker = new Worker(queueName, queueProcessor, {
     concurrency: config.workersConfig[queueName],
-    connection: config.bullMqConnection,
+    connection: config.bullMqConnection
   });
 
   queues.push(queueWorker);
@@ -201,23 +194,18 @@ async function configureQueue(queueName, onFailedJob) {
   return queue;
 }
 
-
-
 function isTxIdValid(txId) {
   const validTxIdRegex = /[a-z0-9_-]{43}/i;
   return validTxIdRegex.test(txId);
 }
 
-
 // Graceful shutdown
 async function cleanup(callback) {
   logger.info('Interrupted');
   for (const queue of queues) {
-    await queue.close()
+    await queue.close();
   }
   await warp.close();
-  await pgClient.close();
-  nodeDb.destroy();
   logger.info('Clean up finished');
   callback();
 }

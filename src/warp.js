@@ -4,6 +4,7 @@ const { NlpExtension } = require('warp-contracts-plugin-nlp');
 const { EvaluationProgressPlugin } = require('warp-contracts-evaluation-progress-plugin');
 const { EventEmitter } = require('node:events');
 const { connect, getFailures } = require('./db/nodeDb');
+const warpDbConfig = require('../postgresConfigWarpDb.js');
 const { EthersExtension } = require('warp-contracts-plugin-ethers');
 const { EvmSignatureVerificationServerPlugin } = require('warp-contracts-plugin-signature/server');
 const { ContractBlacklistPlugin, getDreBlacklistFunction } = require('warp-contracts-plugin-blacklist');
@@ -15,15 +16,7 @@ const { PgContractCache } = require('warp-contracts-postgres');
 
 const eventEmitter = new EventEmitter();
 
-const pgClient = new PgContractCache(defaultCacheOptions, {
-  minEntriesPerContract: 10,
-  maxEntriesPerContract: 100,
-  host: 'localhost',
-  user: 'postgres',
-  password: 'postgres',
-  database: 'dre-u',
-  port: 21726
-});
+const pgClient = new PgContractCache(defaultCacheOptions, warpDbConfig);
 
 const warp = WarpFactory.forMainnet()
   .useGwUrl(config.gwUrl)

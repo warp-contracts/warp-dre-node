@@ -1,7 +1,7 @@
 const { LoggerFactory } = require("warp-contracts");
 const { publish } = require("./common");
 const { signState } = require("../signature");
-const { warp }  = require("../warp");
+const { warp } = require("../warp");
 
 LoggerFactory.INST.logLevel("debug", "signatureProcessor");
 LoggerFactory.INST.logLevel("debug", "PgContractCache");

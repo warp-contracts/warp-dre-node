@@ -1,12 +1,12 @@
 const { config } = require('../config');
-const { lastSyncTimestamp } = require("../db/nodeDb");
+const { getLastSyncTimestamp } = require("../db/nodeDb");
 module.exports = async (ctx) => {
   const { nodeDb } = ctx;
   const response = {};
 
   try {
     response.node = config.dreName;
-    response.lastSyncTimestamp = await lastSyncTimestamp(nodeDb);
+    response.lastSyncTimestamp = await getLastSyncTimestamp(nodeDb);
 
     response.manifest = await config.nodeManifest;
     response.workersConfig = config.workersConfig;
@@ -36,7 +36,3 @@ module.exports = async (ctx) => {
     throw e;
   }
 };
-
-function mapJob(j) {
-  return j.id;
-}
