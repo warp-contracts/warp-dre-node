@@ -44,6 +44,7 @@ const evaluationOptions = {
     "qOd7mNAJdju9PxtsRJbel4Zu3xYgEwUbxW8U14czjD8", // UCM contract evolve
     "0GOnb0o9c232d6SXF_HXHbGzfIdiYeos7U5jobOSZ_c", // UCM contract evolve
     "8kPgNMm7dZUVk93T7wq05otEy1oDNqZhyD3L7WrcMTY", // UCM contract evolve
+    "yDAppVePqGU1qcRnxdk-AShpIJ0RHCZixOMXtJTgm4Y", // UCM contract evolve
     "h9v17KHV4SXwdW2-JHU6a23f6R0YtbXZJJht8LfP8QM", // FAIR
   ]
 };
