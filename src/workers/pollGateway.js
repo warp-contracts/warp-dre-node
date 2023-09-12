@@ -48,12 +48,13 @@ function logPartitionData(partitioned) {
 }
 
 module.exports = async function(
-  nodeDb, whitelistedSources, initialStartTimestamp, windowSize, forceEndTimestamp, signatureQueue) {
+  nodeDb, whitelistedSources, initialStartTimestamp, windowsMs, forceEndTimestamp, signatureQueue) {
 
   let startTimestamp = initialStartTimestamp;
 
   (function workerLoop() {
     setTimeout(async function() {
+      let windowSize = windowSizeMs(startTimestamp, windowsMs);
       const endTimestamp = forceEndTimestamp ? forceEndTimestamp : startTimestamp + windowSize;
       logger.info(`====== Loading interactions for`, {
         startTimestamp,
@@ -166,3 +167,15 @@ module.exports = async function(
     }, 1000);
   })();
 };
+
+function windowSizeMs(startTimestamp, windowsMs) {
+  const lastIndex = windowsMs.length - 1;
+  for (let i = 0; i < lastIndex; i++) {
+    const startToNowDiff = Date.now() - startTimestamp;
+    if (windowsMs[i] < startToNowDiff) {
+      return windowsMs[i];
+    }
+  }
+
+  return windowsMs[lastIndex];
+}

@@ -1,6 +1,6 @@
 const { readFileSync } = require('fs');
 module.exports = {
-  max: 10,
+  max: 20,
   application_name: process.env.MY_NAME_IS,
   host: process.env.PG_HOST,
   user: 'dre',
@@ -10,7 +10,7 @@ module.exports = {
   ssl: {
     rejectUnauthorized: false,
     ca: readFileSync('certs/db/ca.pem').toString(),
-    key: readFileSync('certs/dre/key.pem').toString(),
-    cert: readFileSync('certs/dre/cert.pem').toString()
+    key: readFileSync('certs/warp/key.pem').toString(),
+    cert: readFileSync('certs/warp/cert.pem').toString()
   }
 };

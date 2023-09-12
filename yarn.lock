@@ -6824,10 +6824,10 @@ warp-contracts-plugin-vrf@1.0.4:
     "@idena/vrf-js" "^1.0.1"
     elliptic "^6.5.4"
 
-warp-contracts-postgres@1.0.0-beta.4:
-  version "1.0.0-beta.4"
-  resolved "https://registry.yarnpkg.com/warp-contracts-postgres/-/warp-contracts-postgres-1.0.0-beta.4.tgz#fbe32e6c907d6a966564c9ca30ced80d44a884ce"
-  integrity sha512-1Qi+ETFGdfrbk978vShzL9rExYTv9bnbKsOi/0XcQYYv9gvnbWnctVJxY0AAWPXbBrQa8bprVcf/GA54G/lSHA==
+warp-contracts-postgres@1.0.0-beta.5:
+  version "1.0.0-beta.5"
+  resolved "https://registry.yarnpkg.com/warp-contracts-postgres/-/warp-contracts-postgres-1.0.0-beta.5.tgz#418b04391d95eeb716704dd55a42f17a5e8783f6"
+  integrity sha512-WrdiPwLmzZD5coyFpcrRqkeiAvKnIjfgTkXaRktPi4GBbAEJ4v8QeTt2fEWKcaC/Kwvg2QCncu6cwaLdPKnq7w==
   dependencies:
     "@types/pg" "^8.10.2"
     pg "^8.11.2"

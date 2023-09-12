@@ -1,7 +1,7 @@
 const { readFileSync } = require("fs");
 module.exports = {
-  minEntriesPerContract: 1000,
-  maxEntriesPerContract: 10000,
+  minEntriesPerContract: 1000000,
+  maxEntriesPerContract: 10000000,
   application_name: process.env.MY_NAME_IS,
   host: process.env.PG_HOST,
   user: 'warp',

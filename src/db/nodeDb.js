@@ -103,7 +103,7 @@ module.exports = {
 
   // TODO
   deleteStates: async (nodeDb, contractTxId) => {
-    await nodeDb.raw(`DELETE FROM states WHERE contract_tx_id = $1;`, [contractTxId]);
+    await nodeDb.query(`DELETE FROM states WHERE contract_tx_id = $1;`, [contractTxId]);
   },
 
   deleteBlacklist: async (nodeDb, contractTxId) => {
@@ -141,7 +141,7 @@ module.exports = {
   },
 
   deleteErrors: async (nodeDb, contractTxId) => {
-    await nodeDb.raw(`DELETE FROM errors WHERE contract_tx_id = ?;`, [contractTxId]);
+    await nodeDb.query(`DELETE FROM errors WHERE contract_tx_id = ?;`, [contractTxId]);
   },
 
   getSyncLog: async (nodeDb, start, end) => {

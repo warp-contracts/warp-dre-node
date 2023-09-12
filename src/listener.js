@@ -65,8 +65,7 @@ function corsConfig() {
 async function cleanup(callback) {
   logger.info('Interrupted');
   await warp.close();
-  await pgClient.close();
-  await nodeDb.close();
+  await nodeDb.end();
   logger.info('Clean up finished');
   callback();
 }

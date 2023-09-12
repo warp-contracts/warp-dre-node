@@ -5,6 +5,7 @@ db*.sqlite
 .secrets
 .secrets/.env
 .secrets/local.env
+certs
 gateway.lock
 network-cache.json
 .DS_Store

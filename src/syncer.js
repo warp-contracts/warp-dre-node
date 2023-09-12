@@ -29,18 +29,28 @@ async function runSyncer() {
   logger.info('Last sync timestamp result', lastSyncTimestamp);
   const startTimestamp = lastSyncTimestamp ? lastSyncTimestamp : theVeryFirstTimestamp;
 
-  const windowSizeMs = config.syncWindowSeconds * 1000;
   await pollGateway(
     nodeDb,
     config.evaluationOptions.whitelistSources,
     startTimestamp,
-    windowSizeMs,
+    windowsMs(),
     false,
     signatureQueue
   );
 
   const onMessage = async (data) => await processContractData(data, nodeDb, registerQueue);
   await subscribeToGatewayNotifications(onMessage);
+}
+
+function windowsMs() {
+  const windows = [];
+  if (config.syncWindowSeconds.length < 1) {
+    throw new Error('Provide at least one sync window (in seconds)');
+  }
+  for (let w of config.syncWindowSeconds) {
+    windows.push(parseInt(w) * 1000);
+  }
+  return windows;
 }
 
 runSyncer().catch((e) => {

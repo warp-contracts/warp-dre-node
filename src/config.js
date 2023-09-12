@@ -99,7 +99,7 @@ const config = {
     maxFailures: parseInt(process.env.WORKERS_MAX_FAILURES),
     maxStateSizeB: parseInt(process.env.WORKERS_MAX_STATESIZE)
   },
-  syncWindowSeconds: parseInt(process.env.SYNC_WINDOW_SECONDS),
+  syncWindowSeconds: JSON.parse(process.env.SYNC_WINDOW_SECONDS),
   firstInteractionTimestamp: parseInt(process.env.FIRST_INTERACTION_TIMESTAMP)
 };
 
