@@ -121,6 +121,7 @@ async function processContractData(msgObj, nodeDb, registerQueue) {
       'initContract',
       {
         ...baseMessage,
+        publishContract: true,
         initialState: msgObj.initialState
       },
       { jobId }

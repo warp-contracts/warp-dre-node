@@ -23,7 +23,9 @@ module.exports = async (job) => {
     const { sig, stateHash } = await signState(contractTxId, result.sortKey, result.cachedValue.state);
 
     await warp.stateEvaluator.getCache().setSignature({ key: contractTxId, sortKey: result.sortKey }, stateHash, sig);
-    await publish(logger, contractTxId, result.cachedValue.state, stateHash, sig);
+    if (job.data.publishContract) {
+      await publish(logger, contractTxId, result.cachedValue.state, stateHash, sig);
+    }
   } catch (e) {
     logger.error('Exception in register processor', e);
     throw new Error(e);

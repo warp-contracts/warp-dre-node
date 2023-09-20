@@ -187,18 +187,19 @@ module.exports = {
   },
 
   getAllContractsIds: async (nodeDb) => {
-    console.log(`getAllContractsIds`);
     const result = await nodeDb.query(
-      `SELECT count(DISTINCT key) AS total, array_agg(DISTINCT key) AS ids from warp.sort_key_cache;`
+      `SELECT count(DISTINCT key) AS total, array_agg(DISTINCT key) AS ids FROM warp.sort_key_cache;`
     );
     if (result && result.rows && result.rows.length > 0) {
-      return result.rows[0];
+      return {
+        total: Number(result.rows[0].total),
+        ids: result.rows[0].ids
+      };
     }
     return null;
   },
 
   hasContract: async (nodeDb, contractTxId) => {
-    console.log(`hasContract`);
     const result = await nodeDb.query(`SELECT count(*) > 0 AS has from warp.sort_key_cache WHERE key = $1;`, [
       contractTxId
     ]);

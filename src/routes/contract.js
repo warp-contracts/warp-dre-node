@@ -1,14 +1,14 @@
-const { JSONPath } = require("jsonpath-plus");
-const { getContractErrors } = require("../db/nodeDb");
-const { LoggerFactory } = require("warp-contracts");
+const { JSONPath } = require('jsonpath-plus');
+const { getContractErrors } = require('../db/nodeDb');
+const { LoggerFactory } = require('warp-contracts');
 const { warp } = require('../warp');
 
 const registrationStatus = {
-  "not-registered": "not-registered",
-  registered: "registered",
-  evaluated: "evaluated",
-  error: "error",
-  blacklisted: "blacklisted"
+  'not-registered': 'not-registered',
+  registered: 'registered',
+  evaluated: 'evaluated',
+  error: 'error',
+  blacklisted: 'blacklisted'
 };
 
 LoggerFactory.INST.logLevel('debug', 'contractsRoute');
@@ -17,21 +17,23 @@ const logger = LoggerFactory.INST.create('contractsRoute');
 class NoContractError extends Error {
   constructor(message) {
     super(message);
-    this.name = "NoContractError";
+    this.name = 'NoContractError';
   }
 }
 
 module.exports = async (ctx) => {
   const contractId = ctx.query.id;
-  const showState = ctx.query.state !== "false";
-  const showValidity = ctx.query.validity === "true";
-  const showErrorMessages = ctx.query.errorMessages === "true";
-  const showErrors = ctx.query.errors === "true";
+  const showState = ctx.query.state !== 'false';
+  const showValidity = ctx.query.validity === 'true';
+  const showErrorMessages = ctx.query.errorMessages === 'true';
+  const showErrors = ctx.query.errors === 'true';
   const query = ctx.query.query;
   const { nodeDb } = ctx;
 
   logger.info("New 'contract' request", {
-    contractId, showState, showValidity
+    contractId,
+    showState,
+    showValidity
   });
 
   try {
@@ -39,7 +41,7 @@ module.exports = async (ctx) => {
 
     const result = await warp.stateEvaluator.latestAvailableState(contractId);
     if (result) {
-      response.status = registrationStatus["evaluated"];
+      response.status = registrationStatus['evaluated'];
       response.contractTxId = contractId;
       if (query) {
         response.result = JSONPath({ path: query, json: result.cachedValue.state });
@@ -64,10 +66,10 @@ module.exports = async (ctx) => {
     } else {
       const contractErrors = await getContractErrors(nodeDb, contractId);
       if (contractErrors.length) {
-        response.status = registrationStatus["error"];
+        response.status = registrationStatus['error'];
         response.errors = contractErrors;
       } else {
-        throw new NoContractError("No info about contract");
+        throw new NoContractError('No info about contract');
       }
     }
 
@@ -75,7 +77,7 @@ module.exports = async (ctx) => {
     ctx.status = 200;
   } catch (e) {
     logger.error(e);
-    if (e.name == "NoContractError") {
+    if (e.name == 'NoContractError') {
       ctx.status = 404;
     } else {
       ctx.status = 500;
