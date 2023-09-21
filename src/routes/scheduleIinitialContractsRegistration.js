@@ -1,11 +1,17 @@
 const { config } = require('../config');
 const { LoggerFactory } = require('warp-contracts');
-const { Queue } = require('bullmq');
 const { getAllContractsIds } = require('../db/nodeDb');
 
 const logger = LoggerFactory.INST.create('scheduleContractsDreSync');
 const isTestInstance = config.env === 'test';
 
+/**
+ * Schedule initial state registration of missing contracts.
+ * Contracts will be evaluated using genesis sort key.
+ * No interactions will be taken into account.
+ * Missing interactions are defined by fetching contracts from foreign DRE
+ * and comparing to local data.
+ */
 module.exports = async (ctx) => {
   if (!config.foreignDres || Object.keys(config.foreignDres).length < 1) {
     logger.info('Cannot sync with remote dres, config missing');
@@ -17,41 +23,27 @@ module.exports = async (ctx) => {
   const foreignDre = ctx.query.dre;
   if (!foreignDre || !config.foreignDres[foreignDre]) {
     logger.info('Cannot sync with remote dre, invalid name');
-    ctx.body = `${foreignDre} not recognized, maybe try: /sync-contracts?dre=dreu&size=2`;
+    ctx.body = `${foreignDre} not recognized, maybe try: /contract/initial-registration?dre=dreu&limit=2`;
     ctx.status = 400;
     return;
   }
 
-  const { nodeDb } = ctx;
-  const size = ctx.query.size;
+  const { registerQueue, nodeDb } = ctx;
 
   try {
     const difference = await Promise.all([fetchRemoteContracts(foreignDre), getAllContractsIds(nodeDb)]).then(
       ([foreign, local]) => foreign.ids.filter((x) => !local.ids.includes(x))
     );
 
-    const registerQueue = new Queue('register', {
-      connection: config.bullMqConnection,
-      defaultJobOptions: {
-        removeOnComplete: {
-          age: 3600
-        },
-        removeOnFail: true
-      }
-    });
-
-    let i = 0;
-    const limit = size || difference.length;
+    const limit = ctx.query.limit || difference.length;
     const scheduled = [];
-    while (i < limit && difference.length > 0) {
-      i++;
+    while (scheduled.length < limit && difference.length > 0) {
       const contractTxId = difference.pop();
       const baseMessage = {
         contractTxId,
         appSyncKey: config.appSync.key,
         test: isTestInstance
       };
-      const jobId = contractTxId;
       await registerQueue.add(
         'initContract',
         {
@@ -59,13 +51,13 @@ module.exports = async (ctx) => {
           publishContract: false,
           initialState: {}
         },
-        { jobId }
+        { jobId: contractTxId }
       );
       scheduled.push(contractTxId);
     }
 
     ctx.body = {
-      message: `Scheduled ${i} contracts for registration from ${config.foreignDres[foreignDre]}, left: ${difference.length}`,
+      message: `Scheduled ${scheduled.length} contracts for registration from ${config.foreignDres[foreignDre]}, left: ${difference.length}`,
       contracts: scheduled
     };
     ctx.status = 200;
@@ -76,11 +68,11 @@ module.exports = async (ctx) => {
 };
 
 async function fetchRemoteContracts(foreignDre) {
-  const foreignDreLink = `https://${config.foreignDres[foreignDre]}/cached`;
+  const foreignDreLink = `https://${config.foreignDres[foreignDre]}/cached?ids=true`;
   logger.info(`Calling ${foreignDreLink} to sync contracts`);
   const result = await fetch(foreignDreLink);
   if (!result.ok) {
-    throw new Error(`Wrong response for `);
+    throw new Error(`Failed call: ${foreignDreLink} `);
   }
   return await result.json();
 }

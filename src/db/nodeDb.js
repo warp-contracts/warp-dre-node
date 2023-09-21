@@ -186,6 +186,16 @@ module.exports = {
     return entry;
   },
 
+  countAllContracts: async (nodeDb) => {
+    const result = await nodeDb.query(`SELECT count(DISTINCT key) AS total FROM warp.sort_key_cache;`);
+    if (result && result.rows && result.rows.length > 0) {
+      return {
+        total: Number(result.rows[0].total)
+      };
+    }
+    return 0;
+  },
+
   getAllContractsIds: async (nodeDb) => {
     const result = await nodeDb.query(
       `SELECT count(DISTINCT key) AS total, array_agg(DISTINCT key) AS ids FROM warp.sort_key_cache;`

@@ -1,7 +1,7 @@
 const { config } = require('../config');
-const { getLastSyncTimestamp } = require("../db/nodeDb");
+const { getLastSyncTimestamp } = require('../db/nodeDb');
 module.exports = async (ctx) => {
-  const { nodeDb } = ctx;
+  const { registerQueue, nodeDb } = ctx;
   const response = {};
 
   try {
@@ -11,7 +11,7 @@ module.exports = async (ctx) => {
     response.manifest = await config.nodeManifest;
     response.workersConfig = config.workersConfig;
 
-    /*const registerActiveJobs = await registerQueue.getJobs(['active']);
+    const registerActiveJobs = await registerQueue.getJobs(['active']);
     const registerWaitingJobs = await registerQueue.getJobs(['waiting']);
 
     response.queues_totals = {
@@ -26,7 +26,7 @@ module.exports = async (ctx) => {
         active: registerActiveJobs.map(mapJob),
         waiting: registerWaitingJobs.map(mapJob)
       }
-    };*/
+    };
 
     ctx.body = response;
     ctx.status = 200;
@@ -36,3 +36,7 @@ module.exports = async (ctx) => {
     throw e;
   }
 };
+
+function mapJob(j) {
+  return j.id;
+}

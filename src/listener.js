@@ -4,12 +4,13 @@ const bodyParser = require('koa-bodyparser');
 const compress = require('koa-compress');
 const zlib = require('zlib');
 const router = require('./router');
-const { logConfig } = require('./config');
+const { logConfig, config } = require('./config');
 const { createNodeDbTables, connect } = require('./db/nodeDb');
 
 const logger = require('./logger')('listener');
 const exitHook = require('async-exit-hook');
 const { pgClient, warp } = require('./warp');
+const { Queue } = require('bullmq');
 let port = 8080;
 
 let nodeDb;
@@ -35,13 +36,21 @@ async function runListener() {
       ctx.redirect('/status');
     });
   app.context.nodeDb = nodeDb;
+  app.context.registerQueue = new Queue('register', {
+    connection: config.bullMqConnection,
+    defaultJobOptions: {
+      removeOnComplete: {
+        age: 3600
+      },
+      removeOnFail: true
+    }
+  });
   app.listen(port);
 }
 
 runListener().catch((e) => {
   logger.error(e);
 });
-
 
 const compressionSettings = {
   threshold: 2048,
