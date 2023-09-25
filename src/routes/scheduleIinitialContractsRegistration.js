@@ -28,10 +28,10 @@ module.exports = async (ctx) => {
     return;
   }
 
-  const { registerQueue, nodeDb } = ctx;
+  const { registerQueue } = ctx;
 
   try {
-    const difference = await Promise.all([fetchRemoteContracts(foreignDre), getAllContractsIds(nodeDb)]).then(
+    const difference = await Promise.all([fetchRemoteContracts(foreignDre), getAllContractsIds()]).then(
       ([foreign, local]) => foreign.ids.filter((x) => !local.ids.includes(x))
     );
 
@@ -48,7 +48,7 @@ module.exports = async (ctx) => {
         'initContract',
         {
           ...baseMessage,
-          publishContract: false,
+          requiresPublish: false,
           initialState: {}
         },
         { jobId: contractTxId }

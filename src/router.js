@@ -10,11 +10,13 @@ const scheduleIinitialContractsRegistration = require('./routes/scheduleIinitial
 const kv = require('./routes/kv');
 const eraseContract = require('./routes/eraseContract');
 const validity = require('./routes/validity');
+const { walletBalances } = require('./routes/aggBalances');
 const alive = require('./routes/alive');
 const syncLog = require('./routes/syncLog');
 
 const router = new Router();
 
+router.get('/agg/balances', walletBalances);
 router.get('/contract', contract);
 router.get('/alive', alive);
 router.get('/contract/view-state', contractViewState);

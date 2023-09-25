@@ -7,7 +7,6 @@ const validityCache = new LRUCache(20);
 module.exports = async (ctx) => {
   const id = ctx.query.id;
   const contractId = ctx.query.contractId;
-  const { nodeDb } = ctx;
   let response = {};
 
   if (!id || !contractId) {
@@ -28,7 +27,7 @@ module.exports = async (ctx) => {
     if (contractValidity && id in contractValidity.interactions) {
       response = getInteractionValidityAndErrorMessage(contractValidity, id);
     } else {
-      const { result, parsed } = await getContractState(contractId, nodeDb);
+      const { result, parsed } = await getContractState(contractId);
 
       if (result) {
         const contractValidity = {
@@ -43,7 +42,7 @@ module.exports = async (ctx) => {
           ctx.throw(404, 'Interaction cannot be found in contract interactions.');
         }
       } else {
-        const contractErrors = await getContractErrors(nodeDb, contractId);
+        const contractErrors = await getContractErrors(contractId);
 
         if (contractErrors.length) {
           response.contractErrors = contractErrors;

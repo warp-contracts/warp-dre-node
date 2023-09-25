@@ -32,7 +32,7 @@ module.exports = async (ctx) => {
 
     let output = null;
     let sortKey = (await getLastStateFromDreCache(nodeDb, contractId)).sort_key;
-    let cachedView = (await getCachedViewState(nodeDb, contractId, sortKey, JSON.stringify(input), caller))[0];
+    let cachedView = (await getCachedViewState(contractId, sortKey, JSON.stringify(input), caller))[0];
 
     if (cachedView) {
       output = JSON.parse(cachedView.result);
@@ -47,7 +47,7 @@ module.exports = async (ctx) => {
         error: interactionResult.error,
         errorMessage: interactionResult.errorMessage
       };
-      cachedView = await insertViewStateIntoCache(nodeDb, contractId, sortKey, input, output, caller);
+      cachedView = await insertViewStateIntoCache(contractId, sortKey, input, output, caller);
     }
 
     ctx.body = { ...output, sortKey, signature: cachedView.signature, hash: cachedView.view_hash };

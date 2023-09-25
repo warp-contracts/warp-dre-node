@@ -1,44 +1,35 @@
-const { Queue, Worker, MetricsTime, QueueEvents } = require('bullmq');
-const path = require('path');
 const Redis = require('ioredis');
 const { config, logConfig } = require('./config');
-const { insertFailure, getFailures, connect, doBlacklist, getLastSyncTimestamp } = require('./db/nodeDb');
+const { getFailures, getLastSyncTimestamp, createNodeDbTables, drePool } = require('./db/nodeDb');
 
 const logger = require('./logger')('syncer');
 const exitHook = require('async-exit-hook');
 const { warp, pgClient } = require('./warp');
 const pollGateway = require('./workers/pollGateway');
+const { createAggDbTables } = require('./db/aggDbSetup');
+const { queuesCleanUp, initQueue, postEvalQueue, registerQueue } = require('./bullQueue');
 
 let isTestInstance = config.env === 'test';
-const queues = [];
-
-let nodeDb;
 
 async function runSyncer() {
   logger.info('🚀🚀🚀 Starting syncer node');
   await logConfig();
 
-  nodeDb = connect();
-  await pgClient.open();
+  await createNodeDbTables();
+  await createAggDbTables();
 
-  const registerQueue = await configureQueue('register', onFailedRegisterJob);
-  const signatureQueue = await configureQueue('signature');
+  await pgClient.open();
+  await initQueue(postEvalQueue);
+  await initQueue(registerQueue);
 
   const theVeryFirstTimestamp = config.firstInteractionTimestamp;
-  const lastSyncTimestamp = await getLastSyncTimestamp(nodeDb);
+  const lastSyncTimestamp = await getLastSyncTimestamp();
   logger.info('Last sync timestamp result', lastSyncTimestamp);
   const startTimestamp = lastSyncTimestamp ? lastSyncTimestamp : theVeryFirstTimestamp;
 
-  await pollGateway(
-    nodeDb,
-    config.evaluationOptions.whitelistSources,
-    startTimestamp,
-    windowsMs(),
-    false,
-    signatureQueue
-  );
+  await pollGateway(config.evaluationOptions.whitelistSources, startTimestamp, windowsMs(), false);
 
-  const onMessage = async (data) => await processContractData(data, nodeDb, registerQueue);
+  const onMessage = async (data) => await processContractData(data, registerQueue);
   await subscribeToGatewayNotifications(onMessage);
 }
 
@@ -57,20 +48,7 @@ runSyncer().catch((e) => {
   logger.error(e);
 });
 
-async function onFailedRegisterJob(contractTxId, jobId, failedReason) {
-  await insertFailure(nodeDb, {
-    contract_tx_id: contractTxId,
-    evaluation_options: config.evaluationOptions,
-    sdk_config: config.warpSdkConfig,
-    job_id: jobId,
-    failure: failedReason
-  });
-  if (failedReason.includes('[MaxStateSizeError]')) {
-    await doBlacklist(nodeDb, contractTxId, config.workersConfig.maxFailures);
-  }
-}
-
-async function processContractData(msgObj, nodeDb, registerQueue) {
+async function processContractData(msgObj, registerQueue) {
   logger.info(`Received '${msgObj.contractTxId}'`);
 
   let validationMessage = null;
@@ -91,7 +69,7 @@ async function processContractData(msgObj, nodeDb, registerQueue) {
   }
 
   if (validationMessage == null) {
-    const contractFailures = await getFailures(nodeDb, msgObj.contractTxId);
+    const contractFailures = await getFailures(drePool, msgObj.contractTxId);
     if (Number.isInteger(contractFailures) && contractFailures > config.workersConfig.maxFailures - 1) {
       validationMessage = `Contract blacklisted: ${msgObj.contractTxId}`;
     }
@@ -121,7 +99,7 @@ async function processContractData(msgObj, nodeDb, registerQueue) {
       'initContract',
       {
         ...baseMessage,
-        publishContract: true,
+        requiresPublish: true,
         initialState: msgObj.initialState
       },
       { jobId }
@@ -161,50 +139,6 @@ async function subscribeToGatewayNotifications(onMessage) {
   process.on('exit', () => subscriber.disconnect());
 }
 
-async function configureQueue(queueName, onFailedJob) {
-  async function clearQueue(queue) {
-    await queue.obliterate({ force: true });
-  }
-
-  const queue = new Queue(queueName, {
-    connection: config.bullMqConnection,
-    defaultJobOptions: {
-      removeOnComplete: {
-        age: 3600
-      },
-      removeOnFail: true
-    }
-  });
-
-  const queueEvents = new QueueEvents(queueName, { connection: config.bullMqConnection });
-
-  queueEvents.on('failed', async ({ jobId, failedReason }) => {
-    logger.error(`${queueName} job failed`, { jobId, failedReason });
-    const contractTxId = jobId;
-    if (onFailedJob) {
-      await onFailedJob(contractTxId, jobId, failedReason);
-    }
-  });
-  queueEvents.on('added', async ({ jobId }) => {
-    logger.info(`Job added to ${queueName} queue`, jobId);
-  });
-  queueEvents.on('completed', async ({ jobId }) => {
-    logger.info(`${queueName} job completed`, jobId);
-  });
-
-  await clearQueue(queue);
-
-  const queueProcessor = path.join(__dirname, 'workers', `${queueName}Processor`);
-  const queueWorker = new Worker(queueName, queueProcessor, {
-    concurrency: config.workersConfig[queueName],
-    connection: config.bullMqConnection
-  });
-
-  queues.push(queueWorker);
-
-  return queue;
-}
-
 function isTxIdValid(txId) {
   const validTxIdRegex = /[a-z0-9_-]{43}/i;
   return validTxIdRegex.test(txId);
@@ -213,10 +147,9 @@ function isTxIdValid(txId) {
 // Graceful shutdown
 async function cleanup(callback) {
   logger.info('Interrupted');
-  for (const queue of queues) {
-    await queue.close();
-  }
+  await queuesCleanUp();
   await warp.close();
+  await drePool.end();
   logger.info('Clean up finished');
   callback();
 }

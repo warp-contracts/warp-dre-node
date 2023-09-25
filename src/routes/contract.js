@@ -28,7 +28,6 @@ module.exports = async (ctx) => {
   const showErrorMessages = ctx.query.errorMessages === 'true';
   const showErrors = ctx.query.errors === 'true';
   const query = ctx.query.query;
-  const { nodeDb } = ctx;
 
   logger.info("New 'contract' request", {
     contractId,
@@ -58,13 +57,13 @@ module.exports = async (ctx) => {
         response.errorMessages = result.cachedValue.errorMessages;
       }
       if (showErrors) {
-        response.errors = await getContractErrors(nodeDb, contractId);
+        response.errors = await getContractErrors(contractId);
       }
       response.sortKey = result.sortKey;
       response.signature = result.cachedValue.signature;
       response.stateHash = result.cachedValue.hash;
     } else {
-      const contractErrors = await getContractErrors(nodeDb, contractId);
+      const contractErrors = await getContractErrors(contractId);
       if (contractErrors.length) {
         response.status = registrationStatus['error'];
         response.errors = contractErrors;

@@ -5,7 +5,7 @@ const compress = require('koa-compress');
 const zlib = require('zlib');
 const router = require('./router');
 const { logConfig, config } = require('./config');
-const { createNodeDbTables, connect } = require('./db/nodeDb');
+const { drePool } = require('./db/nodeDb');
 
 const logger = require('./logger')('listener');
 const exitHook = require('async-exit-hook');
@@ -13,16 +13,11 @@ const { pgClient, warp } = require('./warp');
 const { Queue } = require('bullmq');
 let port = 8080;
 
-let nodeDb;
-
 async function runListener() {
   logger.info('🚀🚀🚀 Starting listener node');
   await logConfig();
 
-  nodeDb = connect();
   await pgClient.open();
-
-  await createNodeDbTables(nodeDb);
 
   const app = new Koa();
   app
@@ -35,7 +30,6 @@ async function runListener() {
       await next();
       ctx.redirect('/status');
     });
-  app.context.nodeDb = nodeDb;
   app.context.registerQueue = new Queue('register', {
     connection: config.bullMqConnection,
     defaultJobOptions: {
@@ -74,7 +68,7 @@ function corsConfig() {
 async function cleanup(callback) {
   logger.info('Interrupted');
   await warp.close();
-  await nodeDb.end();
+  await drePool.end();
   logger.info('Clean up finished');
   callback();
 }

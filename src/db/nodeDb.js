@@ -3,12 +3,13 @@ const { config } = require('../config');
 const dreDbConfig = require('../../postgresConfigDreDb.js');
 const { Pool } = require('pg');
 
-let stateDb = null;
+const drePool = new Pool(dreDbConfig);
 
 module.exports = {
+  drePool,
   // remove
-  createNodeDbTables: async (nodeDb) => {
-    await nodeDb.query(
+  createNodeDbTables: async () => {
+    await drePool.query(
       `
         --------------- errors
         CREATE TABLE IF NOT EXISTS errors (
@@ -57,16 +58,8 @@ module.exports = {
     );
   },
 
-  connect: () => {
-    if (stateDb == null) {
-      stateDb = new Pool(dreDbConfig);
-    }
-
-    return stateDb;
-  },
-
-  insertFailure: async (nodeDb, data) => {
-    await nodeDb.query(
+  insertFailure: async (data) => {
+    await drePool.query(
       `
                 INSERT INTO errors (contract_tx_id,evaluation_options,sdk_config,job_id,failure,timestamp)
                 VALUES ($1, $2, $3, $4, $5, $6)
@@ -75,8 +68,8 @@ module.exports = {
     );
   },
 
-  insertSyncLog: async (nodeDb, data) => {
-    await nodeDb.query(
+  insertSyncLog: async (data) => {
+    await drePool.query(
       `
                 INSERT INTO sync_log (start_timestamp, end_timestamp, response_length, response_hash, response_first_sortkey, response_last_sortkey, errors)
                 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
@@ -92,8 +85,8 @@ module.exports = {
     );
   },
 
-  getLastSyncTimestamp: async (nodeDb) => {
-    const result = await nodeDb.query('SELECT max(end_timestamp) as "lastTimestamp" from sync_log');
+  getLastSyncTimestamp: async () => {
+    const result = await drePool.query('SELECT max(end_timestamp) as "lastTimestamp" from sync_log');
     if (result && result.rows && result.rows.length > 0) {
       return Number(result.rows[0].lastTimestamp);
     } else {
@@ -102,23 +95,23 @@ module.exports = {
   },
 
   // TODO
-  deleteStates: async (nodeDb, contractTxId) => {
-    await nodeDb.query(`DELETE FROM states WHERE contract_tx_id = $1;`, [contractTxId]);
+  deleteStates: async (contractTxId) => {
+    await drePool.query(`DELETE FROM states WHERE contract_tx_id = $1;`, [contractTxId]);
   },
 
-  deleteBlacklist: async (nodeDb, contractTxId) => {
-    await nodeDb.query(`DELETE FROM black_list WHERE contract_tx_id = $1;`, [contractTxId]);
+  deleteBlacklist: async (contractTxId) => {
+    await drePool.query(`DELETE FROM black_list WHERE contract_tx_id = $1;`, [contractTxId]);
   },
 
-  doBlacklist: async (nodeDb, contractTxId, failures) => {
-    await nodeDb.query(
+  doBlacklist: async (contractTxId, failures) => {
+    await drePool.query(
       `INSERT INTO black_list VALUES ($1, $2) ON CONFLICT (contract_tx_id) DO UPDATE SET failures = EXCLUDED.failures `,
       [contractTxId, failures]
     );
   },
 
-  getFailures: async (nodeDb, contractTxId) => {
-    const result = await nodeDb.query(`SELECT * FROM black_list WHERE contract_tx_id = $1`, [contractTxId]);
+  getFailures: async (drePool, contractTxId) => {
+    const result = drePool.query(`SELECT * FROM black_list WHERE contract_tx_id = $1`, [contractTxId]);
     if (result && result.rows && result.rows.length > 0) {
       return result.rows[0].failures;
     }
@@ -126,31 +119,31 @@ module.exports = {
     return 0;
   },
 
-  getAllBlacklisted: async (nodeDb) => {
-    return await nodeDb.query(`SELECT * FROM black_list`);
+  getAllBlacklisted: async () => {
+    return await drePool.query(`SELECT * FROM black_list`);
   },
 
-  getAllErrors: async (nodeDb) => {
-    return await nodeDb.query(`SELECT * FROM errors;`);
+  getAllErrors: async () => {
+    return await drePool.query(`SELECT * FROM errors;`);
   },
 
-  getContractErrors: async (nodeDb, contractTxId) => {
-    return await nodeDb.query(`SELECT * FROM errors WHERE contract_tx_id = $1 ORDER BY timestamp DESC;`, [
+  getContractErrors: async (contractTxId) => {
+    return await drePool.query(`SELECT * FROM errors WHERE contract_tx_id = $1 ORDER BY timestamp DESC;`, [
       contractTxId
     ]);
   },
 
-  deleteErrors: async (nodeDb, contractTxId) => {
-    await nodeDb.query(`DELETE FROM errors WHERE contract_tx_id = ?;`, [contractTxId]);
+  deleteErrors: async (contractTxId) => {
+    await drePool.query(`DELETE FROM errors WHERE contract_tx_id = ?;`, [contractTxId]);
   },
 
-  getSyncLog: async (nodeDb, start, end) => {
-    return await nodeDb.query(`SELECT * FROM sync_log WHERE start_timestamp = $1 AND end_timestamp = $2`, [start, end]);
+  getSyncLog: async (start, end) => {
+    return await drePool.query(`SELECT * FROM sync_log WHERE start_timestamp = $1 AND end_timestamp = $2`, [start, end]);
   },
 
-  getCachedViewState: async (nodeDb, contractTxId, sortKey, input, caller) => {
+  getCachedViewState: async (contractTxId, sortKey, input, caller) => {
     caller = caller || '';
-    const result = await nodeDb.query(
+    const result = await drePool.query(
       `SELECT * FROM view_state WHERE contract_tx_id = $1 AND sort_key = $2 AND input = $3 AND caller = $4;`,
       [contractTxId, sortKey, input, caller]
     );
@@ -160,7 +153,7 @@ module.exports = {
     return null;
   },
 
-  insertViewStateIntoCache: async (nodeDb, contractTxId, sortKey, input, result, caller) => {
+  insertViewStateIntoCache: async (contractTxId, sortKey, input, result, caller) => {
     caller = caller || '';
     const manifest = await config.nodeManifest;
     const { sig, stateHash } = await signState(contractTxId, sortKey, result, caller, manifest);
@@ -175,7 +168,7 @@ module.exports = {
       result: result
     };
 
-    await nodeDb.query(
+    await drePool.query(
       `
                 INSERT INTO view_state (contract_tx_id, sort_key, caller, signature, view_hash, input, result)
                 VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -186,8 +179,8 @@ module.exports = {
     return entry;
   },
 
-  countAllContracts: async (nodeDb) => {
-    const result = await nodeDb.query(`SELECT count(DISTINCT key) AS total FROM warp.sort_key_cache;`);
+  countAllContracts: async () => {
+    const result = await drePool.query(`SELECT count(DISTINCT key) AS total FROM warp.sort_key_cache;`);
     if (result && result.rows && result.rows.length > 0) {
       return {
         total: Number(result.rows[0].total)
@@ -196,8 +189,8 @@ module.exports = {
     return 0;
   },
 
-  getAllContractsIds: async (nodeDb) => {
-    const result = await nodeDb.query(
+  getAllContractsIds: async () => {
+    const result = await drePool.query(
       `SELECT count(DISTINCT key) AS total, array_agg(DISTINCT key) AS ids FROM warp.sort_key_cache;`
     );
     if (result && result.rows && result.rows.length > 0) {
@@ -209,8 +202,8 @@ module.exports = {
     return null;
   },
 
-  hasContract: async (nodeDb, contractTxId) => {
-    const result = await nodeDb.query(`SELECT count(*) > 0 AS has from warp.sort_key_cache WHERE key = $1;`, [
+  hasContract: async (contractTxId) => {
+    const result = await drePool.query(`SELECT count(*) > 0 AS has from warp.sort_key_cache WHERE key = $1;`, [
       contractTxId
     ]);
     if (result && result.rows && result.rows.length > 0) {

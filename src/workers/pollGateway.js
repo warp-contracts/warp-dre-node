@@ -1,13 +1,13 @@
-const { LoggerFactory } = require("warp-contracts");
-const loadInteractions = require("../loadInteractions");
-const { hashElement } = require("../signature");
-const updateProcessor = require("./updateProcessor");
-const { insertSyncLog } = require("../db/nodeDb");
-const { isTxIdValid } = require("../common");
-const { partition } = require("./common");
+const { LoggerFactory } = require('warp-contracts');
+const loadInteractions = require('../loadInteractions');
+const { hashElement } = require('../signature');
+const updateProcessor = require('./updateProcessor');
+const { insertSyncLog } = require('../db/nodeDb');
+const { isTxIdValid } = require('../common');
+const { partition } = require('./common');
 
-const logger = LoggerFactory.INST.create("syncer");
-LoggerFactory.INST.logLevel("info", "syncer");
+const logger = LoggerFactory.INST.create('syncer');
+LoggerFactory.INST.logLevel('info', 'syncer');
 
 function validate(entries) {
   for (let i = 0; i < entries.length; i++) {
@@ -37,23 +37,21 @@ function sort(entries) {
 }
 
 function logPartitionData(partitioned) {
-  logger.info("Partitions length", partitioned.length);
+  logger.info('Partitions length', partitioned.length);
   if (partitioned.length > 0) {
     const partitionsData = {};
     partitioned.forEach((p, index) => {
       partitionsData[index] = p.length;
     });
-    logger.info("Partitions", partitionsData);
+    logger.info('Partitions', partitionsData);
   }
 }
 
-module.exports = async function(
-  nodeDb, whitelistedSources, initialStartTimestamp, windowsMs, forceEndTimestamp, signatureQueue) {
-
+module.exports = async function (whitelistedSources, initialStartTimestamp, windowsMs, forceEndTimestamp) {
   let startTimestamp = initialStartTimestamp;
 
   (function workerLoop() {
-    setTimeout(async function() {
+    setTimeout(async function () {
       let windowSize = windowSizeMs(startTimestamp, windowsMs);
       const endTimestamp = forceEndTimestamp ? forceEndTimestamp : startTimestamp + windowSize;
       logger.info(`====== Loading interactions for`, {
@@ -69,16 +67,21 @@ module.exports = async function(
         result = await loadInteractions(startTimestamp, endTimestamp, whitelistedSources);
         // logger.info("Raw response", result);
         if (!result) {
-          throw new Error("Result is null or undefined");
+          throw new Error('Result is null or undefined');
         }
         if (!result.interactions) {
           throw new Error("Result does not contain 'interactions' field");
         }
         validate(result.interactions);
       } catch (e) {
-        logger.error("Error while loading interactions", {
-          startTimestamp, endTimestamp
-        }, e);
+        logger.error(
+          'Error while loading interactions',
+          {
+            startTimestamp,
+            endTimestamp
+          },
+          e
+        );
 
         // we're assuming that's due to some issue on backend side
         // - so no 'startTimestamp' update here
@@ -93,7 +96,7 @@ module.exports = async function(
       const resultLength = interactions.length;
       const firstSortKey = resultLength ? interactions[0].sortKey : null;
       const lastSortKey = resultLength ? interactions[resultLength - 1].sortKey : null;
-      logger.info("Loaded interactions info", {
+      logger.info('Loaded interactions info', {
         startTimestamp,
         endTimestamp,
         responseHash,
@@ -120,24 +123,22 @@ module.exports = async function(
             data: {
               contractTxId: partition[0].contractTxId,
               isTest: false,
-              partition,
-              signatureQueue
-            },
-
+              partition
+            }
           });
         } catch (e) {
           logger.error(e);
           evaluationErrors[`${partition[0].contractTxId}|${partition[0].interaction.id}`] = {
             error: e?.toString()
           };
-          if (e.name == "CacheConsistencyError") {
-            logger.warn("Cache consistency error, stopping node!");
+          if (e.name === 'CacheConsistencyError') {
+            logger.warn('Cache consistency error, stopping node!');
             process.exit(0);
           }
         }
       }
 
-      logger.info("====== Update completed");
+      logger.info('====== Update completed');
 
       const syncLogData = {
         start_timestamp: startTimestamp,
@@ -149,9 +150,9 @@ module.exports = async function(
         errors: JSON.stringify(evaluationErrors)
       };
       try {
-        await insertSyncLog(nodeDb, syncLogData);
+        await insertSyncLog(syncLogData);
       } catch (e) {
-        logger.error("Error while storing sync log for", syncLogData);
+        logger.error('Error while storing sync log for', syncLogData);
         logger.error(e);
         // brutal...
         process.exit(0);

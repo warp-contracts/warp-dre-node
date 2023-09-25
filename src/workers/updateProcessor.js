@@ -1,39 +1,40 @@
-const { warp } = require("../warp");
-const { LoggerFactory, genesisSortKey } = require("warp-contracts");
-const { checkStateSize } = require("./common");
-const { config } = require("../config");
+const { warp } = require('../warp');
+const { LoggerFactory, genesisSortKey } = require('warp-contracts');
+const { checkStateSize } = require('./common');
+const { config } = require('../config');
+const { postEvalQueue } = require('../bullQueue');
 
 // LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
-LoggerFactory.INST.logLevel("debug", "interactionsProcessor");
-LoggerFactory.INST.logLevel("debug", "EvaluationProgressPlugin");
-LoggerFactory.INST.logLevel("debug", "WarpGatewayInteractionsLoader");
-LoggerFactory.INST.logLevel("debug", "ContractHandler");
-LoggerFactory.INST.logLevel("debug", "HandlerBasedContract");
-LoggerFactory.INST.logLevel("info", "DefaultStateEvaluator");
-LoggerFactory.INST.logLevel("debug", "SqliteContractCache");
-LoggerFactory.INST.logLevel("debug", "WarpGatewayContractDefinitionLoader");
-LoggerFactory.INST.logLevel("debug", "SqliteContractCache");
-const logger = LoggerFactory.INST.create("interactionsProcessor");
+LoggerFactory.INST.logLevel('debug', 'interactionsProcessor');
+LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
+LoggerFactory.INST.logLevel('debug', 'WarpGatewayInteractionsLoader');
+LoggerFactory.INST.logLevel('debug', 'ContractHandler');
+LoggerFactory.INST.logLevel('debug', 'HandlerBasedContract');
+LoggerFactory.INST.logLevel('info', 'DefaultStateEvaluator');
+LoggerFactory.INST.logLevel('debug', 'SqliteContractCache');
+LoggerFactory.INST.logLevel('debug', 'WarpGatewayContractDefinitionLoader');
+LoggerFactory.INST.logLevel('debug', 'SqliteContractCache');
+const logger = LoggerFactory.INST.create('interactionsProcessor');
 
 class CacheConsistencyError extends Error {
   constructor(message) {
     super(message);
-    this.name = "CacheConsistencyError";
+    this.name = 'CacheConsistencyError';
   }
 }
 
 module.exports = async (job) => {
-  const { contractTxId, isTest, partition, signatureQueue } = job.data;
+  const { contractTxId, isTest, partition } = job.data;
 
-  logger.info("Update Processor", contractTxId);
+  logger.info('Update Processor', contractTxId);
   if (!partition || partition.length == 0) {
-    throw new Error("Wrong partition - no interactions", contractTxId);
+    throw new Error('Wrong partition - no interactions', contractTxId);
   }
 
   const firstInteraction = partition[0];
   const contract = warp.contract(contractTxId).setEvaluationOptions(config.evaluationOptions);
   const lastCachedKey = (await warp.stateEvaluator.latestAvailableState(contractTxId))?.sortKey;
-  logger.info("Sort keys", {
+  logger.info('Sort keys', {
     lastCachedKey,
     firstInteractionLastSortKey: firstInteraction.lastSortKey,
     firstInteractionSortKey: firstInteraction.sortKey
@@ -42,7 +43,9 @@ module.exports = async (job) => {
   // state not cached (or cached at genesisSortKey - i.e. initial contract state),
   // but first interaction in partition has lastSortKey set (i.e. it is NOT the very first interaction with a contract)
   if ((!lastCachedKey || lastCachedKey == genesisSortKey) && firstInteraction.lastSortKey != null) {
-    throw new CacheConsistencyError(`Inconsistent state for ${contractTxId} - first interaction in partition has lastSortKey != null - while there is no state cached.`);
+    throw new CacheConsistencyError(
+      `Inconsistent state for ${contractTxId} - first interaction in partition has lastSortKey != null - while there is no state cached.`
+    );
   }
 
   // first interaction for contract (i.e. first interaction in partition has lastSortKey = null), but we have already state cached at sortKey > genesisSortKey
@@ -57,9 +60,9 @@ module.exports = async (job) => {
   }*/
   let filteredPartition = partition;
   if (lastCachedKey && firstInteraction.sortKey.localeCompare(lastCachedKey) <= 0) {
-    logger.info("First sort key lower than last cached key, removing interactions");
-    filteredPartition = partition.filter(i => i.sortKey.localeCompare(lastCachedKey) > 0);
-    logger.info("Partition size after filtering", filteredPartition.length);
+    logger.info('First sort key lower than last cached key, removing interactions');
+    filteredPartition = partition.filter((i) => i.sortKey.localeCompare(lastCachedKey) > 0);
+    logger.info('Partition size after filtering', filteredPartition.length);
   }
 
   if (!lastCachedKey) {
@@ -67,16 +70,16 @@ module.exports = async (job) => {
   }
 
   if (filteredPartition.length > 0) {
-    const interactions = filteredPartition.map(i => i.interaction);
+    const interactions = filteredPartition.map((i) => i.interaction);
     const result = await contract.readStateFor(lastCachedKey || genesisSortKey, interactions);
 
     logger.info(`Evaluated ${contractTxId} @ ${result.sortKey}`, contract.lastReadStateStats());
 
     checkStateSize(result.cachedValue.state);
     if (!isTest) {
-      await signatureQueue.add("sign", { contractTxId, result, interactions });
+      await postEvalQueue.add('sign', { contractTxId, result, interactions });
     }
   } else {
-    logger.info("Skipping empty partition");
+    logger.info('Skipping empty partition');
   }
 };

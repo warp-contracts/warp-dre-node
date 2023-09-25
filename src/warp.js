@@ -3,7 +3,7 @@ const { LmdbCache } = require('warp-contracts-lmdb');
 const { NlpExtension } = require('warp-contracts-plugin-nlp');
 const { EvaluationProgressPlugin } = require('warp-contracts-evaluation-progress-plugin');
 const { EventEmitter } = require('node:events');
-const { connect, getFailures } = require('./db/nodeDb');
+const { getFailures, drePool } = require('./db/nodeDb');
 const warpDbConfig = require('../postgresConfigWarpDb.js');
 const { EthersExtension } = require('warp-contracts-plugin-ethers');
 const { EvmSignatureVerificationServerPlugin } = require('warp-contracts-plugin-signature/server');
@@ -65,7 +65,7 @@ const warp = WarpFactory.forMainnet()
   .use(new JWTVerifyPlugin())
   .use(
     new ContractBlacklistPlugin(async (input) => {
-      const blacklistFunction = await getDreBlacklistFunction(getFailures, connect(), config.workersConfig.maxFailures);
+      const blacklistFunction = await getDreBlacklistFunction(getFailures, drePool, config.workersConfig.maxFailures);
       return await blacklistFunction(input);
     })
   );

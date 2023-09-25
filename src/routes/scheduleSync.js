@@ -1,5 +1,5 @@
 const { warp } = require('../warp');
-const { config } = require("../config");
+const { config } = require('../config');
 const updates = new Map();
 
 const chillOutTimeSeconds = 10;
