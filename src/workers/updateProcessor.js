@@ -7,13 +7,13 @@ const { postEvalQueue } = require('../bullQueue');
 // LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
 LoggerFactory.INST.logLevel('debug', 'interactionsProcessor');
 LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
-LoggerFactory.INST.logLevel('debug', 'WarpGatewayInteractionsLoader');
-LoggerFactory.INST.logLevel('debug', 'ContractHandler');
-LoggerFactory.INST.logLevel('debug', 'HandlerBasedContract');
-LoggerFactory.INST.logLevel('info', 'DefaultStateEvaluator');
-LoggerFactory.INST.logLevel('debug', 'SqliteContractCache');
-LoggerFactory.INST.logLevel('debug', 'WarpGatewayContractDefinitionLoader');
-LoggerFactory.INST.logLevel('debug', 'SqliteContractCache');
+LoggerFactory.INST.logLevel('error', 'WarpGatewayInteractionsLoader');
+LoggerFactory.INST.logLevel('error', 'ContractHandler');
+LoggerFactory.INST.logLevel('info', 'HandlerBasedContract');
+LoggerFactory.INST.logLevel('error', 'DefaultStateEvaluator');
+LoggerFactory.INST.logLevel('error', 'SqliteContractCache');
+LoggerFactory.INST.logLevel('error', 'WarpGatewayContractDefinitionLoader');
+LoggerFactory.INST.logLevel('error', 'SqliteContractCache');
 const logger = LoggerFactory.INST.create('interactionsProcessor');
 
 class CacheConsistencyError extends Error {

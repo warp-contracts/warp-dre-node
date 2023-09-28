@@ -10,7 +10,6 @@ services:
       - '80:8080'
 
     volumes:
-      - dre-cache:/app/sqlite
       - warp-cache:/app/cache
   bullmq:
     image: redis:7.0-alpine
@@ -34,8 +33,6 @@ services:
 
 volumes:
   bullmq-cache:
-    driver: local
-  dre-cache:
     driver: local
   warp-cache:
     driver: local

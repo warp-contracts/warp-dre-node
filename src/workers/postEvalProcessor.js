@@ -5,8 +5,8 @@ const { warp } = require('../warp');
 const { upsertBalances } = require('../db/aggDbUpdates');
 const { config } = require('../config');
 
-LoggerFactory.INST.logLevel('debug', 'setStatePostProcessor');
-LoggerFactory.INST.logLevel('debug', 'PgContractCache');
+LoggerFactory.INST.logLevel('info', 'setStatePostProcessor');
+LoggerFactory.INST.logLevel('info', 'PgContractCache');
 const logger = LoggerFactory.INST.create('setStatePostProcessor');
 
 const isTestInstance = config.env === 'test';

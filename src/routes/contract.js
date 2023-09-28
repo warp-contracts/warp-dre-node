@@ -61,7 +61,7 @@ module.exports = async (ctx) => {
       }
       response.sortKey = result.sortKey;
       response.signature = result.cachedValue.signature;
-      response.stateHash = result.cachedValue.hash;
+      response.stateHash = result.cachedValue.state_hash;
     } else {
       const contractErrors = await getContractErrors(contractId);
       if (contractErrors.length) {
