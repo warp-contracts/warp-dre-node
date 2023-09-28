@@ -84,10 +84,30 @@ const crypto = require("crypto");
       maxCallDepth: 666,
       maxInteractionEvaluationTimeSeconds: 20000,
       unsafeClient: "skip",
-      cacheEveryNInteractions: 2000
+      cacheEveryNInteractions: 2000,
+      whitelistSources: [
+        "Of9pi--Gj7hCTawhgxOwbuWnFI1h24TTgO5pw8ENJNQ",
+        "W78KEzU8vIODFHzwa9ab7SS7Pjchc7KenivCiwSHxBY",
+        "kP1Ed8AMvaaBrEFjatP4pSmiE_fsRrGS0EcBMQYYiyc",
+        "mGxosQexdvrvzYCshzBvj18Xh1QmZX16qFJBuh4qobo",
+        "7qv5x9A0NgAlTdMnBc1H2HFvN-te0kzzuT9RNt_66g8",
+        "eIAyBgHH-H7Qzw9fj7Austj30QKPQn27eaakvpOUSR8",
+        "Of9pi--Gj7hCTawhgxOwbuWnFI1h24TTgO5pw8ENJNQ",
+        "ovWCp0xKuHtq-bADXbtiNr6umwb_AE73kVZWtfHlX3w",
+        "1hDZBRSptTNgnACuO9qGHLbaOfnAcMBKCHcHPRhMWUY",
+        "LBcYEl2zwKDApj1Cow1_BYyiicxVV7OCZTexsjk6mB4",
+        "dRTFmLwJ3cNqdNvFK4yUvwc13CrJtFOmLymLxL4HWOE",
+        "yXPm9-9VyxH9otGf7xim0EJsnt21IJN8qJjanFTC_kc",
+        "qOd7mNAJdju9PxtsRJbel4Zu3xYgEwUbxW8U14czjD8",
+        "0GOnb0o9c232d6SXF_HXHbGzfIdiYeos7U5jobOSZ_c",
+        "8kPgNMm7dZUVk93T7wq05otEy1oDNqZhyD3L7WrcMTY",
+        "yDAppVePqGU1qcRnxdk-AShpIJ0RHCZixOMXtJTgm4Y",
+        "W7V0n7g2UKhCee1QDTpvAq6eI6pP9jCS860uF70TbYY",
+        "h9v17KHV4SXwdW2-JHU6a23f6R0YtbXZJJht8LfP8QM"
+      ]
     });
 
-  const evalResult = await contract.readState("000001227096,0000000000000,e6076824e99dfe137d8ff423987019c90b6070a5bb29307ed18cb40ec29cb872");
+  const evalResult = await contract.readState("000001259674,1694484200143,6d27538968dd365be1dc522368f69d012ef8655da6102f089653aaa75af7540b");
   const evalState = evalResult.cachedValue.state;
   const sortKey = evalResult.sortKey;
 
