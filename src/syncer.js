@@ -7,7 +7,7 @@ const exitHook = require('async-exit-hook');
 const { warp, pgClient } = require('./warp');
 const pollGateway = require('./workers/pollGateway');
 const { createAggDbTables } = require('./db/aggDbSetup');
-const { queuesCleanUp, initQueue, postEvalQueue, registerQueue } = require('./bullQueue');
+const { queuesCleanUp, initQueue, postEvalQueue, registerQueue, maintenanceQueue } = require('./bullQueue');
 
 let isTestInstance = config.env === 'test';
 
@@ -21,6 +21,7 @@ async function runSyncer() {
   await pgClient.open();
   await initQueue(postEvalQueue);
   await initQueue(registerQueue);
+  await initQueue(maintenanceQueue);
 
   const theVeryFirstTimestamp = config.firstInteractionTimestamp;
   const lastSyncTimestamp = await getLastSyncTimestamp();
@@ -28,6 +29,7 @@ async function runSyncer() {
   const startTimestamp = lastSyncTimestamp ? lastSyncTimestamp : theVeryFirstTimestamp;
 
   await pollGateway(config.evaluationOptions.whitelistSources, startTimestamp, windowsMs(), false);
+  scheduleMaintenance(5000);
 
   const onMessage = async (data) => await processContractData(data, registerQueue);
   await subscribeToGatewayNotifications(onMessage);
@@ -83,11 +85,6 @@ async function processContractData(msgObj, registerQueue) {
   const contractTxId = msgObj.contractTxId;
   const isRegistered = await warp.stateEvaluator.hasContractCached(contractTxId);
 
-  const baseMessage = {
-    contractTxId,
-    appSyncKey: config.appSync.key,
-    test: isTestInstance
-  };
   if (msgObj.initialState) {
     if (isRegistered) {
       validationMessage = 'Contract already registered';
@@ -98,9 +95,11 @@ async function processContractData(msgObj, registerQueue) {
     await registerQueue.add(
       'initContract',
       {
-        ...baseMessage,
+        contractTxId,
+        appSyncKey: config.appSync.key,
+        test: isTestInstance,
         requiresPublish: true,
-        initialState: msgObj.initialState
+        tags: msgObj.tags
       },
       { jobId }
     );
@@ -137,6 +136,15 @@ async function subscribeToGatewayNotifications(onMessage) {
     }
   });
   process.on('exit', () => subscriber.disconnect());
+}
+
+function scheduleMaintenance(everyMillis) {
+  (function workerLoop() {
+    setTimeout(async function () {
+      await maintenanceQueue.add('maintenance');
+      workerLoop();
+    }, everyMillis);
+  })();
 }
 
 function isTxIdValid(txId) {

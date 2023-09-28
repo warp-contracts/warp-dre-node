@@ -10,13 +10,19 @@ const scheduleIinitialContractsRegistration = require('./routes/scheduleIinitial
 const kv = require('./routes/kv');
 const eraseContract = require('./routes/eraseContract');
 const validity = require('./routes/validity');
-const { walletBalances } = require('./routes/aggBalances');
+const { walletBalances } = require('./routes/agg/aggBalances');
+const { allStates } = require('./routes/agg/aggAllStates');
+const { interactions } = require('./routes/agg/aggInteractionsByIndex');
+const { taggedNftByOwner } = require('./routes/agg/aggTaggedNftByOwner');
 const alive = require('./routes/alive');
 const syncLog = require('./routes/syncLog');
 
 const router = new Router();
 
 router.get('/agg/balances', walletBalances);
+router.get('/agg/all-states', allStates);
+router.get('/agg/interactions-by-indexes', interactions);
+router.get('/agg/nft-by-owner', taggedNftByOwner);
 router.get('/contract', contract);
 router.get('/alive', alive);
 router.get('/contract/view-state', contractViewState);

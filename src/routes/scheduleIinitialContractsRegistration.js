@@ -3,7 +3,6 @@ const { LoggerFactory } = require('warp-contracts');
 const { getAllContractsIds } = require('../db/nodeDb');
 
 const logger = LoggerFactory.INST.create('scheduleContractsDreSync');
-const isTestInstance = config.env === 'test';
 
 /**
  * Schedule initial state registration of missing contracts.
@@ -39,17 +38,11 @@ module.exports = async (ctx) => {
     const scheduled = [];
     while (scheduled.length < limit && difference.length > 0) {
       const contractTxId = difference.pop();
-      const baseMessage = {
-        contractTxId,
-        appSyncKey: config.appSync.key,
-        test: isTestInstance
-      };
       await registerQueue.add(
         'initContract',
         {
-          ...baseMessage,
-          requiresPublish: false,
-          initialState: {}
+          contractTxId,
+          requiresPublish: false
         },
         { jobId: contractTxId }
       );

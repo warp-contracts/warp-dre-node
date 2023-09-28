@@ -8,10 +8,12 @@ const logger = require('./logger')('bullQueues');
 const queues = [];
 const registerQueue = configureQueue('register', onFailedRegisterJob);
 const postEvalQueue = configureQueue('postEval');
+const maintenanceQueue = configureQueue('maintenance');
 
 module.exports = {
   registerQueue,
   postEvalQueue,
+  maintenanceQueue,
   initQueue: async function (queue) {
     await queue.obliterate({ force: true });
 

@@ -1,4 +1,4 @@
-const { drePool } = require('../db/nodeDb');
+const { drePool } = require('../../db/nodeDb');
 const MAX_BALANCES_PER_PAGE = 1000;
 
 module.exports = {

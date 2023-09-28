@@ -2,7 +2,7 @@ const { warp } = require('../warp');
 const { LoggerFactory, genesisSortKey } = require('warp-contracts');
 const { checkStateSize } = require('./common');
 const { config } = require('../config');
-const { postEvalQueue } = require('../bullQueue');
+const { postEvalQueue, registerQueue } = require('../bullQueue');
 
 // LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
 LoggerFactory.INST.logLevel('debug', 'interactionsProcessor');
@@ -67,6 +67,14 @@ module.exports = async (job) => {
 
   if (!lastCachedKey) {
     await contract.readState(genesisSortKey);
+    await registerQueue.add(
+      'initContract',
+      {
+        contractTxId,
+        requiresPublish: false
+      },
+      { jobId: contractTxId }
+    );
   }
 
   if (filteredPartition.length > 0) {

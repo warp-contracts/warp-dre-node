@@ -2,8 +2,10 @@ const { LoggerFactory } = require('warp-contracts');
 const { publish } = require('./common');
 const { signState } = require('../signature');
 const { warp } = require('../warp');
-const { upsertBalances } = require('../db/aggDbUpdates');
+const { upsertDeployment } = require('../db/aggDbUpdates');
 const { config } = require('../config');
+const { onNewState } = require('../routes/agg/onState');
+const { onNewInteraction } = require('../routes/agg/onInteraction');
 
 LoggerFactory.INST.logLevel('info', 'setStatePostProcessor');
 LoggerFactory.INST.logLevel('info', 'PgContractCache');
@@ -13,17 +15,27 @@ const isTestInstance = config.env === 'test';
 
 module.exports = async (job) => {
   try {
-    const { contractTxId, result, interactions, requiresPublish } = job.data;
+    const { contractTxId, tags, result, interactions, requiresPublish } = job.data;
     logger.info('PostEval Processor', contractTxId);
+    const contractState = result.cachedValue.state;
 
-    await upsertBalances(contractTxId, result.sortKey, result.cachedValue.state);
-    const signed = await sign(contractTxId, result.sortKey, result.cachedValue.state);
-    if (requiresPublish && !isTestInstance) {
-      await publish(logger, contractTxId, result.cachedValue.state, signed.stateHash, signed.sig);
+    if (tags) {
+      await onContractDeployment(contractTxId, tags);
+    }
+    const signed = await sign(contractTxId, result.sortKey, contractState);
+    await onNewState(job.data, signed);
+
+    if (interactions) {
+      for (const interaction of interactions) {
+        await onNewInteraction(contractTxId, interaction);
+      }
     }
 
-    if (requiresPublish && !isTestInstance && interactions && interactions.length > 0) {
-      await publishInternalWritesContracts(interactions);
+    if (requiresPublish && !isTestInstance) {
+      await publish(logger, contractTxId, contractState, signed.stateHash, signed.sig);
+      if (interactions && interactions.length > 0) {
+        await publishInternalWritesContracts(interactions);
+      }
     }
   } catch (e) {
     throw new Error(e);
@@ -36,7 +48,7 @@ async function publishInternalWritesContracts(interactions) {
     const tags = i.tags;
     if (tags) {
       tags.forEach((t) => {
-        if (t.name == 'Interact-Write') {
+        if (t.name === 'Interact-Write') {
           iwTagsValues.add(t.value);
         }
       });
@@ -55,4 +67,16 @@ async function sign(contractTxId, sortKey, state) {
   await warp.stateEvaluator.getCache().setSignature({ key: contractTxId, sortKey }, signed.stateHash, signed.sig);
 
   return signed;
+}
+
+async function onContractDeployment(contractTxId, tags) {
+  const indexesString = tags.find((tag) => tag.name === 'Indexed-By');
+
+  if (indexesString) {
+    const indexes = indexesString.value.split(';');
+
+    if (indexes.length > 0) {
+      await upsertDeployment(contractTxId, indexes);
+    }
+  }
 }
