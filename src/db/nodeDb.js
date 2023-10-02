@@ -7,7 +7,6 @@ const drePool = new Pool(dreDbConfig);
 
 module.exports = {
   drePool,
-  // remove
   createNodeDbTables: async () => {
     await drePool.query(
       `
@@ -120,17 +119,17 @@ module.exports = {
   },
 
   getAllBlacklisted: async () => {
-    return await drePool.query(`SELECT * FROM black_list`);
+    return (await drePool.query(`SELECT * FROM black_list`))?.rows;
   },
 
   getAllErrors: async () => {
-    return await drePool.query(`SELECT * FROM errors;`);
+    return (await drePool.query(`SELECT * FROM errors;`))?.rows;
   },
 
   getContractErrors: async (contractTxId) => {
-    return await drePool.query(`SELECT * FROM errors WHERE contract_tx_id = $1 ORDER BY timestamp DESC;`, [
-      contractTxId
-    ]);
+    return (
+      await drePool.query(`SELECT * FROM errors WHERE contract_tx_id = $1 ORDER BY timestamp DESC;`, [contractTxId])
+    )?.rows;
   },
 
   deleteErrors: async (contractTxId) => {
@@ -138,7 +137,10 @@ module.exports = {
   },
 
   getSyncLog: async (start, end) => {
-    return await drePool.query(`SELECT * FROM sync_log WHERE start_timestamp = $1 AND end_timestamp = $2`, [start, end]);
+    return await drePool.query(`SELECT * FROM sync_log WHERE start_timestamp = $1 AND end_timestamp = $2`, [
+      start,
+      end
+    ]);
   },
 
   getCachedViewState: async (contractTxId, sortKey, input, caller) => {
@@ -200,6 +202,44 @@ module.exports = {
       };
     }
     return null;
+  },
+
+  countContractValidity: async (contractTxId, sortKey) => {
+    const result = await drePool.query(
+      `
+          select count(*) as total
+          from warp.validity
+          where key = $1 and sort_key <= $2;`,
+      [contractTxId, sortKey]
+    );
+    if (result && result.rows && result.rows.length > 0) {
+      return Number(result.rows[0].total);
+    }
+    return 0;
+  },
+
+  getContractValidity: async (contractTxId, sortKey) => {
+    const result = await drePool.query(
+      `
+        select json_object_agg(tx_id, valid) as v from warp.validity
+        where key = $1
+          and sort_key <= $2;`,
+      [contractTxId, sortKey]
+    );
+    return result?.rows[0].v;
+  },
+
+  getContractErrorMessages: async (contractTxId, sortKey) => {
+    const result = await drePool.query(
+      `
+          select json_object_agg(tx_id, error_message) as em 
+          from warp.validity
+          where key = $1
+            and sort_key <= $2
+            and error_message is not null;`,
+      [contractTxId, sortKey]
+    );
+    return result?.rows[0].em;
   },
 
   hasContract: async (contractTxId) => {
