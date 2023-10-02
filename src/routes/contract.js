@@ -1,5 +1,10 @@
 const { JSONPath } = require('jsonpath-plus');
-const { getContractErrors } = require('../db/nodeDb');
+const {
+  getContractErrors,
+  getContractValidity,
+  countContractValidity,
+  getContractErrorMessages
+} = require('../db/nodeDb');
 const { LoggerFactory } = require('warp-contracts');
 const { warp } = require('../warp');
 
@@ -50,11 +55,11 @@ module.exports = async (ctx) => {
         }
       }
       if (showValidity) {
-        response.validity = result.cachedValue.validity;
+        response.validity = await getContractValidity(contractId, result.sortKey);
       }
-      response.validityCount = Object.keys(result.cachedValue.validity).length;
+      response.validityCount = await countContractValidity(contractId, result.sortKey);
       if (showErrorMessages) {
-        response.errorMessages = result.cachedValue.errorMessages;
+        response.errorMessages = await getContractErrorMessages(contractId, result.sortKey);
       }
       if (showErrors) {
         response.errors = await getContractErrors(contractId);
@@ -76,7 +81,7 @@ module.exports = async (ctx) => {
     ctx.status = 200;
   } catch (e) {
     logger.error(e);
-    if (e.name == 'NoContractError') {
+    if (e.name === 'NoContractError') {
       ctx.status = 404;
     } else {
       ctx.status = 500;

@@ -1,8 +1,5 @@
-const { getContractErrors } = require('../db/nodeDb');
-const { isTxIdValid, getContractState } = require('../common');
-const LRUCache = require('../lruCache');
-
-const validityCache = new LRUCache(20);
+const { getContractErrors, drePool } = require('../db/nodeDb');
+const { isTxIdValid } = require('../common');
 
 module.exports = async (ctx) => {
   const id = ctx.query.id;
@@ -22,34 +19,22 @@ module.exports = async (ctx) => {
   }
 
   try {
-    const contractValidity = validityCache.get(contractId);
+    const result = await getValidity(id);
+    if (!result) {
+      const contractErrors = await getContractErrors(contractId);
 
-    if (contractValidity && id in contractValidity.interactions) {
-      response = getInteractionValidityAndErrorMessage(contractValidity, id);
-    } else {
-      const { result, parsed } = await getContractState(contractId);
-
-      if (result) {
-        const contractValidity = {
-          interactions: parsed ? result.validity : JSON.parse(result.validity),
-          errorMessages: parsed ? result.error_messages : JSON.parse(result.error_messages)
-        };
-        validityCache.put(contractId, contractValidity);
-
-        if (id in contractValidity.interactions) {
-          response = getInteractionValidityAndErrorMessage(contractValidity, id);
-        } else {
-          ctx.throw(404, 'Interaction cannot be found in contract interactions.');
-        }
+      if (contractErrors.length) {
+        response.contractErrors = contractErrors;
       } else {
-        const contractErrors = await getContractErrors(contractId);
-
-        if (contractErrors.length) {
-          response.contractErrors = contractErrors;
-        } else {
-          ctx.throw(404, 'No info about the contract.');
-        }
+        ctx.throw(404, 'No info about the transaction.');
       }
+    }
+    if (result.key !== contractId) {
+      ctx.throw(404, 'Interaction cannot be found in contract interactions.');
+    }
+    response.validity = result.validity;
+    if (result.error_message) {
+      response.errorMessages = result.error_message;
     }
     ctx.body = response;
   } catch (e) {
@@ -58,13 +43,13 @@ module.exports = async (ctx) => {
   }
 };
 
-function getInteractionValidityAndErrorMessage(contractValidity, id) {
-  const response = {};
-  response.validity = contractValidity.interactions[id];
-
-  if (response.validity == false && id in contractValidity.errorMessages) {
-    response.errorMessage = contractValidity.errorMessages[id];
+async function getValidity(id) {
+  const result = await drePool.query(
+    `select tx_id, key, valid as validity, error_message from warp.validity where tx_id = $1;`,
+    [id]
+  );
+  if (result && result.rows && result.rows.length > 0) {
+    return result.rows[0];
   }
-
-  return response;
+  return null;
 }
