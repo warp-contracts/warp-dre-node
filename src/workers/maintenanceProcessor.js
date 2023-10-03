@@ -13,12 +13,24 @@ module.exports = async () => {
     const result = await drePool.query(`
         with last_txs as (select key, max(sort_key) as max_sk
                           from warp.sort_key_cache
-                          group by key)
-        select sk.key, sk.value, sk.sort_key
-        from last_txs lt
-                 join warp.sort_key_cache sk on sk.key = lt.key and sk.sort_key = lt.max_sk
-        where sk.signature is null
-        order by sk.sort_key
+                          group by key),
+             last20_contracts as (select 1 as priority, sk.key, sk.value, sk.sort_key
+                                  from last_txs lt
+                                           join warp.sort_key_cache sk on sk.key = lt.key and sk.sort_key = lt.max_sk
+                                  where sk.signature is null
+                                  order by sk.sort_key
+                                  limit 20),
+             last20_all as (select 2 as priority, key, value, sort_key
+                            from warp.sort_key_cache
+                            where signature is null
+                            order by sort_key desc
+                            limit 20)
+        SELECT *
+        from last20_contracts
+        union
+        SELECT *
+        from last20_all
+        order by priority
         limit 20;
     `);
 

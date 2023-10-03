@@ -1,6 +1,13 @@
 const Redis = require('ioredis');
 const { config, logConfig } = require('./config');
-const { getFailures, getLastSyncTimestamp, createNodeDbTables, drePool } = require('./db/nodeDb');
+const {
+  getFailures,
+  getLastSyncTimestamp,
+  createNodeDbTables,
+  drePool,
+  insertFailure,
+  doBlacklist
+} = require('./db/nodeDb');
 
 const logger = require('./logger')('syncer');
 const exitHook = require('async-exit-hook');
@@ -20,7 +27,7 @@ async function runSyncer() {
 
   await pgClient.open();
   await initQueue(postEvalQueue);
-  await initQueue(registerQueue);
+  await initQueue(registerQueue, onFailedRegisterJob);
   await initQueue(maintenanceQueue);
 
   const theVeryFirstTimestamp = config.firstInteractionTimestamp;
@@ -29,7 +36,7 @@ async function runSyncer() {
   const startTimestamp = lastSyncTimestamp ? lastSyncTimestamp : theVeryFirstTimestamp;
 
   await pollGateway(config.evaluationOptions.whitelistSources, startTimestamp, windowsMs(), false);
-  scheduleMaintenance(5000);
+  scheduleMaintenance(3000);
 
   const onMessage = async (data) => await processContractData(data, registerQueue);
   await subscribeToGatewayNotifications(onMessage);
@@ -160,6 +167,19 @@ async function cleanup(callback) {
   await drePool.end();
   logger.info('Clean up finished');
   callback();
+}
+
+async function onFailedRegisterJob(contractTxId, jobId, failedReason) {
+  await insertFailure({
+    contract_tx_id: contractTxId,
+    evaluation_options: config.evaluationOptions,
+    sdk_config: config.warpSdkConfig,
+    job_id: jobId,
+    failure: failedReason
+  });
+  if (failedReason.includes('[MaxStateSizeError]')) {
+    await doBlacklist(contractTxId, config.workersConfig.maxFailures);
+  }
 }
 
 exitHook(cleanup);
