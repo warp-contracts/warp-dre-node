@@ -3,7 +3,8 @@ const {
   getContractErrors,
   getContractValidity,
   countContractValidity,
-  getContractErrorMessages
+  getContractErrorMessages,
+  getSignatures
 } = require('../db/nodeDb');
 const { LoggerFactory } = require('warp-contracts');
 const { warp } = require('../warp');
@@ -64,9 +65,10 @@ module.exports = async (ctx) => {
       if (showErrors) {
         response.errors = await getContractErrors(contractId);
       }
+      const sign = await getSignatures(contractId, result.sortKey);
       response.sortKey = result.sortKey;
-      response.signature = result.cachedValue.signature;
-      response.stateHash = result.cachedValue.state_hash;
+      response.signature = sign.signature;
+      response.stateHash = sign.state_hash;
     } else {
       const contractErrors = await getContractErrors(contractId);
       if (contractErrors.length) {
