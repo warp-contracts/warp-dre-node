@@ -10,6 +10,7 @@ module.exports = {
   createNodeDbTables: async () => {
     await drePool.query(
       `
+        SET search_path TO 'dre';
         --------------- errors
         CREATE TABLE IF NOT EXISTS errors (
             contract_tx_id text,

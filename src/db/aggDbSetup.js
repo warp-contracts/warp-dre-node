@@ -3,6 +3,7 @@ const { drePool } = require('./nodeDb');
 module.exports = {
   createAggDbTables: async () => {
     await drePool.query(`
+        SET search_path TO 'dre';
         create table if not exists balances
         (
             wallet_address text,

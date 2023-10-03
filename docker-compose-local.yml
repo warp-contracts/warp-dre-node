@@ -1,24 +1,11 @@
 version: '3.8'
 services:
-  dre:
-    build: .
-    env_file:
-      - .env
-    environment:
-      BULLMQ_HOST: "${BULLMQ_HOST:-bullmq}"
-    ports:
-      - '80:8080'
-
-    volumes:
-      - warp-cache:/app/cache
   bullmq:
     image: redis:7.0-alpine
     restart: always
     ports:
       - '127.0.0.1:6379:6379'
     command: redis-server --save 20 1 --loglevel warning --maxmemory-policy noeviction
-    volumes:
-      - bullmq-cache:/data
 
   postgres:
     image: postgres:14
@@ -30,9 +17,3 @@ services:
       - POSTGRES_DB=dre-u
     ports:
       - '21726:5432'
-
-volumes:
-  bullmq-cache:
-    driver: local
-  warp-cache:
-    driver: local
