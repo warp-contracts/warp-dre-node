@@ -17,13 +17,21 @@ module.exports = {
 
       const result = await drePool.query(
         `
+            WITH deploy AS (
+                SELECT * FROM dre.deployments
+                WHERE $1 IN (deployments.tag_index_0, deployments.tag_index_1, deployments.tag_index_2, deployments.tag_index_3, deployments.tag_index_4)
+            ),
+             states AS (
+                 SELECT DISTINCT ON (key) key AS contract_tx_id, value as state
+                 FROM warp.sort_key_cache
+                 WHERE value ->> 'owner' = $2
+                 ORDER BY key, sort_key desc
+             )
         SELECT states.contract_tx_id, states.state
-        FROM dre.states
-        INNER JOIN dre.deployments
-        ON deployments.contract_tx_id = states.contract_tx_id
-        WHERE $1 IN (deployments.tag_index_0, deployments.tag_index_1, deployments.tag_index_2, deployments.tag_index_3, deployments.tag_index_4) 
-        AND states.state->>'$.owner' = $2
-        ORDER BY deployments.id ASC
+        FROM states
+        JOIN deploy
+        ON deploy.contract_tx_id = states.contract_tx_id
+        ORDER BY deploy.id ASC
         LIMIT $3 OFFSET $4`,
         [ATOMIC_ASSET_TAG_VALUE, ownerAddress, parsedLimit, offset]
       );

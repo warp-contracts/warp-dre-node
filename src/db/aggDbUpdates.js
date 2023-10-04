@@ -48,27 +48,10 @@ module.exports = {
     );
   },
 
-  upsertState: async function (contractTxId, sortKey, state, node, signature, manifest, stateHash) {
-    logger.info('Upserting state', contractTxId);
-
-    await drePool.query(
-      `
-          insert into dre.states(contract_tx_id, sort_key, node, signature, manifest, state_hash, state)
-          VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (contract_tx_id)
-              DO UPDATE SET sort_key = excluded.sort_key,
-                            node = excluded.node,
-                            signature = excluded.signature,
-                            manifest = excluded.manifest,
-                            state_hash = excluded.state_hash,
-                            state = excluded.state;;`,
-      [contractTxId, sortKey, node, signature, manifest, stateHash, state]
-    );
-  },
-
-  lastSortKey: async function (contractTxId) {
+  balancesLastSortKey: async function (contractTxId) {
     const result = await drePool.query(
       `SELECT max(sort_key) as maxSortKey
-       FROM dre.states
+       FROM dre.balances
        WHERE contract_tx_id = $1`,
       [contractTxId]
     );

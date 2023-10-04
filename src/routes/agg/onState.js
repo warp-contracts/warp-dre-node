@@ -1,5 +1,5 @@
 const { LoggerFactory } = require('warp-contracts');
-const { upsertBalances, upsertState, lastSortKey } = require('../../db/aggDbUpdates');
+const { upsertBalances, balancesLastSortKey } = require('../../db/aggDbUpdates');
 
 LoggerFactory.INST.logLevel('none');
 LoggerFactory.INST.logLevel('debug', 'listener');
@@ -7,13 +7,12 @@ LoggerFactory.INST.logLevel('debug', 'listener');
 const logger = LoggerFactory.INST.create('listener');
 
 module.exports = {
-  onNewState: async function (data, signed) {
+  onNewState: async function (data) {
     const { contractTxId, result } = data;
     const contractState = result.cachedValue.state;
-    const lastSK = await lastSortKey(contractTxId);
+    const lastSK = await balancesLastSortKey(contractTxId);
 
     if (result.sortKey.localeCompare(lastSK)) {
-      await upsertState(contractTxId, result.sortKey, contractState, null, signed.signature, null, signed.stateHash);
       await upsertBalances(contractTxId, result.sortKey, contractState);
     } else {
       logger.warn('Received state with older or equal sort key', {

@@ -23,7 +23,7 @@ module.exports = async (job) => {
       await onContractDeployment(contractTxId, tags);
     }
     const signed = await sign(contractTxId, result.sortKey, contractState);
-    await onNewState(job.data, signed);
+    await onNewState(job.data);
 
     if (interactions) {
       for (const interaction of interactions) {
