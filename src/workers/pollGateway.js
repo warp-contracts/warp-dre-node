@@ -9,27 +9,40 @@ const { partition } = require('./common');
 const logger = LoggerFactory.INST.create('syncer');
 LoggerFactory.INST.logLevel('info', 'syncer');
 
-function validate(entries) {
-  for (let i = 0; i < entries.length; i++) {
-    const entry = entries[i];
+function filterInvalidEntries(entries) {
+  if (entries.length >= 15000) {
+    logger.warn(`Max entries in response, either reduce window size or increase interactions limit in response`);
+    process.exit(0);
+  }
+
+  const validEntries = entries.filter((entry) => {
     if (!entry.contractTxId || !isTxIdValid(entry.contractTxId)) {
-      throw new Error(`No valid 'contractTxId' in entry: ${JSON.stringify(entry)}`);
+      logger.warn(`No valid 'contractTxId' in entry: ${JSON.stringify(entry)}`);
+      return false;
     }
     if (!entry.sortKey) {
-      throw new Error(`No 'sortKey' in entry: ${JSON.stringify(entry)}`);
+      logger.warn(`No 'sortKey' in entry: ${JSON.stringify(entry)}`);
+      return false;
     }
     if (!entry.interaction) {
-      throw new Error(`No 'interaction' in entry: ${JSON.stringify(entry)}`);
+      logger.warn(`No 'interaction' in entry: ${JSON.stringify(entry)}`);
+      return false;
     }
     if (entry.interaction.sortKey != entry.sortKey) {
-      throw new Error(`sortKey wrongly set: ${JSON.stringify(entry)}`);
+      logger.warn(`sortKey wrongly set: ${JSON.stringify(entry)}`);
+      return false;
     }
 
     // note: entry.lastSortKey = null means that it's a very first interaction with this contract
     if (entry.lastSortKey === undefined) {
-      throw new Error(`No 'lastSortKey' in entry: ${JSON.stringify(entry)}`);
+      logger.warn(`No 'lastSortKey' in entry: ${JSON.stringify(entry)}`);
+      return false;
     }
-  }
+
+    return true;
+  });
+
+  return validEntries;
 }
 
 function sort(entries) {
@@ -41,13 +54,14 @@ function logPartitionData(partitioned) {
   if (partitioned.length > 0) {
     const partitionsData = {};
     partitioned.forEach((p, index) => {
-      partitionsData[index] = p.length;
+      partitionsData[index] = { contract: p[0].contractTxId, length: p.length };
     });
     logger.info('Partitions', partitionsData);
   }
 }
 
-module.exports = async function (whitelistedSources, initialStartTimestamp, windowsMs, forceEndTimestamp) {
+module.exports = async function (
+  whitelistedSources, initialStartTimestamp, windowsMs, forceEndTimestamp, blacklistFn, isBlacklisted) {
   let startTimestamp = initialStartTimestamp;
 
   (function workerLoop() {
@@ -72,7 +86,7 @@ module.exports = async function (whitelistedSources, initialStartTimestamp, wind
         if (!result.interactions) {
           throw new Error("Result does not contain 'interactions' field");
         }
-        validate(result.interactions);
+        result.interactions = filterInvalidEntries(result.interactions);
       } catch (e) {
         logger.error(
           'Error while loading interactions',
@@ -117,24 +131,37 @@ module.exports = async function (whitelistedSources, initialStartTimestamp, wind
 
       for (let i = 0; i < partitionsLength; i++) {
         const partition = partitioned[i];
+        const contractTxId = partition[0].contractTxId;
+        const blacklisted = await isBlacklisted(contractTxId);
+        if (blacklisted) {
+          logger.warn(`Contract ${contractTxId} is blacklisted, skipping`);
+          continue;
+        }
         // validatePartition(partition);
         try {
           await updateProcessor({
             data: {
-              contractTxId: partition[0].contractTxId,
+              contractTxId,
               isTest: false,
               partition
             }
           });
         } catch (e) {
           logger.error(e);
-          evaluationErrors[`${partition[0].contractTxId}|${partition[0].interaction.id}`] = {
+          evaluationErrors[`${contractTxId}|${partition[0].interaction.id}`] = {
             error: e?.toString()
           };
           if (e.name === 'CacheConsistencyError') {
-            logger.warn('Cache consistency error, stopping node!');
-            process.exit(0);
+            logger.warn("Cache consistency error, blacklisting contract", contractTxId);
+            await blacklistFn(contractTxId, e?.toString());
+          } else if (e.message.includes('[MaxStateSizeError]')) {
+            logger.warn("Max state size reached, blacklisting contract", contractTxId);
+            await blacklistFn(contractTxId, e?.toString());
+          } else {
+            logger.warn("Blacklisting contract", { contractTxId, reason: e.message });
+            await blacklistFn(contractTxId, e?.toString());
           }
+
         }
       }
 
