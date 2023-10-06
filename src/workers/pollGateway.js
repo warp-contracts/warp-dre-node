@@ -169,6 +169,7 @@ module.exports = async function (
             logger.warn('Blacklisting contract', { contractTxId, reason: e.message });
             await blacklistFn(contractTxId, e?.toString());
           }
+
         }
       }
 

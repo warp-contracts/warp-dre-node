@@ -218,7 +218,7 @@ async function onFailedJob(contractTxId, jobId, failedReason) {
 
 async function blacklist(contractTxId, reason) {
   try {
-    await doBlacklist(contractTxId, config.workersConfig.maxFailures, reason);
+    await doBlacklist(contractTxId, config.workersConfig.maxFailures, reason || '');
   } catch (e) {
     logger.error(`Error while blacklisting ${contractTxId}`, e);
   }
