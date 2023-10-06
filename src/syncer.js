@@ -35,7 +35,13 @@ async function runSyncer() {
   logger.info('Last sync timestamp result', lastSyncTimestamp);
   const startTimestamp = lastSyncTimestamp ? lastSyncTimestamp : theVeryFirstTimestamp;
 
-  await pollGateway(config.evaluationOptions.whitelistSources, startTimestamp, windowsMs(), false);
+  await pollGateway(
+    config.evaluationOptions.whitelistSources,
+    startTimestamp,
+    windowsMs(),
+    false,
+    blacklist,
+    isBlacklisted);
   scheduleMaintenance();
 
   const onMessage = async (data) => await processContractData(data, registerQueue);
@@ -180,8 +186,21 @@ async function onFailedRegisterJob(contractTxId, jobId, failedReason) {
     failure: failedReason
   });
   if (failedReason.includes('[MaxStateSizeError]')) {
-    await doBlacklist(contractTxId, config.workersConfig.maxFailures);
+    await blacklist(contractTxId, failedReason);
   }
+}
+
+async function blacklist(contractTxId, reason) {
+  try {
+    await doBlacklist(contractTxId, config.workersConfig.maxFailures, reason || '');
+  } catch (e) {
+    logger.error(`Error while blacklisting ${contractTxId}`, e);
+  }
+}
+
+async function isBlacklisted(contractTxId) {
+  const failures = await getFailures(contractTxId);
+  return failures >= config.workersConfig.maxFailures;
 }
 
 exitHook(cleanup);
