@@ -25,7 +25,8 @@ module.exports = {
         --------------- black_list
         CREATE TABLE IF NOT EXISTS black_list (
             contract_tx_id text unique,
-            failures bigint
+            failures bigint,
+            reason text
         );
         CREATE INDEX IF NOT EXISTS idx_black_list_contract_id ON black_list(contract_tx_id);
         
@@ -103,15 +104,18 @@ module.exports = {
     await drePool.query(`DELETE FROM black_list WHERE contract_tx_id = $1;`, [contractTxId]);
   },
 
-  doBlacklist: async (contractTxId, failures) => {
+  doBlacklist: async (contractTxId, failures, reason) => {
+    console.log("doBlacklist", {
+      contractTxId, failures, reason
+    });
     await drePool.query(
-      `INSERT INTO black_list VALUES ($1, $2) ON CONFLICT (contract_tx_id) DO UPDATE SET failures = EXCLUDED.failures `,
-      [contractTxId, failures]
-    );
+      `INSERT INTO black_list(contract_tx_id, failures, reason) VALUES ($1, $2, $3) ON CONFLICT (contract_tx_id) DO UPDATE SET failures = EXCLUDED.failures, reason = EXCLUDED.reason;`,
+      [contractTxId, failures, reason]);
+    console.log("===== Contract blacklisted =======", contractTxId);
   },
 
-  getFailures: async (drePool, contractTxId) => {
-    const result = drePool.query(`SELECT * FROM black_list WHERE contract_tx_id = $1`, [contractTxId]);
+  getFailures: async (contractTxId) => {
+    const result = await drePool.query(`SELECT * FROM black_list WHERE contract_tx_id = $1`, [contractTxId]);
     if (result && result.rows && result.rows.length > 0) {
       return result.rows[0].failures;
     }
