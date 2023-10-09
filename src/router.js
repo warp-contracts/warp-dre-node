@@ -18,9 +18,9 @@ const syncLog = require('./routes/syncLog');
 
 const router = new Router();
 
-router.get('/agg/balances', walletBalances);
-router.get('/agg/interactions-by-indexes', interactions);
-router.get('/agg/nft-by-owner', taggedNftByOwner);
+router.get('/balances', walletBalances);
+router.get('/interactions-by-indexes', interactions);
+router.get('/nft-by-owner', taggedNftByOwner);
 router.get('/contract', contract);
 router.get('/alive', alive);
 router.get('/contract/view-state', contractViewState);
