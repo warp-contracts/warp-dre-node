@@ -245,7 +245,7 @@ module.exports = {
 
   getSignatures: async (contractTxId, sortKey) => {
     const result = await drePool.query(
-      `select state_hash, signature from warp.sort_key_cache where key = $1 and sort_key = $2;`,
+      `select state_hash as stateHash, signature as sig from warp.sort_key_cache where key = $1 and sort_key = $2;`,
       [contractTxId, sortKey]
     );
     return result?.rows[0];

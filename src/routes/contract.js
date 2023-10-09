@@ -8,6 +8,7 @@ const {
 } = require('../db/nodeDb');
 const { LoggerFactory } = require('warp-contracts');
 const { warp } = require('../warp');
+const { signState } = require('../signature');
 
 const registrationStatus = {
   'not-registered': 'not-registered',
@@ -19,13 +20,6 @@ const registrationStatus = {
 
 LoggerFactory.INST.logLevel('debug', 'contractsRoute');
 const logger = LoggerFactory.INST.create('contractsRoute');
-
-class NoContractError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'NoContractError';
-  }
-}
 
 module.exports = async (ctx) => {
   const contractId = ctx.query.id;
@@ -65,17 +59,17 @@ module.exports = async (ctx) => {
       if (showErrors) {
         response.errors = await getContractErrors(contractId);
       }
-      const sign = await getSignatures(contractId, result.sortKey);
+      const { sig, stateHash } = await signatures(contractId, result.sortKey, result.cachedValue.state);
       response.sortKey = result.sortKey;
-      response.signature = sign.signature;
-      response.stateHash = sign.state_hash;
+      response.signature = sig;
+      response.stateHash = stateHash;
     } else {
       const contractErrors = await getContractErrors(contractId);
       if (contractErrors.length) {
         response.status = registrationStatus['error'];
         response.errors = contractErrors;
       } else {
-        throw new NoContractError('No info about contract');
+        ctx.throw(404, 'No info about contract');
       }
     }
 
@@ -83,11 +77,15 @@ module.exports = async (ctx) => {
     ctx.status = 200;
   } catch (e) {
     logger.error(e);
-    if (e.name === 'NoContractError') {
-      ctx.status = 404;
-    } else {
-      ctx.status = 500;
-    }
+    ctx.status = e.status || 500;
     ctx.body = e.message;
   }
 };
+
+async function signatures(contractTxId, sortKey, state) {
+  const dbSignatures = await getSignatures(contractTxId, sortKey);
+  if (!dbSignatures || !dbSignatures.sig) {
+    return await signState(contractTxId, sortKey, state);
+  }
+  return dbSignatures;
+}
