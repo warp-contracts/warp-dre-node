@@ -1,13 +1,22 @@
+const { publishToRedis, publishToAppSync } = require("./publish");
 const { config } = require("../config");
 
 module.exports = {
   publish: async (logger, contractTxId, state, sortKey, stateHash, sig) => {
     if (config.gwPubSubConfig.publishState) {
+      await publishToRedis(logger, contractTxId, {
+        contractTxId: contractTxId,
+        sortKey: sortKey,
+        state: state,
+        node: config.nodeJwk.n,
+        signature: sig,
+        stateHash: stateHash
+      });
       logger.debug("Published to Redis");
     }
 
     if (config.appSync.publishState) {
-      logger.debug("Published to AppSync");
+      await publishToAppSync(logger, contractTxId, sortKey, state, sig);
     }
   },
 
