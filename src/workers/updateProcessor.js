@@ -85,7 +85,11 @@ module.exports = async (job) => {
 
     checkStateSize(result.cachedValue.state);
     if (!isTest) {
-      await postEvalQueue.add('sign', { contractTxId, result, interactions });
+      await postEvalQueue.add(
+        'sign',
+        { contractTxId, result, interactions, requiresPublish: true, shit: true },
+        { priority: 1 }
+      );
     }
   } else {
     logger.info('Skipping empty partition');

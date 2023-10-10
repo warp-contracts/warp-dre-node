@@ -39,11 +39,17 @@ module.exports = async () => {
         const contractTxId = row.key;
         const state = row.value;
         const sortKey = row.sort_key;
-        await postEvalQueue.add('sign', {
-          contractTxId,
-          result: { sortKey, cachedValue: { state } },
-          requiresPublish: false
-        });
+        await postEvalQueue.add(
+          'sign',
+          {
+            contractTxId,
+            result: { sortKey, cachedValue: { state } },
+            requiresPublish: false
+          },
+          {
+            priority: 100
+          }
+        );
       }
     }
   } catch (e) {

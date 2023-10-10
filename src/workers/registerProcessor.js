@@ -24,12 +24,16 @@ module.exports = async (job) => {
 
     checkStateSize(result.cachedValue.state);
 
-    await postEvalQueue.add('sign', {
-      contractTxId,
-      tags,
-      result,
-      requiresPublish: job.data.requiresPublish
-    });
+    await postEvalQueue.add(
+      'sign',
+      {
+        contractTxId,
+        tags,
+        result,
+        requiresPublish: job.data.requiresPublish
+      },
+      { priority: 1 }
+    );
   } catch (e) {
     logger.error('Exception in register processor', e);
     throw new Error(e);

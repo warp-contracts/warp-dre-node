@@ -36,7 +36,7 @@ async function runSyncer() {
   const startTimestamp = lastSyncTimestamp ? lastSyncTimestamp : theVeryFirstTimestamp;
 
   await pollGateway(config.evaluationOptions.whitelistSources, startTimestamp, windowsMs(), false);
-  scheduleMaintenance(3000);
+  scheduleMaintenance(10000);
 
   const onMessage = async (data) => await processContractData(data, registerQueue);
   await subscribeToGatewayNotifications(onMessage);

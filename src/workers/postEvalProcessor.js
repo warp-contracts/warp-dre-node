@@ -32,7 +32,7 @@ module.exports = async (job) => {
     }
 
     if (requiresPublish && !isTestInstance) {
-      await publish(logger, contractTxId, contractState, signed.stateHash, signed.sig);
+      await publish(logger, contractTxId, contractState, result.sortKey, signed.stateHash, signed.sig);
       if (interactions && interactions.length > 0) {
         await publishInternalWritesContracts(interactions);
       }
