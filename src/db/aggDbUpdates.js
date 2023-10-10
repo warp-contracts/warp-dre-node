@@ -8,13 +8,13 @@ module.exports = {
     const balances = state.balances;
     const ticker = state.ticker; // pst standard
     const symbol = state.symbol; // warp nft/erc standard
-    const token_ticker = ticker ? ticker.trim() : symbol.trim();
-    const name = state.name;
-
     if (!balances || (!ticker && !symbol)) {
       logger.error(`Contract ${contractTxId} is not compatible with token standard`);
       return;
     }
+    const token_ticker = ticker ? ticker.trim() : symbol.trim();
+    const name = state.name;
+
     const walletAddresses = Object.keys(balances);
     for (const walletAddress of walletAddresses) {
       const balance = balances[walletAddress] ? balances[walletAddress].toString() : null;
