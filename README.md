@@ -14,16 +14,17 @@ Docs are available [here](https://academy.warp.cc/docs/dre/overview).
 docker ps -a
 
 # should display something similar to:
-CONTAINER ID   IMAGE         COMMAND                  CREATED         STATUS         PORTS                     NAMES
-ac171f5f91f4   postgres:14   "docker-entrypoint.s…"   3 seconds ago   Up 2 seconds   0.0.0.0:21726->5432/tcp   dre-postgres
+CONTAINER ID   IMAGE              COMMAND                  CREATED          STATUS          PORTS                      NAMES
+f240114e69a0   postgres:14        "docker-entrypoint.s…"   11 minutes ago   Up 11 minutes   0.0.0.0:21726->5432/tcp    dre-postgres
+c3ee9a099cda   redis:7.0-alpine   "docker-entrypoint.s…"   11 minutes ago   Up 11 minutes   127.0.0.1:6379->6379/tcp   warp-dre-node-bullmq-1
 ```
 
 3. Run database initialization script:
- `npm run db-setup:local`
+ `npm run db-setup:local` (the default password for user `postgres` is `postgres`)
 
 
 
-##### 1. Prod env
+##### 2. Prod env
 TBA
 
 ### Starting DRE node
