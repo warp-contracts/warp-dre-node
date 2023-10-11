@@ -5,11 +5,11 @@ const { config } = require('../config');
 const { postEvalQueue, registerQueue } = require('../bullQueue');
 
 // LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
-LoggerFactory.INST.logLevel('debug', 'interactionsProcessor');
-LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
+LoggerFactory.INST.logLevel('info', 'interactionsProcessor');
+LoggerFactory.INST.logLevel('info', 'EvaluationProgressPlugin');
 LoggerFactory.INST.logLevel('error', 'WarpGatewayInteractionsLoader');
 LoggerFactory.INST.logLevel('error', 'ContractHandler');
-LoggerFactory.INST.logLevel('info', 'HandlerBasedContract');
+LoggerFactory.INST.logLevel('error', 'HandlerBasedContract');
 LoggerFactory.INST.logLevel('error', 'DefaultStateEvaluator');
 LoggerFactory.INST.logLevel('error', 'SqliteContractCache');
 LoggerFactory.INST.logLevel('error', 'WarpGatewayContractDefinitionLoader');
