@@ -97,6 +97,7 @@ const config = {
     update: parseInt(process.env.WORKERS_UPDATE),
     postEval: parseInt(process.env.WORKERS_POST_EVAL),
     maintenance: parseInt(process.env.WORKERS_MAINTENANCE),
+    maintenanceWindow: parseInt(process.env.WORKERS_MAINTENANCE_WINDOW),
     jobIdRefreshSeconds: parseInt(process.env.WORKERS_JOB_ID_REFRESH_SECONDS),
     maxFailures: parseInt(process.env.WORKERS_MAX_FAILURES),
     maxStateSizeB: parseInt(process.env.WORKERS_MAX_STATESIZE)

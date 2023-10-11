@@ -14,11 +14,16 @@ module.exports = {
   postEvalQueue,
   maintenanceQueue,
   initQueue: async function (queue, onFailedJob) {
+    const workersConcurrency = config.workersConfig[queue.name];
+    if (workersConcurrency < 1) {
+      logger.info(`Skipping ${queue} worker init, concurrency set to ${workersConcurrency}`);
+      return;
+    }
     await queue.obliterate({ force: true });
 
     const queueProcessor = path.join(__dirname, 'workers', `${queue.name}Processor`);
     const queueWorker = new Worker(queue.name, queueProcessor, {
-      concurrency: config.workersConfig[queue.name],
+      concurrency: workersConcurrency,
       connection: config.bullMqConnection
     });
 

@@ -36,7 +36,7 @@ async function runSyncer() {
   const startTimestamp = lastSyncTimestamp ? lastSyncTimestamp : theVeryFirstTimestamp;
 
   await pollGateway(config.evaluationOptions.whitelistSources, startTimestamp, windowsMs(), false);
-  scheduleMaintenance(10000);
+  scheduleMaintenance();
 
   const onMessage = async (data) => await processContractData(data, registerQueue);
   await subscribeToGatewayNotifications(onMessage);
@@ -145,13 +145,15 @@ async function subscribeToGatewayNotifications(onMessage) {
   process.on('exit', () => subscriber.disconnect());
 }
 
-function scheduleMaintenance(everyMillis) {
-  (function workerLoop() {
-    setTimeout(async function () {
-      await maintenanceQueue.add('maintenance');
-      workerLoop();
-    }, everyMillis);
-  })();
+function scheduleMaintenance() {
+  if (config.workersConfig.maintenance > 0 && config.workersConfig.maintenanceWindow > 0) {
+    (function workerLoop() {
+      setTimeout(async function () {
+        await maintenanceQueue.add('maintenance');
+        workerLoop();
+      }, config.workersConfig.maintenanceWindow);
+    })();
+  }
 }
 
 function isTxIdValid(txId) {
