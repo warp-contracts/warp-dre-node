@@ -31,8 +31,8 @@ TBA
 1. `npm install --force`
 2. `npm install pm2 -g`
 3. `cp .env.defaults .env`
-4. Update NODE_JWK_KEY with your Arweave wallet JWK
-5. Update .env passwords for your local postgres (if you changed them).
+4. Update `.env` `NODE_JWK_KEY` with your Arweave wallet JWK
+5. Update `.env` passwords for your local postgres (only if you changed them!).
 6. `pm2 install pm2-logrotate` 
 7. `pm2 start src/syncer.js`
 8. `pm2 start src/listener.js`
