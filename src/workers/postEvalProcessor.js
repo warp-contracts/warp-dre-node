@@ -19,7 +19,7 @@ module.exports = async (job) => {
     logger.info('PostEval Processor', contractTxId);
     const contractState = result.cachedValue.state;
 
-    if (tags) {
+    if (tags && tags.length > 0) {
       await onContractDeployment(contractTxId, tags);
     }
     const signed = await sign(contractTxId, result.sortKey, contractState);

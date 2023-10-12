@@ -41,5 +41,5 @@ module.exports = async (job) => {
 };
 
 async function decodeTags(contractTx) {
-  return new TagsParser().decodeTags(new Transaction(contractTx));
+  return contractTx ? new TagsParser().decodeTags(new Transaction(contractTx)) : [];
 }
