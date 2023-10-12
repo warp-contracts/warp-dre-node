@@ -41,7 +41,8 @@ async function runSyncer() {
     windowsMs(),
     false,
     blacklist,
-    isBlacklisted);
+    isBlacklisted
+  );
   scheduleMaintenance();
 
   const onMessage = async (data) => await processContractData(data, registerQueue);
@@ -84,7 +85,7 @@ async function processContractData(msgObj, registerQueue) {
   }
 
   if (validationMessage == null) {
-    const contractFailures = await getFailures(drePool, msgObj.contractTxId);
+    const contractFailures = await getFailures(null, msgObj.contractTxId);
     if (Number.isInteger(contractFailures) && contractFailures > config.workersConfig.maxFailures - 1) {
       validationMessage = `Contract blacklisted: ${msgObj.contractTxId}`;
     }
@@ -192,14 +193,14 @@ async function onFailedRegisterJob(contractTxId, jobId, failedReason) {
 
 async function blacklist(contractTxId, reason) {
   try {
-    await doBlacklist(contractTxId, config.workersConfig.maxFailures, reason || '');
+    await doBlacklist(contractTxId, config.workersConfig.maxFailures, reason);
   } catch (e) {
     logger.error(`Error while blacklisting ${contractTxId}`, e);
   }
 }
 
 async function isBlacklisted(contractTxId) {
-  const failures = await getFailures(contractTxId);
+  const failures = await getFailures(null, contractTxId);
   return failures >= config.workersConfig.maxFailures;
 }
 
