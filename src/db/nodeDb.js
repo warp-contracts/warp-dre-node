@@ -104,20 +104,32 @@ module.exports = {
     await drePool.query(`DELETE FROM black_list WHERE contract_tx_id = $1;`, [contractTxId]);
   },
 
+  /**
+   * Blacklists contract and avoid further interactions' evaluations.
+   * @param {string} contractTxId
+   * @param {number} failures
+   * @param {object} reason
+   */
   doBlacklist: async (contractTxId, failures, reason) => {
-    console.log("doBlacklist", {
-      contractTxId, failures, reason
-    });
     await drePool.query(
       `INSERT INTO black_list(contract_tx_id, failures, reason) VALUES ($1, $2, $3) ON CONFLICT (contract_tx_id) DO UPDATE SET failures = EXCLUDED.failures, reason = EXCLUDED.reason;`,
-      [contractTxId, failures, reason]);
-    console.log("===== Contract blacklisted =======", contractTxId);
+      [contractTxId, failures, reason]
+    );
   },
 
-  getFailures: async (contractTxId) => {
-    const result = await drePool.query(`SELECT * FROM black_list WHERE contract_tx_id = $1`, [contractTxId]);
+  /**
+   * This function is used by warp-contracts-plugin-blacklist plugin.
+   * Any changes here must be coordinated with the plugin.
+   * @param {Pool | null} customPool If customPool is not provided, a default drePool will be used.
+   * @param {string} contractTxId
+   * @return {Promise<number>} Number of failures.
+   */
+  getFailures: async (customPool, contractTxId) => {
+    const result = await (customPool || drePool).query(`SELECT failures FROM black_list WHERE contract_tx_id = $1;`, [
+      contractTxId
+    ]);
     if (result && result.rows && result.rows.length > 0) {
-      return result.rows[0].failures;
+      return parseInt(result.rows[0].failures);
     }
 
     return 0;

@@ -61,7 +61,13 @@ function logPartitionData(partitioned) {
 }
 
 module.exports = async function (
-  whitelistedSources, initialStartTimestamp, windowsMs, forceEndTimestamp, blacklistFn, isBlacklisted) {
+  whitelistedSources,
+  initialStartTimestamp,
+  windowsMs,
+  forceEndTimestamp,
+  blacklistFn,
+  isBlacklisted
+) {
   let startTimestamp = initialStartTimestamp;
 
   (function workerLoop() {
@@ -152,16 +158,15 @@ module.exports = async function (
             error: e?.toString()
           };
           if (e.name === 'CacheConsistencyError') {
-            logger.warn("Cache consistency error, blacklisting contract", contractTxId);
+            logger.warn('Cache consistency error, blacklisting contract', contractTxId);
             await blacklistFn(contractTxId, e?.toString());
           } else if (e.message.includes('[MaxStateSizeError]')) {
-            logger.warn("Max state size reached, blacklisting contract", contractTxId);
+            logger.warn('Max state size reached, blacklisting contract', contractTxId);
             await blacklistFn(contractTxId, e?.toString());
           } else {
-            logger.warn("Blacklisting contract", { contractTxId, reason: e.message });
+            logger.warn('Blacklisting contract', { contractTxId, reason: e.message });
             await blacklistFn(contractTxId, e?.toString());
           }
-
         }
       }
 
