@@ -33,7 +33,7 @@ module.exports = {
       logger.error(`${queue.name} job failed`, { jobId, failedReason });
       const contractTxId = jobId;
       if (onFailedJob) {
-        await onFailedJob(contractTxId, jobId, failedReason);
+        await onFailedJob(contractTxId, jobId, failedReason?.toString());
       }
     });
     queueEvents.on('added', async ({ jobId }) => {
