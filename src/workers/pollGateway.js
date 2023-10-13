@@ -5,13 +5,14 @@ const updateProcessor = require('./updateProcessor');
 const { insertSyncLog } = require('../db/nodeDb');
 const { isTxIdValid } = require('../common');
 const { partition } = require('./common');
+const { config } = require("../config");
 
 const logger = LoggerFactory.INST.create('syncer');
 LoggerFactory.INST.logLevel('info', 'syncer');
 
-function filterInvalidEntries(entries) {
-  if (entries.length >= 15000) {
-    logger.warn(`Max entries in response, either reduce window size or increase interactions limit in response`);
+function filterInvalidEntries(entries, responseSizeLimit) {
+  if (entries.length >= responseSizeLimit) {
+    logger.warn(`Max entries in response (${responseSizeLimit}), either reduce window size or increase interactions limit in response via the .env.POLL_RESPONSE_LENGTH_LIMIT`);
     process.exit(0);
   }
 
@@ -84,7 +85,7 @@ module.exports = async function (
 
       let result;
       try {
-        result = await loadInteractions(startTimestamp, endTimestamp, whitelistedSources);
+        result = await loadInteractions(startTimestamp, endTimestamp, whitelistedSources, config.pollResponseLengthLimit);
         // logger.info("Raw response", result);
         if (!result) {
           throw new Error('Result is null or undefined');
@@ -92,7 +93,7 @@ module.exports = async function (
         if (!result.interactions) {
           throw new Error("Result does not contain 'interactions' field");
         }
-        result.interactions = filterInvalidEntries(result.interactions);
+        result.interactions = filterInvalidEntries(result.interactions, config.pollResponseLengthLimit);
       } catch (e) {
         logger.error(
           'Error while loading interactions',
