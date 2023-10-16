@@ -58,6 +58,7 @@ async function publishInternalWritesContracts(interactions) {
   for (const iwContract of iwTagsValues) {
     const interactWriteContractResult = await warp.stateEvaluator.latestAvailableState(iwContract);
     await sign(iwContract, interactWriteContractResult.sortKey, interactWriteContractResult.cachedValue.state);
+    await onNewState({ contractTxId: iwContract, result: interactWriteContractResult });
   }
 }
 
