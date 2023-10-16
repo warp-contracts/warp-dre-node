@@ -166,7 +166,6 @@ async function processGatewayMessage(msgObj) {
     );
     logger.info('Published to register queue', jobId);
   } else if (subscriptionMode && msgObj.interaction) {
-    const parsedInteraction = JSON.parse(msgObj.interaction);
     await updateQueue.add(
       'evaluateInteraction',
       {
