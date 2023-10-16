@@ -55,6 +55,25 @@ module.exports = {
             errors jsonb
         );
         CREATE INDEX IF NOT EXISTS idx_sync_log_end_timestamp ON sync_log(end_timestamp);
+        
+        --------------- contract_event
+        CREATE TABLE IF NOT EXISTS contract_event (
+            contract_tx_id text,
+            sort_key text,
+            tx_id text,
+            caller text,
+            input jsonb,
+            block_timestamp bigint,
+            block_height bigint,
+            data jsonb,
+            UNIQUE (contract_tx_id, sort_key)
+        );
+        CREATE INDEX IF NOT EXISTS idx_contract_event_contract_tx_id ON contract_event(contract_tx_id);
+        CREATE INDEX IF NOT EXISTS idx_contract_event_sort_key ON contract_event(sort_key);
+        CREATE INDEX IF NOT EXISTS idx_contract_event_tx_id ON contract_event(tx_id);
+        CREATE INDEX IF NOT EXISTS idx_contract_event_caller ON contract_event(caller);
+        CREATE INDEX IF NOT EXISTS idx_contract_event_block_timestamp ON contract_event(block_timestamp);
+        CREATE INDEX IF NOT EXISTS idx_contract_event_block_height ON contract_event(block_height);
 `
     );
   },
@@ -275,5 +294,21 @@ module.exports = {
       return result.rows[0].has;
     }
     return false;
-  }
+  },
+
+  insertContractEvent: async (event) => {
+    const { contractTxId, caller, transactionId, sortKey, input, blockHeight, blockTimestamp, data } = event;
+
+    // manual stringify due to issues w node-postgres
+    const inputStringified = JSON.stringify(input);
+    const dataStringified = JSON.stringify(data);
+
+    await drePool.query(
+      `
+                INSERT INTO contract_event (contract_tx_id, sort_key, tx_id, caller, input, block_timestamp, block_height, data)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                ON CONFLICT(contract_tx_id, sort_key) DO UPDATE SET data = EXCLUDED.data`,
+      [ contractTxId, sortKey, transactionId, caller, inputStringified, blockTimestamp, blockHeight, dataStringified ]
+    );
+  },
 };

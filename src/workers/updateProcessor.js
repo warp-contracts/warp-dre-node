@@ -3,6 +3,7 @@ const { LoggerFactory } = require("warp-contracts");
 const { checkStateSize } = require("./common");
 const { config } = require("../config");
 const { postEvalQueue } = require("../bullQueue");
+const { insertContractEvent } = require("../db/nodeDb");
 
 LoggerFactory.INST.logLevel("debug", "updateProcessor");
 LoggerFactory.INST.logLevel("info", "EvaluationProgressPlugin");
@@ -29,6 +30,11 @@ module.exports = async (job) => {
       lastSortKey: interaction.lastSortKey
     });
 
+    if (config.availableFunctions.contractEvents) {
+      logger.info("Adding interactionCompleted listener");
+      warp.eventTarget.addEventListener('interactionCompleted', interactionCompleteHandler);
+    }
+
     let result;
 
     // note: this check will work properly with at most 1 update processor per given contract...
@@ -52,5 +58,15 @@ module.exports = async (job) => {
   } catch (e) {
     logger.error(e);
     throw e;
+  } finally {
+    if (config.availableFunctions.contractEvents) {
+      warp.eventTarget.removeEventListener('interactionCompleted', interactionCompleteHandler);
+    }
   }
 };
+
+async function interactionCompleteHandler(event) {
+  const eventData = event.detail;
+  logger.debug("New contract event", eventData);
+  await insertContractEvent(eventData);
+}
