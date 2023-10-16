@@ -22,8 +22,8 @@ module.exports = {
         `
             INSERT INTO dre.balances(wallet_address, contract_tx_id, token_ticker, sort_key, token_name, balance)
             VALUES ($1, $2, $3, $4, $5, $6)
-            ON CONFLICT (wallet_address, contract_tx_id) DO UPDATE SET wallet_address = excluded.wallet_address,
-                                                                       contract_tx_id = excluded.contract_tx_id`,
+            ON CONFLICT (wallet_address, contract_tx_id) DO UPDATE SET sort_key = excluded.sort_key,
+                                                                       balance = excluded.balance`,
         [walletAddress.trim(), contractTxId.trim(), token_ticker, sortKey, name?.trim(), balance]
       );
     }
