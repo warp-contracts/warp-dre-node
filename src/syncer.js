@@ -17,6 +17,7 @@ const { createAggDbTables } = require('./db/aggDbSetup');
 const { queuesCleanUp, initQueue, postEvalQueue, registerQueue, maintenanceQueue } = require('./bullQueue');
 
 let isTestInstance = config.env === 'test';
+const subscriptionMode = true;
 
 async function runSyncer() {
   logger.info('🚀🚀🚀 Starting syncer node');
@@ -35,14 +36,16 @@ async function runSyncer() {
   logger.info('Last sync timestamp result', lastSyncTimestamp);
   const startTimestamp = lastSyncTimestamp ? lastSyncTimestamp : theVeryFirstTimestamp;
 
-  await pollGateway(
-    config.evaluationOptions.whitelistSources,
-    startTimestamp,
-    windowsMs(),
-    false,
-    blacklist,
-    isBlacklisted
-  );
+  if (!subscriptionMode) {
+    await pollGateway(
+      config.evaluationOptions.whitelistSources,
+      startTimestamp,
+      windowsMs(),
+      false,
+      blacklist,
+      isBlacklisted
+    );
+  }
   scheduleMaintenance();
 
   const onMessage = async (data) => await processContractData(data, registerQueue);
@@ -99,6 +102,12 @@ async function processContractData(msgObj, registerQueue) {
   const contractTxId = msgObj.contractTxId;
   const isRegistered = await warp.stateEvaluator.hasContractCached(contractTxId);
 
+  const baseMessage = {
+    contractTxId,
+    appSyncKey: config.appSync.key,
+    test: isTestInstance,
+    requiresPublish: true
+  };
   if (msgObj.initialState) {
     if (isRegistered) {
       validationMessage = 'Contract already registered';
@@ -109,15 +118,38 @@ async function processContractData(msgObj, registerQueue) {
     await registerQueue.add(
       'initContract',
       {
-        contractTxId,
-        appSyncKey: config.appSync.key,
-        test: isTestInstance,
-        requiresPublish: true,
+        ...baseMessage,
         tags: msgObj.tags
       },
       { jobId }
     );
     logger.info('Published to register queue', jobId);
+  } else if (subscriptionMode && msgObj.interaction) {
+    if (await isRegisteringContract(registerQueue, contractTxId)) {
+      logger.warn(`${contractTxId} is currently being registered, skipping update`);
+      return;
+    }
+    if (!isRegistered) {
+      logger.warn('Contract not registered, adding to register queue', contractTxId);
+      await registerQueue.add(
+        'initContract',
+        {
+          ...baseMessage,
+          force: true
+        },
+        { jobId: contractTxId }
+      );
+    } else {
+      const jobId = `${msgObj.contractTxId}|${timestamp}`;
+      await updatedQueue.add(
+        'evaluateInteraction',
+        {
+          ...baseMessage,
+          interaction: msgObj.interaction
+        },
+        { jobId }
+      );
+    }
   }
 }
 
@@ -140,7 +172,13 @@ async function subscribeToGatewayNotifications(onMessage) {
   subscriber.on('message', async (channel, message) => {
     try {
       const msgObj = JSON.parse(message);
-      if (msgObj.initialState && msgObj.srcTxId && config.evaluationOptions.whitelistSources.includes(msgObj.srcTxId)) {
+      if (subscriptionMode) {
+        await onMessage(msgObj);
+      } else if (
+        msgObj.initialState &&
+        msgObj.srcTxId &&
+        config.evaluationOptions.whitelistSources.includes(msgObj.srcTxId)
+      ) {
         logger.info(`Registering contract ${msgObj.contractTxId}[${msgObj.srcTxId}] from channel '${channel}'`);
         await onMessage(msgObj);
       }
