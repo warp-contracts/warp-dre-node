@@ -104,7 +104,8 @@ const config = {
   },
   syncWindowSeconds: JSON.parse(process.env.SYNC_WINDOW_SECONDS),
   firstInteractionTimestamp: parseInt(process.env.FIRST_INTERACTION_TIMESTAMP),
-  pollResponseLengthLimit: process.env.POLL_RESPONSE_LENGTH_LIMIT ? parseInt(process.env.POLL_RESPONSE_LENGTH_LIMIT) : 15000
+  pollResponseLengthLimit: process.env.POLL_RESPONSE_LENGTH_LIMIT ? parseInt(process.env.POLL_RESPONSE_LENGTH_LIMIT) : 15000,
+  updateMode: process.env.UPDATE_MODE || 'poll'
 };
 
 validate(config);
@@ -181,6 +182,9 @@ async function logConfig(config) {
   logger.info('evaluationOptions', config.evaluationOptions);
   logger.info('workersConfig', config.workersConfig);
   logger.info('syncWindowSeconds', config.syncWindowSeconds);
+  logger.info('firstInteractionTimestamp', config.firstInteractionTimestamp);
+  logger.info('pollResponseLengthLimit', config.pollResponseLengthLimit);
+  logger.info('updateMode', config.updateMode);
 }
 
 module.exports.config = config;

@@ -76,7 +76,7 @@ const crypto = require("crypto");
     .use(new JWTVerifyPlugin());
 
 
-  const contract = warp.contract("fLOpXe97Gf0X9BEf9QklyOLXt_v63a7U5RsZ9wsE000")
+  const contract = warp.contract("p5OI99-BaY4QbZts266T7EDwofZqs-wVuYJmMCS0SUU")
     .setEvaluationOptions({
       allowBigInt: true,
       internalWrites: true,
@@ -85,18 +85,15 @@ const crypto = require("crypto");
       unsafeClient: "skip",
       cacheEveryNInteractions: 2000,
       whitelistSources: [
-        "00elNGZCnqSfVIBUUOBeFB8VGg0nX8vCiDyZed0Zdys",
-        "SpKjw3fTwsH0RSk_mfnNN9jlwYWlnPjwRhLzgFz7hM0",
-        "Z9PGIe0SIXb-UU7970dFOodvOXNh_WMhJ-bXr6GRVoY",
-        "xIDRxGWDdWdDkeWTouh937orxGC2hWuYgVu14z1Ks1Q",
-        "3MiQ250Mddx1fwerlg6ix4uhkUiNeFuL27nvs1ZJkhs",
-        "3F2xKBP_2IbF9483zIxl68fgHlHGoIPhTjwGUwz2t9g",
-        "UYnZedG34A4LkEGY8VDs75yaUHbUPU4Rd2w5OmEHmLk",
-        "oKv8zRWXbPgYTyf2y1OLdwBQtm5zs0SQ_tM6KGOYdD8"
+        "q6uux2HImYsjHH3bBqYTpcGbG4qrfD5zctkLOgDnRFU",
+        "lJVxtLcKbBFJ6GU3jZy4QVk2-FmrmxDiiZW7wChShz4",
+        "TFhVs1gBzejgMfa1K6dfu-YVP9Z5vDLE6lmA22oHSBg",
+        "xPPBzwfuam_Z3Kl_6eioX4X_89i924CEfNbBZ3NTe1A",
+        "gfntmEq5vriF_xxwB_-liQOwFwVbpXhd5kHHVv-74ck"
       ]
     });
 
-  const evalResult = await contract.readState("000001259674,1694484200143,6d27538968dd365be1dc522368f69d012ef8655da6102f089653aaa75af7540b");
+  const evalResult = await contract.readState();
   const evalState = evalResult.cachedValue.state;
   const sortKey = evalResult.sortKey;
 

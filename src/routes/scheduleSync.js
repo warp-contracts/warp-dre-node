@@ -16,9 +16,10 @@ module.exports = async (ctx) => {
     }
 
     const contract = warp.contract(contractTxId).connect(config.nodeJwk);
-    await contract.writeInteraction({ function: 'registerDre' });
+    const functionName = `__update_dre_${Date.now()}`;
+    await contract.writeInteraction({ function: functionName });
 
-    ctx.body = 'Scheduled for update';
+    ctx.body = `Scheduled for update ${contractTxId}: ${functionName}`;
     ctx.status = 200;
   } catch (e) {
     ctx.body = e.message;

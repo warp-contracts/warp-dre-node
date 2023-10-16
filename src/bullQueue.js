@@ -6,11 +6,13 @@ const logger = require('./logger')('bullQueues');
 
 const queues = [];
 const registerQueue = configureQueue('register');
+const updateQueue = configureQueue('update');
 const postEvalQueue = configureQueue('postEval');
 const maintenanceQueue = configureQueue('maintenance');
 
 module.exports = {
   registerQueue,
+  updateQueue,
   postEvalQueue,
   maintenanceQueue,
   initQueue: async function (queue, onFailedJob) {
