@@ -1,7 +1,7 @@
 const { LoggerFactory } = require('warp-contracts');
 const loadInteractions = require('../loadInteractions');
 const { hashElement } = require('../signature');
-const updateProcessor = require('./updateProcessor');
+const pollProcessor = require('./pollProcessor');
 const { insertSyncLog } = require('../db/nodeDb');
 const { isTxIdValid } = require('../common');
 const { partition } = require('./common');
@@ -146,11 +146,12 @@ module.exports = async function (
         }
         // validatePartition(partition);
         try {
-          await updateProcessor({
+          await pollProcessor({
             data: {
               contractTxId,
               isTest: false,
-              partition
+              partition,
+              isSubscription: false
             }
           });
         } catch (e) {

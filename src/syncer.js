@@ -14,12 +14,13 @@ const exitHook = require('async-exit-hook');
 const { warp, pgClient } = require('./warp');
 const pollGateway = require('./workers/pollGateway');
 const { createAggDbTables } = require('./db/aggDbSetup');
-const { queuesCleanUp, initQueue, postEvalQueue, registerQueue, maintenanceQueue } = require('./bullQueue');
+const { queuesCleanUp, initQueue, postEvalQueue, registerQueue, maintenanceQueue, updateQueue } = require('./bullQueue');
 
-let isTestInstance = config.env === 'test';
+const isTestInstance = config.env === 'test';
+const subscriptionMode = config.updateMode === 'subscription';
 
 async function runSyncer() {
-  logger.info('🚀🚀🚀 Starting syncer node');
+  logger.info(`🚀🚀🚀 Starting syncer node in ${config.updateMode} mode.`);
   await logConfig();
 
   await createNodeDbTables();
@@ -27,26 +28,34 @@ async function runSyncer() {
 
   await pgClient.open();
   await initQueue(postEvalQueue);
-  await initQueue(registerQueue, onFailedRegisterJob);
+  await initQueue(registerQueue, onFailedJob);
   await initQueue(maintenanceQueue);
+  if (subscriptionMode) {
+    await initQueue(updateQueue, onFailedJob);
+  }
 
-  const theVeryFirstTimestamp = config.firstInteractionTimestamp;
-  const lastSyncTimestamp = await getLastSyncTimestamp();
-  logger.info('Last sync timestamp result', lastSyncTimestamp);
-  const startTimestamp = lastSyncTimestamp ? lastSyncTimestamp : theVeryFirstTimestamp;
+  if (!subscriptionMode) {
+    const theVeryFirstTimestamp = config.firstInteractionTimestamp;
+    if (!theVeryFirstTimestamp) {
+      logger.error("FIRST_INTERACTION_TIMESTAMP .env param not set");
+      process.exit(0);
+    }
+    const lastSyncTimestamp = await getLastSyncTimestamp();
+    logger.info('Last sync timestamp result', lastSyncTimestamp);
+    const startTimestamp = lastSyncTimestamp ? lastSyncTimestamp : theVeryFirstTimestamp;
 
-  await pollGateway(
-    config.evaluationOptions.whitelistSources,
-    startTimestamp,
-    windowsMs(),
-    false,
-    blacklist,
-    isBlacklisted
-  );
+    await pollGateway(
+      config.evaluationOptions.whitelistSources,
+      startTimestamp,
+      windowsMs(),
+      false,
+      blacklist,
+      isBlacklisted
+    );
+  }
   scheduleMaintenance();
 
-  const onMessage = async (data) => await processContractData(data, registerQueue);
-  await subscribeToGatewayNotifications(onMessage);
+  await subscribeToGatewayNotifications();
 }
 
 function windowsMs() {
@@ -64,16 +73,51 @@ runSyncer().catch((e) => {
   logger.error(e);
 });
 
-async function processContractData(msgObj, registerQueue) {
-  logger.info(`Received '${msgObj.contractTxId}'`);
+async function subscribeToGatewayNotifications() {
+  const onError = (err) => logger.error('Failed to subscribe:', err);
+  const onMessage = async (data) => await processGatewayMessage(data);
+
+  const subscriber = new Redis(config.gwPubSubConfig);
+  await subscriber.connect();
+  logger.info('Connected to Warp Gateway notifications', subscriber.status);
+
+  subscriber.subscribe('contracts', (err, count) => {
+    if (err) {
+      onError(err.message);
+    } else {
+      logger.info(`Subscribed successfully! This client is currently subscribed to ${count} channels.`);
+    }
+  });
+  subscriber.on('message', async (channel, message) => {
+    try {
+      const msgObj = JSON.parse(message);
+      if (
+        ((msgObj.interaction && subscriptionMode) || msgObj.initialState) && isWhitelistedSource(msgObj.srcTxId)
+      ) {
+        await onMessage(msgObj);
+      }
+    } catch (e) {
+      logger.error(e);
+      logger.error(message);
+    }
+  });
+  process.on('exit', () => subscriber.disconnect());
+}
+
+async function processGatewayMessage(msgObj) {
+  logger.info(`Received message for '${msgObj.contractTxId}'`);
+  logger.info('message object', msgObj);
 
   let validationMessage = null;
   if (!isTxIdValid(msgObj.contractTxId)) {
-    validationMessage = 'Invalid tx id format';
+    validationMessage = `Invalid contract tx id format: ${msgObj.contractTxId}`;
+  }
+  if (!isTxIdValid(msgObj.srcTxId)) {
+    validationMessage = `Invalid src tx id format: ${msgObj.srcTxId}`;
   }
 
-  if (!msgObj.initialState) {
-    validationMessage = 'Only register messages are allowed';
+  if ((!msgObj.initialState && !msgObj.interaction) || (msgObj.initialState && msgObj.interaction)) {
+    validationMessage = 'Invalid message format';
   }
 
   if (msgObj.test && !isTestInstance) {
@@ -99,6 +143,12 @@ async function processContractData(msgObj, registerQueue) {
   const contractTxId = msgObj.contractTxId;
   const isRegistered = await warp.stateEvaluator.hasContractCached(contractTxId);
 
+  const baseMessage = {
+    contractTxId,
+    appSyncKey: config.appSync.key,
+    test: isTestInstance,
+    requiresPublish: true
+  };
   if (msgObj.initialState) {
     if (isRegistered) {
       validationMessage = 'Contract already registered';
@@ -109,47 +159,23 @@ async function processContractData(msgObj, registerQueue) {
     await registerQueue.add(
       'initContract',
       {
-        contractTxId,
-        appSyncKey: config.appSync.key,
-        test: isTestInstance,
-        requiresPublish: true,
+        ...baseMessage,
         tags: msgObj.tags
       },
       { jobId }
     );
     logger.info('Published to register queue', jobId);
-  }
-}
-
-async function subscribeToGatewayNotifications(onMessage) {
-  const onError = (err) => logger.error('Failed to subscribe:', err);
-
-  const pubsubType = config.pubsub.type;
-  logger.info(`Starting pubsub in ${pubsubType} mode`);
-  const subscriber = new Redis(config.gwPubSubConfig);
-  await subscriber.connect();
-  logger.info('Connected to Warp Gateway notifications', subscriber.status);
-
-  subscriber.subscribe('contracts', (err, count) => {
-    if (err) {
-      onError(err.message);
-    } else {
-      logger.info(`Subscribed successfully! This client is currently subscribed to ${count} channels.`);
-    }
-  });
-  subscriber.on('message', async (channel, message) => {
-    try {
-      const msgObj = JSON.parse(message);
-      if (msgObj.initialState && msgObj.srcTxId && config.evaluationOptions.whitelistSources.includes(msgObj.srcTxId)) {
-        logger.info(`Registering contract ${msgObj.contractTxId}[${msgObj.srcTxId}] from channel '${channel}'`);
-        await onMessage(msgObj);
+  } else if (subscriptionMode && msgObj.interaction) {
+    const parsedInteraction = JSON.parse(msgObj.interaction);
+    await updateQueue.add(
+      'evaluateInteraction',
+      {
+        ...baseMessage,
+        interaction: msgObj.interaction
       }
-    } catch (e) {
-      logger.error(e);
-      logger.error(message);
-    }
-  });
-  process.on('exit', () => subscriber.disconnect());
+    );
+    logger.info('Published to update queue');
+  }
 }
 
 function scheduleMaintenance() {
@@ -178,7 +204,7 @@ async function cleanup(callback) {
   callback();
 }
 
-async function onFailedRegisterJob(contractTxId, jobId, failedReason) {
+async function onFailedJob(contractTxId, jobId, failedReason) {
   await insertFailure({
     contract_tx_id: contractTxId,
     evaluation_options: config.evaluationOptions,
@@ -202,6 +228,11 @@ async function blacklist(contractTxId, reason) {
 async function isBlacklisted(contractTxId) {
   const failures = await getFailures(null, contractTxId);
   return failures >= config.workersConfig.maxFailures;
+}
+
+function isWhitelistedSource(srcTxId) {
+  const whitelistedSources = config.evaluationOptions.whitelistSources;
+  return whitelistedSources.length == 0 || whitelistedSources.includes(srcTxId);
 }
 
 exitHook(cleanup);
