@@ -27,7 +27,8 @@ const evaluationOptions = {
   unsafeClient: process.env.EVALUATION_UNSAFECLIENT,
   internalWrites: process.env.EVALUATION_INTERNALWRITES === 'true',
   cacheEveryNInteractions: 2000,
-  whitelistSources: JSON.parse(process.env.EVALUATION_WHITELIST_SOURCES)
+  whitelistSources: JSON.parse(process.env.EVALUATION_WHITELIST_SOURCES),
+  blacklistedContracts: JSON.parse(process.env.EVALUATION_BLACKLISTED_CONTRACTS)
 };
 
 function getGwPubSubConfig() {

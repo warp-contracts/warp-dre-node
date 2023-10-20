@@ -66,7 +66,7 @@ const warp = WarpFactory.forMainnet()
   .use(
     new ContractBlacklistPlugin(async (input) => {
       const blacklistFunction = await getDreBlacklistFunction(getFailures, drePool, config.workersConfig.maxFailures);
-      return await blacklistFunction(input);
+      return await blacklistFunction(input) || config.evaluationOptions.blacklistedContracts.includes(input);
     })
   );
 warp.whoAmI = config.dreName || 'DRE';

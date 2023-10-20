@@ -63,6 +63,7 @@ function logPartitionData(partitioned) {
 
 module.exports = async function (
   whitelistedSources,
+  blacklistedContracts,
   initialStartTimestamp,
   windowsMs,
   forceEndTimestamp,
@@ -85,8 +86,7 @@ module.exports = async function (
 
       let result;
       try {
-        result = await loadInteractions(startTimestamp, endTimestamp, whitelistedSources, config.pollResponseLengthLimit);
-        // logger.info("Raw response", result);
+        result = await loadInteractions(startTimestamp, endTimestamp, whitelistedSources, blacklistedContracts, config.pollResponseLengthLimit);
         if (!result) {
           throw new Error('Result is null or undefined');
         }

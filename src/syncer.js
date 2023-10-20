@@ -46,6 +46,7 @@ async function runSyncer() {
 
     await pollGateway(
       config.evaluationOptions.whitelistSources,
+      config.evaluationOptions.blacklistedContracts,
       startTimestamp,
       windowsMs(),
       false,

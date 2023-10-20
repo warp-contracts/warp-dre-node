@@ -1,9 +1,10 @@
-module.exports = async (startTimestamp, endTimestamp, whiteListedSources, limit) => {
+module.exports = async (startTimestamp, endTimestamp, whiteListedSources, blacklistedContracts, limit) => {
   const response = await postData({
     start: startTimestamp,
     end: endTimestamp,
     limit,
-    src_ids: whiteListedSources
+    src_ids: whiteListedSources,
+    blacklisted_contracts: blacklistedContracts
   });
 
   if (response) {
