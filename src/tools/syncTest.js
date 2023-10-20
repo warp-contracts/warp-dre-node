@@ -8,18 +8,7 @@ async function main() {
 
   const srcIds =  [
     // https://docs.google.com/spreadsheets/d/1F9T1Vyk3geEsrU8wVSdsPj9drO48Ae9f2UpkuE0ralI/edit#gid=0
-    "Of9pi--Gj7hCTawhgxOwbuWnFI1h24TTgO5pw8ENJNQ", // Atomic Asset
-    "W78KEzU8vIODFHzwa9ab7SS7Pjchc7KenivCiwSHxBY", // STAMP
-    "kP1Ed8AMvaaBrEFjatP4pSmiE_fsRrGS0EcBMQYYiyc", // STAMP-evolve
-    "mGxosQexdvrvzYCshzBvj18Xh1QmZX16qFJBuh4qobo", // U
-    "7qv5x9A0NgAlTdMnBc1H2HFvN-te0kzzuT9RNt_66g8", // UCM contract old
-    "eIAyBgHH-H7Qzw9fj7Austj30QKPQn27eaakvpOUSR8", // Facts
-    "Of9pi--Gj7hCTawhgxOwbuWnFI1h24TTgO5pw8ENJNQ", // Pages
-    "ovWCp0xKuHtq-bADXbtiNr6umwb_AE73kVZWtfHlX3w", // VouchDAO
-    "1hDZBRSptTNgnACuO9qGHLbaOfnAcMBKCHcHPRhMWUY", // VouchDAO-evolve
-    "LBcYEl2zwKDApj1Cow1_BYyiicxVV7OCZTexsjk6mB4", // UCM contract new
-    "dRTFmLwJ3cNqdNvFK4yUvwc13CrJtFOmLymLxL4HWOE", // UCM contract evolve
-    "yXPm9-9VyxH9otGf7xim0EJsnt21IJN8qJjanFTC_kc", // UCM contract evolve
+
   ]
 
   //const result = await loadInteractions(1692111085730, 1692111087730, srcIds);
@@ -33,7 +22,7 @@ async function main() {
 
   const now = Date.now();
 
-  const result = await loadInteractions(now - 4000, now - 2000, srcIds);
+  const result = await loadInteractions(now - 5 * 60 * 1000, now - 2000, srcIds);
   console.timeLog("fetch");
 
   //console.dir(result, {depth: null});
