@@ -33,11 +33,13 @@ module.exports = async (ctx) => {
     let output = null;
     let sortKey = (await getLastStateFromDreCache(nodeDb, contractId)).sort_key;
     let cachedView = (await getCachedViewState(contractId, sortKey, JSON.stringify(input), caller))[0];
-
+    console.log(sortKey);
+    console.log(cachedView);
     if (cachedView) {
       output = JSON.parse(cachedView.result);
     } else {
       const interactionResult = await warp.contract(contractId).viewState(input, [], emptyTransfer, caller);
+      console.log(interactionResult);
       sortKey = (await warp.stateEvaluator.latestAvailableState(contractId)).sortKey;
 
       output = {
@@ -53,6 +55,7 @@ module.exports = async (ctx) => {
     ctx.body = { ...output, sortKey, signature: cachedView.signature, hash: cachedView.view_hash };
     ctx.status = 200;
   } catch (e) {
+    console.log(e);
     ctx.status = e.status;
     ctx.body = { message: e.message };
   }
