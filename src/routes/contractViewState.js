@@ -3,8 +3,13 @@ const { config } = require('../config');
 const { getLastStateFromDreCache, getCachedViewState, insertViewStateIntoCache } = require('../db/nodeDb');
 const { isTxIdValid } = require('../common');
 const { emptyTransfer } = require('warp-contracts');
+const { LoggerFactory } = require('warp-contracts');
+
+LoggerFactory.INST.logLevel('info', 'contractViewState');
+const logger = LoggerFactory.INST.create('contractViewState');
 
 module.exports = async (ctx) => {
+  logger.info('view state enabled', config.availableFunctions.viewState);
   if (!config.availableFunctions.viewState) {
     ctx.body = 'Contract view state functionality is disabled';
     ctx.status = 404;
@@ -33,13 +38,13 @@ module.exports = async (ctx) => {
     let output = null;
     let sortKey = (await getLastStateFromDreCache(nodeDb, contractId)).sort_key;
     let cachedView = (await getCachedViewState(contractId, sortKey, JSON.stringify(input), caller))[0];
-    console.log(sortKey);
-    console.log(cachedView);
+    logger.info('Sort key', sortKey);
+    logger.info('PostEval Processor', cachedView);
     if (cachedView) {
       output = JSON.parse(cachedView.result);
     } else {
       const interactionResult = await warp.contract(contractId).viewState(input, [], emptyTransfer, caller);
-      console.log(interactionResult);
+      logger.info('Interaction result', interactionResult);
       sortKey = (await warp.stateEvaluator.latestAvailableState(contractId)).sortKey;
 
       output = {
@@ -55,7 +60,7 @@ module.exports = async (ctx) => {
     ctx.body = { ...output, sortKey, signature: cachedView.signature, hash: cachedView.view_hash };
     ctx.status = 200;
   } catch (e) {
-    console.log(e);
+    logger.info('error', e);
     ctx.status = e.status;
     ctx.body = { message: e.message };
   }
