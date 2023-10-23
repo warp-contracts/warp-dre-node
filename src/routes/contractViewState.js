@@ -37,8 +37,7 @@ module.exports = async (ctx) => {
     let sortKey = (await warp.stateEvaluator.latestAvailableState(contractId)).sortKey;
     logger.info("Latest available sortKey", sortKey);
 
-
-    let cachedView = (await getCachedViewState(contractId, sortKey, JSON.stringify(input), caller))[0];
+    let cachedView = await getCachedViewState(contractId, sortKey, JSON.stringify(input), caller);
 
     logger.info("new view state request after cache lookup", sortKey);
 
