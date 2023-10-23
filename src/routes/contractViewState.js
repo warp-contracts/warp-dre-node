@@ -37,8 +37,7 @@ module.exports = async (ctx) => {
     let cachedView = await getCachedViewState(contractId, sortKey, JSON.stringify(input), caller);
 
     if (cachedView) {
-      logger.info("VieState cached", cachedView);
-      output = JSON.parse(cachedView.result);
+      output = cachedView.result;
     } else {
       const interactionResult = await warp.contract(contractId)
         .setEvaluationOptions(config.evaluationOptions)
