@@ -3,6 +3,10 @@ const { config } = require('../config');
 const { getCachedViewState, insertViewStateIntoCache } = require('../db/nodeDb');
 const { isTxIdValid } = require('../common');
 const { emptyTransfer } = require('warp-contracts');
+const { LoggerFactory } = require("warp-contracts/mjs");
+
+LoggerFactory.INST.logLevel('debug', 'viewStateRoute');
+const logger = LoggerFactory.INST.create('viewStateRoute');
 
 module.exports = async (ctx) => {
   if (!config.availableFunctions.viewState) {
@@ -10,8 +14,6 @@ module.exports = async (ctx) => {
     ctx.status = 404;
     return;
   }
-
-  const nodeDb = ctx.nodeDb;
 
   try {
     const contractId = ctx.query.id;
@@ -32,13 +34,21 @@ module.exports = async (ctx) => {
 
     let output;
     let sortKey = (await warp.stateEvaluator.latestAvailableState(contractId)).sortKey;
+    logger.debug("Latest available sortKey", sortKey);
+
+
     let cachedView = (await getCachedViewState(contractId, sortKey, JSON.stringify(input), caller))[0];
 
     if (cachedView) {
+      logger.debug("VieState cached");
       output = JSON.parse(cachedView.result);
     } else {
-      const interactionResult = await warp.contract(contractId).viewState(input, [], emptyTransfer, caller);
+      const interactionResult = await warp.contract(contractId)
+        .setEvaluationOptions(config.evaluationOptions)
+        .viewState(input, [], emptyTransfer, caller);
       sortKey = (await warp.stateEvaluator.latestAvailableState(contractId)).sortKey;
+
+      logger.debug("Interaction result", interactionResult);
 
       output = {
         type: interactionResult.type,
