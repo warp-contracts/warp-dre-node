@@ -8,6 +8,7 @@ LoggerFactory.INST.logLevel('debug', 'viewStateRoute');
 const logger = LoggerFactory.INST.create('viewStateRoute');
 
 module.exports = async (ctx) => {
+  logger.info('new view state request', ctx.query)
   if (!config.availableFunctions.viewState) {
     ctx.body = 'Contract view state functionality is disabled';
     ctx.status = 404;
