@@ -8,7 +8,7 @@ LoggerFactory.INST.logLevel('debug', 'viewStateRoute');
 const logger = LoggerFactory.INST.create('viewStateRoute');
 
 module.exports = async (ctx) => {
-  logger.info("new view state request", ctx.query);
+  logger.info("new view state request");
   if (!config.availableFunctions.viewState) {
     ctx.body = 'Contract view state functionality is disabled';
     ctx.status = 404;
@@ -30,29 +30,20 @@ module.exports = async (ctx) => {
     if (!input) {
       ctx.throw(400, 'Invalid input format');
     }
-    logger.info("new view state request after validation");
     const caller = ctx.query.caller;
 
     let output;
     let sortKey = (await warp.stateEvaluator.latestAvailableState(contractId)).sortKey;
-    logger.info("Latest available sortKey", sortKey);
-
     let cachedView = await getCachedViewState(contractId, sortKey, JSON.stringify(input), caller);
 
-    logger.info("new view state request after cache lookup", sortKey);
-
     if (cachedView) {
-      logger.debug("VieState cached");
+      logger.info("VieState cached", cachedView);
       output = JSON.parse(cachedView.result);
     } else {
-      logger.info("new view state request before viewState", sortKey);
       const interactionResult = await warp.contract(contractId)
         .setEvaluationOptions(config.evaluationOptions)
         .viewState(input, [], emptyTransfer, caller);
-      logger.info("new view state request after viewState", sortKey);
       sortKey = (await warp.stateEvaluator.latestAvailableState(contractId)).sortKey;
-
-      logger.info("Interaction result", interactionResult);
 
       output = {
         type: interactionResult.type,
