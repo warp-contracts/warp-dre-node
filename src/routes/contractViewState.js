@@ -2,8 +2,7 @@ const { warp } = require('../warp');
 const { config } = require('../config');
 const { getCachedViewState, insertViewStateIntoCache } = require('../db/nodeDb');
 const { isTxIdValid } = require('../common');
-const { emptyTransfer } = require('warp-contracts');
-const { LoggerFactory } = require("warp-contracts/mjs");
+const { emptyTransfer, LoggerFactory } = require('warp-contracts');
 
 LoggerFactory.INST.logLevel('debug', 'viewStateRoute');
 const logger = LoggerFactory.INST.create('viewStateRoute');
