@@ -1,6 +1,6 @@
 const { warp } = require('../warp');
 const { config } = require('../config');
-const { getLastStateFromDreCache, getCachedViewState, insertViewStateIntoCache } = require('../db/nodeDb');
+const { getCachedViewState, insertViewStateIntoCache } = require('../db/nodeDb');
 const { isTxIdValid } = require('../common');
 const { emptyTransfer } = require('warp-contracts');
 
@@ -30,8 +30,8 @@ module.exports = async (ctx) => {
     }
     const caller = ctx.query.caller;
 
-    let output = null;
-    let sortKey = (await getLastStateFromDreCache(nodeDb, contractId)).sort_key;
+    let output;
+    let sortKey = (await warp.stateEvaluator.latestAvailableState(contractId)).sortKey;
     let cachedView = (await getCachedViewState(contractId, sortKey, JSON.stringify(input), caller))[0];
 
     if (cachedView) {
@@ -53,7 +53,7 @@ module.exports = async (ctx) => {
     ctx.body = { ...output, sortKey, signature: cachedView.signature, hash: cachedView.view_hash };
     ctx.status = 200;
   } catch (e) {
-    ctx.status = e.status;
+    ctx.status = e.status || 500;
     ctx.body = { message: e.message };
   }
 };
