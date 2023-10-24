@@ -162,14 +162,13 @@ module.exports = async function (
           if (e.name === 'CacheConsistencyError') {
             logger.warn('Cache consistency error, blacklisting contract', contractTxId);
             await blacklistFn(contractTxId, e?.toString());
-          } else if (e.message.includes('[MaxStateSizeError]')) {
+          } else if (Array.isArray(e.message) && e.message.includes('[MaxStateSizeError]')) {
             logger.warn('Max state size reached, blacklisting contract', contractTxId);
             await blacklistFn(contractTxId, e?.toString());
           } else {
             logger.warn('Blacklisting contract', { contractTxId, reason: e.message });
             await blacklistFn(contractTxId, e?.toString());
           }
-
         }
       }
 
