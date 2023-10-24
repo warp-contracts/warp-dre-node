@@ -330,7 +330,42 @@ module.exports = {
                 INSERT INTO contract_event (contract_tx_id, sort_key, tx_id, caller, input, block_timestamp, block_height, data)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                 ON CONFLICT(contract_tx_id, sort_key) DO UPDATE SET data = EXCLUDED.data`,
-      [ contractTxId, sortKey, transactionId, caller, inputStringified, blockTimestamp, blockHeight, dataStringified ]
+      [contractTxId, sortKey, transactionId, caller, inputStringified, blockTimestamp, blockHeight, dataStringified]
     );
   },
+
+  getUserLastRewards: async (contractId, userId, limit) => {
+    const result = await drePool.query(
+      `
+        SELECT sort_key, block_timestamp, data ->> 'points' AS points
+        FROM dre.contract_event 
+        WHERE contract_tx_id = $1
+        AND data ->> 'userId' = $2 
+        ORDER BY sort_key DESC 
+        LIMIT $3;
+      `,
+      [contractId, userId, limit]
+    );
+    return result.rows;
+  },
+
+  getSeasonRanking: async (contractId, seasonName, limit, offset) => {
+    const result = await drePool.query(
+      `
+        WITH season AS 
+          (SELECT (data ->> 'from')::bigint AS fromTimestamp, (data ->> 'to')::bigint AS toTimestamp
+          FROM dre.contract_event
+          WHERE data ->> 'name' = $1 AND contract_tx_id = $2)
+        SELECT data ->> 'userId' as "userId", SUM((data ->> 'points')::bigint) AS points from dre.contract_event ce
+        JOIN season s ON true
+        WHERE ce.block_timestamp >= s.fromTimestamp AND ce.block_timestamp <= s.toTimestamp
+        GROUP BY (data ->> 'userId')
+        ORDER BY points desc nulls last
+        LIMIT $3 OFFSET $4;
+      `,
+      [contractId, seasonName, limit, offset]
+    );
+
+    return result.rows;
+  }
 };

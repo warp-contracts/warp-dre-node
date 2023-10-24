@@ -94,7 +94,8 @@ const config = {
   nodeManifest: getNodeManifest(),
   availableFunctions: {
     viewState: process.env.FUNC_VIEW_STATE === 'true',
-    contractEvents: process.env.PROCESS_CONTRACT_EVENTS === 'true'
+    contractEvents: process.env.PROCESS_CONTRACT_EVENTS === 'true',
+    warpyAggreging: process.env.WARPY_AGGREGING === 'true'
   },
   workersConfig: {
     register: parseInt(process.env.WORKERS_REGISTER),
@@ -108,7 +109,9 @@ const config = {
   },
   syncWindowSeconds: JSON.parse(process.env.SYNC_WINDOW_SECONDS),
   firstInteractionTimestamp: parseInt(process.env.FIRST_INTERACTION_TIMESTAMP),
-  pollResponseLengthLimit: process.env.POLL_RESPONSE_LENGTH_LIMIT ? parseInt(process.env.POLL_RESPONSE_LENGTH_LIMIT) : 15000,
+  pollResponseLengthLimit: process.env.POLL_RESPONSE_LENGTH_LIMIT
+    ? parseInt(process.env.POLL_RESPONSE_LENGTH_LIMIT)
+    : 15000,
   pollLoadInteractionsUrl: readLoadInteractionsUrl(),
   pollForkProcess: process.env.POLL_FORK_PROCESS === 'true',
   whitelistMode: JSON.parse(process.env.EVALUATION_WHITELIST_SOURCES).length > 0,
