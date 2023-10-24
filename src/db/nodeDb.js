@@ -334,14 +334,14 @@ module.exports = {
           (SELECT (data ->> 'from')::bigint AS fromTimestamp, (data ->> 'to')::bigint AS toTimestamp
           FROM dre.contract_event
           WHERE data ->> 'name' = $1 AND contract_tx_id = $2)
-        SELECT data ->> 'userId' as "userId", SUM((data ->> 'points')::bigint) AS points from dre.contract_event ce
+        SELECT data ->> 'userId' as "userId", SUM((data ->> 'points')::bigint) AS points FROM dre.contract_event ce
         JOIN season s ON true
         WHERE ce.block_timestamp >= s.fromTimestamp AND ce.block_timestamp <= s.toTimestamp
         GROUP BY (data ->> 'userId')
-        ORDER BY points desc nulls last
+        ORDER BY points DESC nulls LAST
         LIMIT $3 OFFSET $4;
       `,
-      [contractId, seasonName, limit, offset]
+      [seasonName, contractId, limit, offset]
     );
 
     return result.rows;
