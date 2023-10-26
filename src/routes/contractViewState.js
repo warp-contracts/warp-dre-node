@@ -1,17 +1,19 @@
 const { warp } = require('../warp');
 const { config } = require('../config');
-const { getLastStateFromDreCache, getCachedViewState, insertViewStateIntoCache } = require('../db/nodeDb');
+const { getCachedViewState, insertViewStateIntoCache } = require('../db/nodeDb');
 const { isTxIdValid } = require('../common');
-const { emptyTransfer } = require('warp-contracts');
+const { emptyTransfer, LoggerFactory } = require('warp-contracts');
+
+LoggerFactory.INST.logLevel('debug', 'viewStateRoute');
+const logger = LoggerFactory.INST.create('viewStateRoute');
 
 module.exports = async (ctx) => {
+  logger.info('new view state request');
   if (!config.availableFunctions.viewState) {
     ctx.body = 'Contract view state functionality is disabled';
     ctx.status = 404;
     return;
   }
-
-  const nodeDb = ctx.nodeDb;
 
   try {
     const contractId = ctx.query.id;
@@ -30,14 +32,17 @@ module.exports = async (ctx) => {
     }
     const caller = ctx.query.caller;
 
-    let output = null;
-    let sortKey = (await getLastStateFromDreCache(nodeDb, contractId)).sort_key;
-    let cachedView = (await getCachedViewState(contractId, sortKey, JSON.stringify(input), caller))[0];
+    let output;
+    let sortKey = (await warp.stateEvaluator.latestAvailableState(contractId)).sortKey;
+    let cachedView = await getCachedViewState(contractId, sortKey, JSON.stringify(input), caller);
 
     if (cachedView) {
-      output = JSON.parse(cachedView.result);
+      output = cachedView.result;
     } else {
-      const interactionResult = await warp.contract(contractId).viewState(input, [], emptyTransfer, caller);
+      const interactionResult = await warp
+        .contract(contractId)
+        .setEvaluationOptions(config.evaluationOptions)
+        .viewState(input, [], emptyTransfer, caller);
       sortKey = (await warp.stateEvaluator.latestAvailableState(contractId)).sortKey;
 
       output = {
@@ -53,7 +58,7 @@ module.exports = async (ctx) => {
     ctx.body = { ...output, sortKey, signature: cachedView.signature, hash: cachedView.view_hash };
     ctx.status = 200;
   } catch (e) {
-    ctx.status = e.status;
+    ctx.status = e.status || 500;
     ctx.body = { message: e.message };
   }
 };
