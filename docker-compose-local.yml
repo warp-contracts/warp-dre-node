@@ -14,6 +14,6 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=dre-u
+      - POSTGRES_DB=postgres
     ports:
       - '21726:5432'

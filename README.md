@@ -4,6 +4,24 @@ A Delegated Resolution Environment for Warp Contracts.
 Docs are available [here](https://academy.warp.cc/docs/dre/overview).
 
 
+## Update mode
+DRE can run in two different modes.
+Each of them listens on gateways notification and registers new contracts, but upcoming new interactions are handled differently. 
+
+#### Poll
+Node fetches interactions directly from gateway in time intervals.
+Interaction are grouped and executed sequentially.
+This is the default mode.
+
+
+#### Subscription
+Node listens on new interactions events and evaluates contracts immediately after every interaction.
+This offers a faster contract evaluation and serves the latest contract state 
+
+Update mode can be set up using env config
+``UPDATE_MODE='poll'`` or
+``UPDATE_MODE='subscription'``
+
 ## Deployment
 
 ### 1.  Database
@@ -31,8 +49,10 @@ TBA
 1. `npm install --force`
 2. `npm install pm2 -g`
 3. `cp .env.defaults .env`
-4. Update `.env` `NODE_JWK_KEY` with your Arweave wallet JWK
-5. Update `.env` passwords for your local postgres (only if you changed them!).
-6. `pm2 install pm2-logrotate` 
-7. `pm2 start src/syncer.js`
-8. `pm2 start src/listener.js`
+4. Update `.env` config file.
+   1. Set `NODE_JWK_KEY` with your Arweave wallet JWK
+   2. Update `.env` passwords for your local postgres (only if you changed them!).
+   3. Optionally you can change the 'UPDATE_MODE'. By default, it is set to poll mode.
+5. `pm2 install pm2-logrotate` 
+6. `pm2 start src/syncer.js`
+7. `pm2 start src/listener.js`

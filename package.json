@@ -13,7 +13,7 @@
     "generate-arweave-wallet": "node src/tools/generateArweaveWallet.js",
     "run-bullmq": "docker-compose up -d bullmq",
     "run-postgres:local": "docker-compose -f ./docker-compose-local.yml up -d postgres",
-    "db-setup:local": "psql -U postgres -h localhost -p 21726 -d dre-u -f ./src/db/pgRolesAndSchemasSetup.sql",
+    "db-setup:local": "psql -U postgres -h localhost -p 21726 -d postgres -f ./src/db/pgRolesAndSchemasSetup.sql",
     "run-docker": "docker-compose up -d",
     "run-docker:local": "docker-compose -f ./docker-compose-local.yml up -d",
     "stop-docker": "docker-compose down",
