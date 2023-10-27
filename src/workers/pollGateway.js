@@ -1,14 +1,16 @@
 const { LoggerFactory } = require('warp-contracts');
 const loadInteractions = require('../loadInteractions');
 const { hashElement } = require('../signature');
-const pollProcessor = require('./pollProcessor');
 const { insertSyncLog } = require('../db/nodeDb');
 const { isTxIdValid } = require('../common');
 const { partition } = require('./common');
-const { config } = require("../config");
+const { config } = require('../config');
+const { init } = require('./pollWorkerRunner');
 
 const logger = LoggerFactory.INST.create('syncer');
 LoggerFactory.INST.logLevel('info', 'syncer');
+
+const pollRunner = init();
 
 function filterInvalidEntries(entries, responseSizeLimit) {
   if (entries.length >= responseSizeLimit) {
@@ -146,7 +148,7 @@ module.exports = async function (
         }
         // validatePartition(partition);
         try {
-          await pollProcessor({
+          await pollRunner.exec({
             data: {
               contractTxId,
               isTest: false,

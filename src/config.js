@@ -77,7 +77,8 @@ const config = {
     password: process.env.BULLMQ_PASSWORD,
     tls: process.env.BULLMQ_TLS === 'true',
     enableOfflineQueue: process.env.BULLMQ_ENABLE_OFFLINE_QUEUE === 'true',
-    lazyConnect: process.env.BULLMQ_LAZY_CONNECT === 'true'
+    lazyConnect: process.env.BULLMQ_LAZY_CONNECT === 'true',
+    enableReadyCheck: false
   },
   appSync: {
     key: process.env.APPSYNC_KEY,
