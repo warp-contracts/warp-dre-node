@@ -18,7 +18,7 @@ module.exports = {
     }
 
     if (!seasonName) {
-      ctx.throw(422, 'Limit must be provided.');
+      ctx.throw(422, 'Season name must be provided.');
     }
 
     const parsedPage = page ? parseInt(page) : 1;
