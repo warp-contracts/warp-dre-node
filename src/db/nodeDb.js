@@ -315,7 +315,7 @@ module.exports = {
   getUserLastRewards: async (contractId, userId, limit) => {
     const result = await drePool.query(
       `
-        SELECT sort_key, block_timestamp, data ->> 'points' AS points
+        SELECT sort_key, block_timestamp, tx_id, data ->> 'points' AS points
         FROM dre.contract_event 
         WHERE contract_tx_id = $1
         AND data ->> 'userId' = $2 
