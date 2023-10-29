@@ -92,7 +92,7 @@ const config = {
   availableFunctions: {
     viewState: process.env.FUNC_VIEW_STATE === 'true',
     contractEvents: process.env.PROCESS_CONTRACT_EVENTS === 'true',
-    warpyAggreging: process.env.WARPY_AGGREGING === 'true'
+    warpyAggreging: process.env.WARPY_AGGREGATING === 'true'
   },
   workersConfig: {
     register: parseInt(process.env.WORKERS_REGISTER),
