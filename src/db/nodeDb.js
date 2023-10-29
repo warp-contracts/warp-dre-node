@@ -338,13 +338,19 @@ module.exports = {
     const result = await drePool.query(
       `
         SELECT sort_key, block_timestamp, tx_id, data ->> 'points' AS points
-        FROM dre.contract_event 
+        FROM dre.contract_event
         WHERE contract_tx_id = $1
-        AND data ->> 'userId' = $2 
+        AND data ->> 'userId' = $2
+        UNION ALL
+        SELECT dre.sort_key, dre.block_timestamp, tx_id, users ->> 'points' AS points
+        FROM dre.contract_event dre
+        CROSS JOIN LATERAL jsonb_array_elements(data -> 'users') AS users
+        WHERE dre.contract_tx_id = $3
+        AND users ->> 'userId' = $4        
         ORDER BY sort_key DESC 
-        LIMIT $3;
+        LIMIT $5;
       `,
-      [contractId, userId, limit]
+      [contractId, userId, contractId, userId, limit]
     );
     return result.rows;
   },
