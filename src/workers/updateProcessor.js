@@ -14,13 +14,18 @@ LoggerFactory.INST.logLevel("debug", "DefaultStateEvaluator");
 LoggerFactory.INST.logLevel("debug", "SqliteContractCache");
 LoggerFactory.INST.logLevel("debug", "WarpGatewayContractDefinitionLoader");
 LoggerFactory.INST.logLevel("debug", "SqliteContractCache");
+LoggerFactory.INST.logLevel("debug", "p5OI99-BaY4QbZts266T7EDwofZqs-wVuYJmMCS0SUU");
+
 const logger = LoggerFactory.INST.create("updateProcessor");
 
 module.exports = async (job) => {
   try {
-    const { contractTxId, isTest, interaction } = job.data;
+    let { contractTxId, isTest, interaction } = job.data;
 
     logger.info("Update Processor", contractTxId);
+    if (typeof interaction === 'string' || interaction instanceof String) {
+      interaction = JSON.parse(interaction);
+    }
 
     const contract = warp.contract(contractTxId).setEvaluationOptions(config.evaluationOptions);
     const lastCachedKey = (await warp.stateEvaluator.latestAvailableState(contractTxId))?.sortKey;
