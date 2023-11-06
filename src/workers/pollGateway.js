@@ -160,12 +160,11 @@ module.exports = async function (
             error: e?.toString()
           };
           if (e.name === 'CacheConsistencyError') {
-            logger.warn('Cache consistency error, blacklisting contract', contractTxId);
-            await blacklistFn(contractTxId, e?.toString());
+            logger.warn('Cache consistency error', contractTxId);
           } else if (Array.isArray(e.message) && e.message.includes('[MaxStateSizeError]')) {
-            logger.warn('Max state size reached, blacklisting contract', contractTxId);
-            await blacklistFn(contractTxId, e?.toString());
-          } else {
+            logger.warn('Max state size reached', contractTxId);
+          }
+          if (!config.whitelistMode) {
             logger.warn('Blacklisting contract', { contractTxId, reason: e.message });
             await blacklistFn(contractTxId, e?.toString());
           }
@@ -192,7 +191,7 @@ module.exports = async function (
         process.exit(0);
       }
 
-      startTimestamp = endTimestamp;
+      startTimestamp = endTimestamp; // jezeli jest network communication error to nie robmy tego
 
       logger.info(`====== Loading interactions end.`);
 
