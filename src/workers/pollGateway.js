@@ -164,6 +164,14 @@ module.exports = async function (
           } else if (Array.isArray(e.message) && e.message.includes('[MaxStateSizeError]')) {
             logger.warn('Max state size reached', contractTxId);
           }
+          if (config.updateMode === 'poll' && e.name === 'NetworkCommunicationError') {
+            // we're assuming that's due to network communication problems
+            // - so no 'startTimestamp' update here
+            if (windowSize) {
+              workerLoop();
+              return;
+            }
+          }
           if (!config.whitelistMode) {
             logger.warn('Blacklisting contract', { contractTxId, reason: e.message });
             await blacklistFn(contractTxId, e?.toString());
