@@ -61,7 +61,7 @@ module.exports = async (ctx) => {
 };
 
 async function fetchRemoteContracts(foreignDre) {
-  const foreignDreLink = `https://${config.foreignDres[foreignDre]}/cached?ids=true`;
+  const foreignDreLink = `${config.foreignDres[foreignDre]}/cached?ids=true`;
   logger.info(`Calling ${foreignDreLink} to sync contracts`);
   const result = await fetch(foreignDreLink);
   if (!result.ok) {
