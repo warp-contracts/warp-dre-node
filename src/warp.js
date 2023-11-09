@@ -12,11 +12,11 @@ const { config } = require('./config');
 const { VM2Plugin } = require('warp-contracts-plugin-vm2');
 const { VRFPlugin } = require('warp-contracts-plugin-vrf');
 const { JWTVerifyPlugin } = require('@othent/warp-contracts-plugin-jwt-verify');
-const { PgContractCache } = require('warp-contracts-postgres');
+const { PgContractCache, PgSortKeyCache } = require('warp-contracts-postgres');
 
 const eventEmitter = new EventEmitter();
 
-const pgClient = new PgContractCache(defaultCacheOptions, warpDbConfig);
+const pgClient = new PgContractCache(warpDbConfig);
 
 const warp = WarpFactory.forMainnet()
   .useGwUrl(config.gwUrl)
@@ -45,16 +45,14 @@ const warp = WarpFactory.forMainnet()
   )
   .useKVStorageFactory(
     (contractTxId) =>
-      new LmdbCache(
-        {
-          ...defaultCacheOptions,
-          dbLocation: `./cache/warp/kv/lmdb/${contractTxId}`
-        },
-        {
-          minEntriesPerContract: 3,
-          maxEntriesPerContract: 10
-        }
-      )
+      new PgSortKeyCache({
+        ...warpDbConfig,
+        schemaName: 'kv',
+        tableName: contractTxId,
+        minEntriesPerKey: 3,
+        maxEntriesPerKey: 10,
+        application_name: 'kv'
+      })
   )
   .use(new EvaluationProgressPlugin(eventEmitter, 500))
   .use(new NlpExtension())
