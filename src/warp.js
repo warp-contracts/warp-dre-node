@@ -49,8 +49,8 @@ const warp = WarpFactory.forMainnet()
         ...warpDbConfig,
         schemaName: 'kv',
         tableName: contractTxId,
-        minEntriesPerKey: 3,
-        maxEntriesPerKey: 10,
+        minEntriesPerKey: 1000,
+        maxEntriesPerKey: 10000,
         application_name: 'kv'
       })
   )
