@@ -9401,10 +9401,10 @@ warp-contracts-plugin-vrf@1.0.4:
     "@idena/vrf-js" "^1.0.1"
     elliptic "^6.5.4"
 
-warp-contracts-postgres@1.0.4:
-  version "1.0.4"
-  resolved "https://registry.npmjs.org/warp-contracts-postgres/-/warp-contracts-postgres-1.0.4.tgz"
-  integrity sha512-XSV6VPhLPZBbvuuWIE5dhgLt+RN4F1tyv4h6qKjZIQMGuO3HV0/AZ4dg+DQ78MCvTqjB9NqsyRGL4zWWiVMQzQ==
+warp-contracts-postgres@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.npmjs.org/warp-contracts-postgres/-/warp-contracts-postgres-1.1.0.tgz"
+  integrity sha512-g+CLx5qYBZIgNgnN3PKcLDX/1y14LLdrWh/7BOe8ZO9AfL5Cu0ByHOrauv7bAsTZG2Rhrb1Z/KD/6Igevrf7mg==
   dependencies:
     "@types/pg" "^8.10.2"
     pg "^8.11.2"
@@ -9427,10 +9427,10 @@ warp-contracts-sqlite@1.0.2:
     better-sqlite3 "^8.3.0"
     safe-stable-stringify "^2.4.3"
 
-warp-contracts@*, warp-contracts@^1.0.0, warp-contracts@^1.4.19, warp-contracts@^1.4.2, warp-contracts@^1.4.4, warp-contracts@^1.4.7, warp-contracts@1.3.x, warp-contracts@1.4.22:
-  version "1.4.22"
-  resolved "https://registry.npmjs.org/warp-contracts/-/warp-contracts-1.4.22.tgz"
-  integrity sha512-MVbPetx1NedMnopFvNcSPo6/tCpnxmd7666VV9Td9G+8hCVXyZkDvP4xFs3bjcSQ6bO2va71dmM99O0XVL8wKA==
+warp-contracts@*, warp-contracts@^1.0.0, warp-contracts@^1.4.19, warp-contracts@^1.4.2, warp-contracts@^1.4.4, warp-contracts@^1.4.7, warp-contracts@1.3.x, warp-contracts@1.4.25:
+  version "1.4.25"
+  resolved "https://registry.npmjs.org/warp-contracts/-/warp-contracts-1.4.25.tgz"
+  integrity sha512-hJ05UbQxD3fW4ZI/6qztXW509tIyT/oRE8y4r7WzKfVu19u0dDjcPEsJC2U2yflke8P1+oi+BrSulT+o7yoPKA==
   dependencies:
     archiver "^5.3.0"
     arweave "1.13.7"

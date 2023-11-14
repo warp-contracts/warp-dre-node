@@ -16,7 +16,7 @@ const { PgContractCache } = require('warp-contracts-postgres');
 
 const eventEmitter = new EventEmitter();
 
-const pgClient = new PgContractCache(defaultCacheOptions, warpDbConfig);
+const pgClient = new PgContractCache(warpDbConfig);
 
 const warp = WarpFactory.forMainnet()
   .useGwUrl(config.gwUrl)
