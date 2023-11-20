@@ -82,7 +82,8 @@ const config = {
   foreignDres: process.env.FOREIGN_DRES ? JSON.parse(process.env.FOREIGN_DRES) : false,
   appSync: {
     key: process.env.APPSYNC_KEY,
-    publishState: process.env.APPSYNC_PUBLISH_STATE === 'true'
+    publishState: process.env.APPSYNC_PUBLISH_STATE === 'true',
+    stream: process.env.APPSYNC_STREAM
   },
   pubsub: {
     type: process.env.PUBSUB_TYPE
