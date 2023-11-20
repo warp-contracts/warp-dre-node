@@ -79,7 +79,6 @@ const config = {
     enableOfflineQueue: process.env.BULLMQ_ENABLE_OFFLINE_QUEUE === 'true',
     lazyConnect: process.env.BULLMQ_LAZY_CONNECT === 'true'
   },
-  foreignDres: process.env.FOREIGN_DRES ? JSON.parse(process.env.FOREIGN_DRES) : false,
   appSync: {
     key: process.env.APPSYNC_KEY,
     publishState: process.env.APPSYNC_PUBLISH_STATE === 'true',
