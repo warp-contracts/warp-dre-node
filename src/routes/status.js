@@ -11,19 +11,18 @@ module.exports = async (ctx) => {
     response.manifest = await config.nodeManifest;
     response.workersConfig = config.workersConfig;
 
-
     response.queues_totals = {
       update: {
-        active: await updateQueue.getJobs(['active']),
-        waiting: await updateQueue.getJobs(['waiting']),
+        active: await updateQueue.getJobCounts('active'),
+        waiting: await updateQueue.getJobCounts('waiting'),
       },
       postEval: {
-        active: await postEvalQueue.getJobs(['active']),
-        waiting: await postEvalQueue.getJobs(['waiting']),
+        active: await postEvalQueue.getJobCounts('active'),
+        waiting: await postEvalQueue.getJobCounts('waiting'),
       },
       register: {
-        active: await registerQueue.getJobs(['active']),
-        waiting: await registerQueue.getJobs(['waiting']),
+        active: await registerQueue.getJobCounts('active'),
+        waiting: await registerQueue.getJobCounts('waiting'),
       }
     };
 
