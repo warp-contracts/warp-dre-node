@@ -11,6 +11,7 @@ const logger = require('./logger')('listener');
 const exitHook = require('async-exit-hook');
 const { pgClient, warp } = require('./warp');
 const { Queue } = require('bullmq');
+const { queuesCleanUp, initQueue, postEvalQueue, registerQueue, maintenanceQueue, updateQueue } = require('./bullQueue');
 let port = 8080;
 
 async function runListener() {
@@ -30,15 +31,10 @@ async function runListener() {
       await next();
       ctx.redirect('/status');
     });
-  app.context.registerQueue = new Queue('register', {
-    connection: config.bullMqConnection,
-    defaultJobOptions: {
-      removeOnComplete: {
-        age: 3600
-      },
-      removeOnFail: true
-    }
-  });
+  app.context.registerQueue = registerQueue;
+  app.context.updateQueue = updateQueue;
+  app.context.postEvalQueue = postEvalQueue;
+
   app.listen(port);
 }
 
