@@ -5,7 +5,7 @@ const { config } = require("../config");
 const { postEvalQueue } = require("../bullQueue");
 const { insertContractEvent } = require("../db/nodeDb");
 
-LoggerFactory.INST.logLevel("debug", "updateProcessor");
+LoggerFactory.INST.logLevel("info", "updateProcessor");
 LoggerFactory.INST.logLevel("info", "EvaluationProgressPlugin");
 LoggerFactory.INST.logLevel("debug", "WarpGatewayInteractionsLoader");
 LoggerFactory.INST.logLevel("debug", "ContractHandler");
