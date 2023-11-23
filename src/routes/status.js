@@ -7,25 +7,20 @@ module.exports = async (ctx) => {
   try {
     response.node = config.dreName;
     response.lastSyncTimestamp = await getLastSyncTimestamp(nodeDb);
-
-    response.manifest = await config.nodeManifest;
-    response.workersConfig = config.workersConfig;
-
     response.queues_totals = {
       update: {
-        active: await updateQueue.getJobCounts('active'),
-        waiting: await updateQueue.getJobCounts('waiting'),
+        ...await updateQueue.getJobCounts('active', 'waiting'),
       },
       postEval: {
-        active: await postEvalQueue.getJobCounts('active'),
-        waiting: await postEvalQueue.getJobCounts('waiting'),
+        ...await postEvalQueue.getJobCounts('active', 'waiting'),
       },
       register: {
-        active: await registerQueue.getJobCounts('active'),
-        waiting: await registerQueue.getJobCounts('waiting'),
+        ...await registerQueue.getJobCounts('active', 'waiting')
       }
     };
 
+    response.manifest = await config.nodeManifest;
+    response.workersConfig = config.workersConfig;
 
     ctx.body = response;
     ctx.status = 200;
