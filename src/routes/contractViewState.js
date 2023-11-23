@@ -7,6 +7,9 @@ const { emptyTransfer, LoggerFactory } = require('warp-contracts');
 LoggerFactory.INST.logLevel('debug', 'viewStateRoute');
 const logger = LoggerFactory.INST.create('viewStateRoute');
 
+LoggerFactory.INST.logLevel("warn", "HandlerBasedContract");
+LoggerFactory.INST.logLevel("error", "HandlerExecutorFactory");
+
 module.exports = async (ctx) => {
   logger.info('new view state request');
   if (!config.availableFunctions.viewState) {

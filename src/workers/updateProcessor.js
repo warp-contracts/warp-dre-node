@@ -5,16 +5,16 @@ const { config } = require("../config");
 const { postEvalQueue } = require("../bullQueue");
 const { insertContractEvent } = require("../db/nodeDb");
 
-LoggerFactory.INST.logLevel("debug", "updateProcessor");
+LoggerFactory.INST.logLevel("info", "updateProcessor");
 LoggerFactory.INST.logLevel("info", "EvaluationProgressPlugin");
 LoggerFactory.INST.logLevel("debug", "WarpGatewayInteractionsLoader");
 LoggerFactory.INST.logLevel("debug", "ContractHandler");
-LoggerFactory.INST.logLevel("debug", "HandlerBasedContract");
-LoggerFactory.INST.logLevel("debug", "DefaultStateEvaluator");
-LoggerFactory.INST.logLevel("debug", "SqliteContractCache");
-LoggerFactory.INST.logLevel("debug", "WarpGatewayContractDefinitionLoader");
-LoggerFactory.INST.logLevel("debug", "SqliteContractCache");
-LoggerFactory.INST.logLevel("debug", "p5OI99-BaY4QbZts266T7EDwofZqs-wVuYJmMCS0SUU");
+LoggerFactory.INST.logLevel("info", "HandlerBasedContract");
+LoggerFactory.INST.logLevel("info", "DefaultStateEvaluator");
+LoggerFactory.INST.logLevel("info", "SqliteContractCache");
+LoggerFactory.INST.logLevel("info", "WarpGatewayContractDefinitionLoader");
+LoggerFactory.INST.logLevel("error", "p5OI99-BaY4QbZts266T7EDwofZqs-wVuYJmMCS0SUU");
+LoggerFactory.INST.logLevel("error", "HandlerExecutorFactory");
 
 const logger = LoggerFactory.INST.create("updateProcessor");
 
