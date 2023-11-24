@@ -88,7 +88,13 @@ module.exports = async function (
 
       let result;
       try {
-        result = await loadInteractions(startTimestamp, endTimestamp, whitelistedSources, blacklistedContracts, config.pollResponseLengthLimit);
+        result = await loadInteractions(
+          startTimestamp,
+          endTimestamp,
+          whitelistedSources,
+          blacklistedContracts,
+          config.pollResponseLengthLimit
+        );
         if (!result) {
           throw new Error('Result is null or undefined');
         }
@@ -166,7 +172,12 @@ module.exports = async function (
           } else if (Array.isArray(e.message) && e.message.includes('[MaxStateSizeError]')) {
             logger.warn('Max state size reached', contractTxId);
           }
-          if (config.updateMode === 'poll' && e.name === 'NetworkCommunicationError') {
+          if (
+            config.updateMode === 'poll' &&
+            e.name === 'NetworkCommunicationError' &&
+            // In case of internal calls with invalid tx id, ie nGA3i55uvj92TRq0evME3ycEbcArosCzCNbleBuDh8c
+            e.message.toString().includes('Error during network communication')
+          ) {
             // we're assuming that's due to network communication problems
             // - so no 'startTimestamp' update here
             if (windowSize) {
