@@ -7,15 +7,40 @@ module.exports = async (ctx) => {
   try {
     response.node = config.dreName;
     response.lastSyncTimestamp = await getLastSyncTimestamp(nodeDb);
+
     response.queues_totals = {
       update: {
-        ...await updateQueue.getJobCounts('active', 'waiting'),
+        ...await updateQueue.getJobCounts("completed",
+          "failed",
+          "delayed",
+          "active",
+          "wait",
+          "waiting-children",
+          "prioritized",
+          "paused",
+          "repeat"),
       },
       postEval: {
-        ...await postEvalQueue.getJobCounts('active', 'waiting'),
+        ...await postEvalQueue.getJobCounts("completed",
+          "failed",
+          "delayed",
+          "active",
+          "wait",
+          "waiting-children",
+          "prioritized",
+          "paused",
+          "repeat"),
       },
       register: {
-        ...await registerQueue.getJobCounts('active', 'waiting')
+        ...await registerQueue.getJobCounts("completed",
+          "failed",
+          "delayed",
+          "active",
+          "wait",
+          "waiting-children",
+          "prioritized",
+          "paused",
+          "repeat")
       }
     };
 
