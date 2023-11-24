@@ -17,6 +17,14 @@ const { PgContractCache, PgSortKeyCache } = require('warp-contracts-postgres');
 const eventEmitter = new EventEmitter();
 
 const pgClient = new PgContractCache(warpDbConfig);
+const p5kv = new PgSortKeyCache({
+  ...warpDbConfig,
+  schemaName: 'kv',
+  tableName: 'p5OI99-BaY4QbZts266T7EDwofZqs-wVuYJmMCS0SUU',
+  minEntriesPerKey: 1000,
+  maxEntriesPerKey: 10000,
+  application_name: 'kv'
+});
 
 const warp = WarpFactory.forMainnet()
   .useGwUrl(config.gwUrl)
@@ -43,16 +51,17 @@ const warp = WarpFactory.forMainnet()
       }
     )
   )
-  .useKVStorageFactory(
-    (contractTxId) =>
-      new PgSortKeyCache({
-        ...warpDbConfig,
-        schemaName: 'kv',
-        tableName: contractTxId,
-        minEntriesPerKey: 1000,
-        maxEntriesPerKey: 10000,
-        application_name: 'kv'
-      })
+  .useKVStorageFactory((contractTxId) =>
+    contractTxId === 'p5OI99-BaY4QbZts266T7EDwofZqs-wVuYJmMCS0SUU'
+      ? p5kv
+      : new PgSortKeyCache({
+          ...warpDbConfig,
+          schemaName: 'kv',
+          tableName: contractTxId,
+          minEntriesPerKey: 1000,
+          maxEntriesPerKey: 10000,
+          application_name: 'kv'
+        })
   )
   .use(new EvaluationProgressPlugin(eventEmitter, 500))
   .use(new NlpExtension())
