@@ -1,7 +1,7 @@
 const { config } = require('../config');
 const { getLastSyncTimestamp } = require('../db/nodeDb');
 module.exports = async (ctx) => {
-  const { registerQueue, nodeDb } = ctx;
+  const { registerQueue, updateQueue, postEvalQueue, nodeDb } = ctx;
   const response = {};
 
   try {
@@ -15,10 +15,9 @@ module.exports = async (ctx) => {
     const registerWaitingJobs = await registerQueue.getJobs(['waiting']);
 
     response.queues_totals = {
-      register: {
-        active: registerActiveJobs.length,
-        waiting: registerWaitingJobs.length
-      }
+      update: await updateQueue.getJobCounts(),
+      postEval: await postEvalQueue.getJobCounts(),
+      register: await registerQueue.getJobCounts()
     };
 
     response.queues_details = {
