@@ -20,6 +20,7 @@ const registrationStatus = {
 
 LoggerFactory.INST.logLevel('debug', 'contractsRoute');
 const logger = LoggerFactory.INST.create('contractsRoute');
+LoggerFactory.INST.logLevel("error", "HandlerExecutorFactory");
 
 module.exports = async (ctx) => {
   const contractId = ctx.query.id;
