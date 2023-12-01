@@ -39,12 +39,13 @@ module.exports = {
         return new Promise((resolve, reject) => {
           singleWorker
             .once('message', (response) => {
-              logger.info(`Worker ${id} finished with message `, response);
               singleWorker.removeAllListeners('error');
               singleWorker.removeAllListeners('exit');
               if (response.failed) {
+                logger.error(`Worker ${id} failed with response`, response);
                 reject(objectToError(response.error));
               } else {
+                logger.info(`Worker ${id} finished with response`, response);
                 resolve(response.message);
               }
             })
