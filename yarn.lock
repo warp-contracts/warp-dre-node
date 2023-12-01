@@ -6713,10 +6713,10 @@ warp-contracts-plugin-signature@1.0.12:
     ethers "^5.7.2"
     safe-stable-stringify "^2.4.1"
 
-warp-contracts-plugin-vm2@1.0.2:
-  version "1.0.2"
-  resolved "https://registry.npmjs.org/warp-contracts-plugin-vm2/-/warp-contracts-plugin-vm2-1.0.2.tgz"
-  integrity sha512-3VAHO7/SLFy6WjjieRANuQSsKQ9Xm1t6JmZXYV73O8yPH0oMe7DqE1Fz52M6oQOd+jXEDiAoRqazmOwrOl1giA==
+warp-contracts-plugin-vm2@1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/warp-contracts-plugin-vm2/-/warp-contracts-plugin-vm2-1.0.3.tgz#c5848d41056a033b32620de959b750b4538f50d7"
+  integrity sha512-Dfuqgb3pFgQF3s1/98x43HPQXeIuh1y3sXpl0C3RJjjttxC0/7FwfeyUfCfe27cNrMRLuev2DHDX2cPV8Yx56Q==
   dependencies:
     bignumber.js "^9.1.1"
     vm2 "^3.9.19"
