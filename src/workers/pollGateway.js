@@ -71,7 +71,7 @@ module.exports = async function (
 ) {
   let startTimestamp = initialStartTimestamp;
 
-  (function workerLoop() {
+  (function workerLoop(delay = 1_000) {
     setTimeout(async function () {
       let windowSize = windowSizeMs(startTimestamp, windowsMs);
       const endTimestamp = forceEndTimestamp ? forceEndTimestamp : startTimestamp + windowSize;
@@ -159,13 +159,27 @@ module.exports = async function (
           evaluationErrors[`${contractTxId}|${partition[0].interaction.id}`] = {
             error: e?.toString()
           };
-          if (e.name === 'CacheConsistencyError') {
-            logger.warn('Cache consistency error, blacklisting contract', contractTxId);
-            await blacklistFn(contractTxId, e?.toString());
-          } else if (e.message.includes('[MaxStateSizeError]')) {
-            logger.warn('Max state size reached, blacklisting contract', contractTxId);
-            await blacklistFn(contractTxId, e?.toString());
-          } else {
+          const mes = e.message?.toString() || '';
+          switch (e.name) {
+            case 'CacheConsistencyError':
+              logger.warn('Cache consistency error', contractTxId);
+              break;
+            case 'ReplyError':
+              logger.warn('Redis failure. Retry after delay', contractTxId, e);
+              workerLoop(8_000);
+              return;
+            case 'NetworkCommunicationError':
+              if (mes.includes('Error during network communication') || mes.includes('429')) {
+                logger.warn('Temporary network problems. Retry after delay', contractTxId, e);
+                workerLoop(8_000);
+                return;
+              }
+              break;
+          }
+          if (mes.includes('[MaxStateSizeError]')) {
+            logger.warn('Max state size reached', contractTxId);
+          }
+          if (!config.whitelistMode) {
             logger.warn('Blacklisting contract', { contractTxId, reason: e.message });
             await blacklistFn(contractTxId, e?.toString());
           }
@@ -199,7 +213,7 @@ module.exports = async function (
       if (windowSize) {
         workerLoop();
       }
-    }, 1000);
+    }, delay);
   })();
 };
 

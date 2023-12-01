@@ -21,8 +21,8 @@ const p5kv = new PgSortKeyCache({
   ...warpDbConfig,
   schemaName: 'kv',
   tableName: 'p5OI99-BaY4QbZts266T7EDwofZqs-wVuYJmMCS0SUU',
-  minEntriesPerKey: 1000,
-  maxEntriesPerKey: 10000,
+  minEntriesPerKey: 50,
+  maxEntriesPerKey: 1000,
   application_name: 'kv'
 });
 
