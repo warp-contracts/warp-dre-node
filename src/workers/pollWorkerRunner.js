@@ -36,31 +36,40 @@ module.exports = {
     return {
       exec: function (updateInput) {
         const id = singleWorker.pid;
+        const contractTxId = updateInput.data.contractTxId;
         return new Promise((resolve, reject) => {
+          if (!singleWorker.connected) {
+            resetWorker();
+            logger.error(`Worker ${id} disconnected. Setting up new worker.`);
+          }
+          logger.info(`Worker ${id} running`, contractTxId);
           singleWorker
             .once('message', (response) => {
               singleWorker.removeAllListeners('error');
               singleWorker.removeAllListeners('exit');
               if (response.failed) {
-                logger.error(`Worker ${id} failed with response`, response);
+                logger.error(`Worker ${id} failed with response`, contractTxId, response);
                 reject(objectToError(response.error));
               } else {
-                logger.info(`Worker ${id} finished with response`, response);
+                logger.info(`Worker ${id} finished with response`, contractTxId, response);
                 resolve(response.message);
               }
             })
             .once('error', (err) => {
-              logger.error(`Worker, pid: ${id} finished with error. Setting up new worker.`, err);
+              logger.error(`Worker ${id} finished with error. Setting up new worker.`, contractTxId, err);
+              resetWorker();
               reject(err);
             })
             .once('exit', (code, signal) => {
               if (code !== 0) {
-                logger.error(`Worker, pid: ${id} exited with error, code ${code}`);
+                logger.error(`Worker ${id} exited with error, code ${code} Setting up new worker.`, contractTxId);
               } else {
-                logger.info(`Worker, pid: ${id} exited, code ${code}`);
+                logger.info(`Worker ${id} exited, code ${code} Setting up new worker.`, contractTxId);
               }
               resetWorker();
-              reject(new Error(`Worker terminated Unexpectedly code: ${code} signal: ${signal}`));
+              reject(
+                new Error(`Worker ${id} terminated Unexpectedly code: ${code} signal: ${signal} tx: ${contractTxId}`)
+              );
             })
             .send(updateInput);
         });
