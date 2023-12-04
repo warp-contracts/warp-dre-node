@@ -23,7 +23,7 @@ module.exports = async (startTimestamp, endTimestamp, whiteListedSources, blackl
 
 
 async function postData(data = {}) {
-  return await fetch('http://api-dre-sync.warp.cc/v1/interactions', {
+  return await fetch('http://api-dre-sync.warp.cc/v1/ro/interactions', {
     method: "POST",
     cache: "no-store",
     headers: {
