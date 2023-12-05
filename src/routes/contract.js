@@ -2,13 +2,16 @@ const { JSONPath } = require('jsonpath-plus');
 const {
   getContractErrors,
   getContractValidity,
-  countContractValidity,
+  getContractValidityTotalCount,
   getContractErrorMessages,
   getSignatures
 } = require('../db/nodeDb');
 const { LoggerFactory } = require('warp-contracts');
 const { warp } = require('../warp');
 const { signState } = require('../signature');
+
+const MAX_VALIDITY_PER_PAGE = 1000;
+const DEFAULT_VALIDITY_PER_PAGE = 15;
 
 const registrationStatus = {
   'not-registered': 'not-registered',
@@ -22,12 +25,15 @@ LoggerFactory.INST.logLevel('debug', 'contractsRoute');
 const logger = LoggerFactory.INST.create('contractsRoute');
 
 module.exports = async (ctx) => {
-  const contractId = ctx.query.id;
+  const { page, limit, query, id: contractId } = ctx.query;
+  const parsedPage = page ? parseInt(page) : 1;
+  const parsedLimit = limit ? Math.min(parseInt(limit), MAX_VALIDITY_PER_PAGE) : DEFAULT_VALIDITY_PER_PAGE;
+  const offset = parsedPage ? (parsedPage - 1) * parsedLimit : 0;
+
   const showState = ctx.query.state !== 'false';
   const showValidity = ctx.query.validity === 'true';
   const showErrorMessages = ctx.query.errorMessages === 'true';
   const showErrors = ctx.query.errors === 'true';
-  const query = ctx.query.query;
 
   logger.info("New 'contract' request", {
     contractId,
@@ -50,11 +56,18 @@ module.exports = async (ctx) => {
         }
       }
       if (showValidity) {
-        response.validity = await getContractValidity(contractId, result.sortKey);
+        const contractValidity = await getContractValidity(contractId, result.sortKey, parsedLimit, offset);
+        response.validity = contractValidity.validity;
+        response.paging = {
+          limit: parsedLimit,
+          items: contractValidity.count,
+          page: parsedPage
+        };
       }
-      response.validityCount = await countContractValidity(contractId, result.sortKey);
+      response.validityCount = await getContractValidityTotalCount(contractId, result.sortKey);
       if (showErrorMessages) {
-        response.errorMessages = await getContractErrorMessages(contractId, result.sortKey);
+        const contractErrorMessages = await getContractErrorMessages(contractId, result.sortKey, parsedLimit, offset);
+        response.errorMessages = contractErrorMessages.errorMessages;
       }
       if (showErrors) {
         response.errors = await getContractErrors(contractId);
