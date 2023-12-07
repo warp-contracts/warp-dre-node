@@ -1,6 +1,7 @@
 const { LoggerFactory } = require('warp-contracts');
 const loadInteractions = require('../loadInteractions');
 const { hashElement } = require('../signature');
+const pollProcessor = require('./pollProcessor');
 const { insertSyncLog } = require('../db/nodeDb');
 const { isTxIdValid } = require('../common');
 const { partition } = require('./common');
@@ -9,8 +10,6 @@ const { init } = require('./pollWorkerRunner');
 
 const logger = LoggerFactory.INST.create('syncer');
 LoggerFactory.INST.logLevel('info', 'syncer');
-
-const pollRunner = init();
 
 function filterInvalidEntries(entries, responseSizeLimit) {
   if (entries.length >= responseSizeLimit) {
@@ -73,6 +72,10 @@ module.exports = async function (
   isBlacklisted
 ) {
   let startTimestamp = initialStartTimestamp;
+  let pollRunner = null;
+  if (config.pollForkProcess) {
+    pollRunner = init();
+  }
 
   (function workerLoop(delay = 1_000) {
     setTimeout(async function () {
@@ -154,14 +157,19 @@ module.exports = async function (
         }
         // validatePartition(partition);
         try {
-          await pollRunner.exec({
+          const data = {
             data: {
               contractTxId,
               isTest: false,
               partition,
               isSubscription: false
             }
-          });
+          };
+          if (pollRunner) {
+            await pollRunner.exec(data);
+          } else {
+            await pollProcessor(data);
+          }
         } catch (e) {
           logger.error(e);
           evaluationErrors[`${contractTxId}|${partition[0].interaction.id}`] = {
