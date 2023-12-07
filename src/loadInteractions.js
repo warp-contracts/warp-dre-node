@@ -1,3 +1,4 @@
+const { config } = require('./config');
 module.exports = async (startTimestamp, endTimestamp, whiteListedSources, blacklistedContracts, limit) => {
   const response = await postData({
     start: startTimestamp,
@@ -9,7 +10,7 @@ module.exports = async (startTimestamp, endTimestamp, whiteListedSources, blackl
 
   if (response) {
     if (response.status == 204) {
-      throw new Error("Blocks not yet ready for this timestamp range, wait!");
+      throw new Error('Blocks not yet ready for this timestamp range, wait!');
     } else if (response.ok) {
       return await response.json();
     } else {
@@ -17,18 +18,17 @@ module.exports = async (startTimestamp, endTimestamp, whiteListedSources, blackl
       throw new Error(`Wrong response code: ${response.status}. ${text}`);
     }
   } else {
-    throw new Error("Response null or undefined");
+    throw new Error('Response null or undefined');
   }
 };
 
-
 async function postData(data = {}) {
-  return await fetch('http://api-dre-sync.warp.cc/v1/ro/interactions', {
-    method: "POST",
-    cache: "no-store",
+  return await fetch(config.pollLoadInteractionsUrl, {
+    method: 'POST',
+    cache: 'no-store',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json'
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(data)
   });
 }

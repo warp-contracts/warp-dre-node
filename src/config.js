@@ -109,6 +109,7 @@ const config = {
   syncWindowSeconds: JSON.parse(process.env.SYNC_WINDOW_SECONDS),
   firstInteractionTimestamp: parseInt(process.env.FIRST_INTERACTION_TIMESTAMP),
   pollResponseLengthLimit: process.env.POLL_RESPONSE_LENGTH_LIMIT ? parseInt(process.env.POLL_RESPONSE_LENGTH_LIMIT) : 15000,
+  pollLoadInteractionsUrl: readLoadInteractionsUrl(),
   pollForkProcess: process.env.POLL_FORK_PROCESS === 'true',
   whitelistMode: JSON.parse(process.env.EVALUATION_WHITELIST_SOURCES).length > 0,
   updateMode: process.env.UPDATE_MODE || 'poll'
@@ -133,6 +134,15 @@ function readNodeJwk() {
 function readGwUrl() {
   if (!process.env.WARP_GW_URL) throw new Error('Gateway URL is required');
   return process.env.WARP_GW_URL;
+}
+function readLoadInteractionsUrl() {
+  if (process.env.UPDATE_MODE === 'poll') {
+    if (!process.env.POLL_INTERACTIONS_URL) {
+      throw new Error('Poll mode requires load interactions url');
+    }
+    return process.env.POLL_INTERACTIONS_URL;
+  }
+  return '';
 }
 
 async function getNodeManifest() {
@@ -190,6 +200,7 @@ async function logConfig(config) {
   logger.info('syncWindowSeconds', config.syncWindowSeconds);
   logger.info('firstInteractionTimestamp', config.firstInteractionTimestamp);
   logger.info('pollResponseLengthLimit', config.pollResponseLengthLimit);
+  logger.info('pollLoadInteractionsUrl', config.pollLoadInteractionsUrl);
   logger.info('pollForkProcess', config.pollForkProcess);
   logger.info('updateMode', config.updateMode);
 }
