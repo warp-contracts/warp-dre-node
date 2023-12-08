@@ -14,8 +14,8 @@ const logger = LoggerFactory.INST.create('setStatePostProcessor');
 const isTestInstance = config.env === 'test';
 
 module.exports = async (job) => {
+  const { contractTxId, tags, result, interactions, requiresPublish } = job.data;
   try {
-    const { contractTxId, tags, result, interactions, requiresPublish } = job.data;
     logger.info('PostEval Processor', contractTxId);
     const contractState = result.cachedValue.state;
 
@@ -38,6 +38,7 @@ module.exports = async (job) => {
       }
     }
   } catch (e) {
+    logger.error(`PostEval Processor, contract ${contractTxId} failed with err`, e);
     throw new Error(e);
   }
 };

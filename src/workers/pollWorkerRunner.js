@@ -34,9 +34,9 @@ module.exports = {
       singleWorker = createWorker();
     };
     return {
-      exec: function (updateInput) {
+      exec: function (job) {
         const id = singleWorker.pid;
-        const contractTxId = updateInput.data.contractTxId;
+        const contractTxId = job.data.contractTxId;
         return new Promise((resolve, reject) => {
           if (!singleWorker.connected) {
             resetWorker();
@@ -71,7 +71,7 @@ module.exports = {
                 new Error(`Worker ${id} terminated Unexpectedly code: ${code} signal: ${signal} tx: ${contractTxId}`)
               );
             })
-            .send(updateInput);
+            .send(job);
         });
       }
     };

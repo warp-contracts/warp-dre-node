@@ -157,7 +157,7 @@ module.exports = async function (
         }
         // validatePartition(partition);
         try {
-          const data = {
+          const job = {
             data: {
               contractTxId,
               isTest: false,
@@ -166,9 +166,9 @@ module.exports = async function (
             }
           };
           if (pollRunner) {
-            await pollRunner.exec(data);
+            await pollRunner.exec(job);
           } else {
-            await pollProcessor(data);
+            await pollProcessor(job);
           }
         } catch (e) {
           logger.error(e);
