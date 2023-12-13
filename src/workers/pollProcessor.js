@@ -44,7 +44,7 @@ module.exports = async (job) => {
   // but first interaction in partition has lastSortKey set (i.e. it is NOT the very first interaction with a contract)
   if ((!lastCachedKey || lastCachedKey == genesisSortKey) && firstInteraction.lastSortKey != null) {
     throw new CacheConsistencyError(
-      `Inconsistent state for ${contractTxId} - first interaction in partition has lastSortKey != null - while there is no state cached.`
+      `Inconsistent state for ${contractTxId} - first interaction ${firstInteraction.lastSortKey} in partition has lastSortKey != null - while there is no state cached.`
     );
   }
 
@@ -87,11 +87,7 @@ module.exports = async (job) => {
 
     checkStateSize(result.cachedValue.state);
     if (!isTest) {
-      await postEvalQueue.add(
-        'sign',
-        { contractTxId, result, interactions, requiresPublish: true, shit: true },
-        { priority: 1 }
-      );
+      await postEvalQueue.add('sign', { contractTxId, result, interactions, requiresPublish: true }, { priority: 1 });
     }
   } else {
     logger.info('Skipping empty partition');

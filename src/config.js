@@ -10,7 +10,8 @@ const arweave = getArweave();
 let warpSdkConfig = {
   'warp-contracts': pjson.dependencies['warp-contracts'],
   'warp-contracts-lmdb': pjson.dependencies['warp-contracts-lmdb'],
-  'warp-contracts-postgres': pjson.dependencies['warp-contracts-sqlite'],
+  'warp-contracts-sqlite': pjson.dependencies['warp-contracts-sqlite'],
+  'warp-contracts-postgres': pjson.dependencies['warp-contracts-postgres'],
   'warp-contracts-evaluation-progress-plugin': pjson.dependencies['warp-contracts-evaluation-progress-plugin'],
   'warp-contracts-plugin-nlp': pjson.dependencies['warp-contracts-plugin-nlp'],
   'warp-contracts-plugin-ethers': pjson.dependencies['warp-contracts-plugin-ethers'],
@@ -76,12 +77,13 @@ const config = {
     password: process.env.BULLMQ_PASSWORD,
     tls: process.env.BULLMQ_TLS === 'true',
     enableOfflineQueue: process.env.BULLMQ_ENABLE_OFFLINE_QUEUE === 'true',
-    lazyConnect: process.env.BULLMQ_LAZY_CONNECT === 'true'
+    lazyConnect: process.env.BULLMQ_LAZY_CONNECT === 'true',
+    enableReadyCheck: false
   },
-  foreignDres: process.env.FOREIGN_DRES ? JSON.parse(process.env.FOREIGN_DRES) : false,
   appSync: {
     key: process.env.APPSYNC_KEY,
-    publishState: process.env.APPSYNC_PUBLISH_STATE === 'true'
+    publishState: process.env.APPSYNC_PUBLISH_STATE === 'true',
+    stream: process.env.APPSYNC_STREAM
   },
   pubsub: {
     type: process.env.PUBSUB_TYPE
@@ -107,6 +109,8 @@ const config = {
   syncWindowSeconds: JSON.parse(process.env.SYNC_WINDOW_SECONDS),
   firstInteractionTimestamp: parseInt(process.env.FIRST_INTERACTION_TIMESTAMP),
   pollResponseLengthLimit: process.env.POLL_RESPONSE_LENGTH_LIMIT ? parseInt(process.env.POLL_RESPONSE_LENGTH_LIMIT) : 15000,
+  pollLoadInteractionsUrl: readLoadInteractionsUrl(),
+  pollForkProcess: process.env.POLL_FORK_PROCESS === 'true',
   whitelistMode: JSON.parse(process.env.EVALUATION_WHITELIST_SOURCES).length > 0,
   updateMode: process.env.UPDATE_MODE || 'poll'
 };
@@ -130,6 +134,15 @@ function readNodeJwk() {
 function readGwUrl() {
   if (!process.env.WARP_GW_URL) throw new Error('Gateway URL is required');
   return process.env.WARP_GW_URL;
+}
+function readLoadInteractionsUrl() {
+  if (process.env.UPDATE_MODE === 'poll') {
+    if (!process.env.POLL_INTERACTIONS_URL) {
+      throw new Error('Poll mode requires load interactions url');
+    }
+    return process.env.POLL_INTERACTIONS_URL;
+  }
+  return '';
 }
 
 async function getNodeManifest() {
@@ -187,6 +200,8 @@ async function logConfig(config) {
   logger.info('syncWindowSeconds', config.syncWindowSeconds);
   logger.info('firstInteractionTimestamp', config.firstInteractionTimestamp);
   logger.info('pollResponseLengthLimit', config.pollResponseLengthLimit);
+  logger.info('pollLoadInteractionsUrl', config.pollLoadInteractionsUrl);
+  logger.info('pollForkProcess', config.pollForkProcess);
   logger.info('updateMode', config.updateMode);
 }
 

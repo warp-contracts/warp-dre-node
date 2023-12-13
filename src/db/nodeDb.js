@@ -240,7 +240,7 @@ module.exports = {
     return null;
   },
 
-  countContractValidity: async (contractTxId, sortKey) => {
+  getContractValidityTotalCount: async (contractTxId, sortKey) => {
     const result = await drePool.query(
       `
           select count(*) as total
@@ -254,28 +254,50 @@ module.exports = {
     return 0;
   },
 
-  getContractValidity: async (contractTxId, sortKey) => {
+  /**
+   * @return {Promise<{count: (number), validity: (Object.<string, boolean>)}>}
+   */
+  getContractValidity: async (contractTxId, sortKey, parsedLimit, offset) => {
     const result = await drePool.query(
       `
-        select json_object_agg(tx_id, valid) as v from warp.validity
-        where key = $1
-          and sort_key <= $2;`,
-      [contractTxId, sortKey]
+          WITH validity_page AS (
+              SELECT tx_id, valid from warp.validity
+              where key = $1
+                and sort_key <= $2
+              ORDER BY sort_key DESC, id DESC
+              LIMIT $3 OFFSET $4
+          )
+          select json_object_agg(tx_id, valid) as v, count(*) as count from validity_page;`,
+      [contractTxId, sortKey, parsedLimit, offset]
     );
-    return result?.rows[0].v;
+    return {
+      validity: result?.rows[0].v || {},
+      count: Number(result?.rows[0].count || 0)
+    };
   },
 
-  getContractErrorMessages: async (contractTxId, sortKey) => {
+  /**
+   * @return {Promise<{count: (number), errorMessages: (Object.<string, string>)}>}
+   */
+  getContractErrorMessages: async (contractTxId, sortKey, parsedLimit, offset) => {
     const result = await drePool.query(
       `
-          select json_object_agg(tx_id, error_message) as em 
-          from warp.validity
-          where key = $1
-            and sort_key <= $2
-            and error_message is not null;`,
-      [contractTxId, sortKey]
+          WITH validity_page AS (
+              SELECT tx_id, valid, error_message from warp.validity
+              where key = $1
+                and sort_key <= $2
+              ORDER BY sort_key DESC, id DESC
+              LIMIT $3 OFFSET $4
+          )
+          select json_object_agg(tx_id, error_message) as em, count(*) as count 
+          from validity_page 
+          where error_message is not null;`,
+      [contractTxId, sortKey, parsedLimit, offset]
     );
-    return result?.rows[0].em;
+    return {
+      errorMessages: result?.rows[0].em || {},
+      count: Number(result?.rows[0].count || 0)
+    };
   },
 
   getSignatures: async (contractTxId, sortKey) => {

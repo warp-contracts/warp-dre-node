@@ -60,9 +60,7 @@ function configureQueue(queueName) {
   return new Queue(queueName, {
     connection: config.bullMqConnection,
     defaultJobOptions: {
-      removeOnComplete: {
-        age: 3600
-      },
+      removeOnComplete: true,
       removeOnFail: true
     }
   });

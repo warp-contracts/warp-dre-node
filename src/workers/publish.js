@@ -22,8 +22,9 @@ module.exports = {
   publishToAppSync: async (logger, contractTxId, sortKey, state, sig) => {
     logger.info('Publishing to appSync');
     try {
+      const streamName = config.appSync.stream || config.dreName;
       await appSyncPublish(
-        `states/${config.dreName}/${contractTxId}`,
+        `states/${streamName}/${contractTxId}`,
         JSON.stringify({
           sortKey: sortKey,
           state: state,
