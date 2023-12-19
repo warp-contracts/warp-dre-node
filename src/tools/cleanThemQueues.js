@@ -11,7 +11,7 @@ const logger = require('../logger')('queuesClean');
   const postEvalQueue = configureQueue('postEval');
   const postEvalCount = await postEvalQueue.getJobCountByTypes();
   logger.info(`postEval queue count  ${postEvalCount}`);
-  if (postEvalCount > 20_000) {
+  if (postEvalCount > 100) {
     const prioritizedIds = await postEvalQueue.clean(GRACE_PERIOD, CLEAN_LIMIT, 'prioritized');
     const waitIds = await postEvalQueue.clean(GRACE_PERIOD, CLEAN_LIMIT, 'wait');
     logger.info(`Just removed prioritized jobs in count of ${prioritizedIds.length} and waiting jobs ${waitIds.length}`);
