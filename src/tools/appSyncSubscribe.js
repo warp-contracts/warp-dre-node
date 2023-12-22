@@ -4,16 +4,17 @@ global.WebSocket = require('ws');
 
 initPubSub();
 async function sub() {
-  const contractTxId = 'FnaxqvRN5neyArFpVs33uxjJLaaZ2yU0_rrRyD03ry0';
+  const contractTxId = 'KTzTXT_ANmF84fWEKHzWURD1LWd9QaFR9yfYUwH2Lxw';
 
   let prevState = {};
 
   const subscription = await subscribe(
-    contractTxId,
+    'states/DRE-BAZAR-1/KTzTXT_ANmF84fWEKHzWURD1LWd9QaFR9yfYUwH2Lxw',
     ({ data }) => {
       const newState = JSON.parse(data);
       console.log('\n ==== new message ==== ', newState.sortKey);
-      console.dir(newState);
+      console.log(new Date());
+      //console.dir(newState);
       prevState = newState.state;
     },
     console.error

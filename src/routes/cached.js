@@ -1,15 +1,21 @@
-const { getAllContracts } = require('../db/nodeDb');
+const { getAllContractsIds, countAllContracts } = require('../db/nodeDb');
 
 module.exports = async (ctx) => {
-  const { nodeDb } = ctx;
-
-  const allContracts = await getAllContracts(nodeDb);
+  const showIds = ctx.query.ids === 'true';
 
   try {
-    ctx.body = {
-      cachedContracts: allContracts.length,
-      ids: allContracts
-    };
+    if (showIds) {
+      const allContracts = await getAllContractsIds();
+      ctx.body = {
+        cachedContracts: allContracts.total,
+        ids: allContracts.ids
+      };
+    } else {
+      ctx.body = {
+        cachedContracts: (await countAllContracts()).total
+      };
+    }
+
     ctx.status = 200;
   } catch (e) {
     ctx.body = e.message;

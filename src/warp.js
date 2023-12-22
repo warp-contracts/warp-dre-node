@@ -3,7 +3,8 @@ const { LmdbCache } = require('warp-contracts-lmdb');
 const { NlpExtension } = require('warp-contracts-plugin-nlp');
 const { EvaluationProgressPlugin } = require('warp-contracts-evaluation-progress-plugin');
 const { EventEmitter } = require('node:events');
-const { events, connect, getFailures } = require('./db/nodeDb');
+const { getFailures, drePool } = require('./db/nodeDb');
+const warpDbConfig = require('../postgresConfigWarpDb.js');
 const { EthersExtension } = require('warp-contracts-plugin-ethers');
 const { EvmSignatureVerificationServerPlugin } = require('warp-contracts-plugin-signature/server');
 const { ContractBlacklistPlugin, getDreBlacklistFunction } = require('warp-contracts-plugin-blacklist');
@@ -11,25 +12,15 @@ const { config } = require('./config');
 const { VM2Plugin } = require('warp-contracts-plugin-vm2');
 const { VRFPlugin } = require('warp-contracts-plugin-vrf');
 const { JWTVerifyPlugin } = require('@othent/warp-contracts-plugin-jwt-verify');
+const { PgContractCache, PgSortKeyCache } = require('warp-contracts-postgres');
 
 const eventEmitter = new EventEmitter();
-eventEmitter.on('progress-notification', (data) => {
-  events.progress(data.contractTxId, data.message);
-});
+
+const pgClient = new PgContractCache(warpDbConfig);
 
 const warp = WarpFactory.forMainnet()
-  .useStateCache(
-    new LmdbCache(
-      {
-        ...defaultCacheOptions,
-        dbLocation: `./cache/warp/lmdb/state`
-      },
-      {
-        minEntriesPerContract: 5,
-        maxEntriesPerContract: 20
-      }
-    )
-  )
+  .useGwUrl(config.gwUrl)
+  .useStateCache(pgClient)
   .useContractCache(
     new LmdbCache(
       {
@@ -54,16 +45,14 @@ const warp = WarpFactory.forMainnet()
   )
   .useKVStorageFactory(
     (contractTxId) =>
-      new LmdbCache(
-        {
-          ...defaultCacheOptions,
-          dbLocation: `./cache/warp/kv/lmdb/${contractTxId}`
-        },
-        {
-          minEntriesPerContract: 3,
-          maxEntriesPerContract: 10
-        }
-      )
+      new PgSortKeyCache({
+        ...warpDbConfig,
+        schemaName: 'kv',
+        tableName: contractTxId,
+        minEntriesPerKey: 100,
+        maxEntriesPerKey: 10_000,
+        application_name: 'kv'
+      })
   )
   .use(new EvaluationProgressPlugin(eventEmitter, 500))
   .use(new NlpExtension())
@@ -74,10 +63,10 @@ const warp = WarpFactory.forMainnet()
   .use(new JWTVerifyPlugin())
   .use(
     new ContractBlacklistPlugin(async (input) => {
-      const blacklistFunction = await getDreBlacklistFunction(getFailures, connect(), config.workersConfig.maxFailures);
-      return await blacklistFunction(input);
+      const blacklistFunction = await getDreBlacklistFunction(getFailures, drePool, config.workersConfig.maxFailures);
+      return await blacklistFunction(input) || config.evaluationOptions.blacklistedContracts.includes(input);
     })
   );
 warp.whoAmI = config.dreName || 'DRE';
 
-module.exports = warp;
+module.exports = { warp, pgClient };

@@ -11,7 +11,10 @@ RUN mv .env.defaults .env
 RUN echo $(git rev-parse HEAD) > GIT_HASH
 RUN rm -rf .git/
 
+# DRE cache
 VOLUME /app/sqlite
+
+# Warp SDK cache
 VOLUME /app/cache
 
 CMD ["node", "src/listener.js"]

@@ -1,4 +1,4 @@
-const warp = require('../warp');
+const { warp } = require('../warp');
 const Arweave = require('arweave');
 const fs = require('fs');
 const ArweaveUtils = require('arweave/node/lib/utils');
@@ -6,7 +6,15 @@ const { deleteStates, deleteBlacklist, deleteErrors, deleteEvents } = require('.
 const { config } = require('../config');
 
 module.exports = async (ctx) => {
-  const { nodeDb } = ctx;
+
+  try {
+    throw new Error("not implemented yet");
+  } catch (e) {
+    ctx.body = e.message;
+    ctx.status = 500;
+  }
+
+  /*const { nodeDb } = ctx;
   const contractId = ctx.params.id;
   const signature = ctx.query.signature;
   console.log(`Request to erase contract ${contractId}`);
@@ -36,7 +44,7 @@ module.exports = async (ctx) => {
   } catch (e) {
     ctx.body = e.message;
     ctx.status = 500;
-  }
+  }*/
 };
 
 function pruneKvStorage(txId) {

@@ -2,7 +2,7 @@ const { getAllBlacklisted } = require('../db/nodeDb');
 
 module.exports = async (ctx) => {
   try {
-    ctx.body = await getAllBlacklisted(ctx.nodeDb);
+    ctx.body = await getAllBlacklisted();
     ctx.status = 200;
   } catch (e) {
     ctx.body = e.message;

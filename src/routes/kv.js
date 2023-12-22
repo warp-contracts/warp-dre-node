@@ -1,4 +1,4 @@
-const warp = require('../warp');
+const { warp } = require('../warp');
 
 module.exports = async (ctx) => {
   const contractId = ctx.query.id;

@@ -1,44 +1,45 @@
-const warp = require('../warp');
-const { LoggerFactory, genesisSortKey, CacheKey, EvalStateResult } = require('warp-contracts');
-const { storeAndPublish, checkStateSize } = require('./common');
+const { warp } = require('../warp');
+const { LoggerFactory, genesisSortKey, TagsParser, Transaction } = require('warp-contracts');
+const { checkStateSize } = require('./common');
 const { config } = require('../config');
+const { postEvalQueue } = require('../bullQueue');
 
-LoggerFactory.INST.logLevel('none');
 LoggerFactory.INST.logLevel('info', 'contractsProcessor');
 const logger = LoggerFactory.INST.create('contractsProcessor');
 LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
 
 module.exports = async (job) => {
-  // workaround for https://github.com/taskforcesh/bullmq/issues/1557
   try {
     const contractTxId = job.data.contractTxId;
+
     logger.info('Register Processor', contractTxId);
-    const isTest = job.data.test;
 
-    const stateCache = warp.stateEvaluator.getCache();
+    const result = await warp
+      .contract(contractTxId)
+      .setEvaluationOptions(config.evaluationOptions)
+      .readState(genesisSortKey);
+    const cd = await warp.definitionLoader.getCache().get({ key: contractTxId, sortKey: 'cd' });
 
-    let result;
-    if (job.data.force) {
-      result = await warp.contract(contractTxId).setEvaluationOptions(config.evaluationOptions).readState();
-      checkStateSize(result.cachedValue.state);
-    } else {
-      checkStateSize(job.data.initialState);
-      await stateCache.put(
-        new CacheKey(contractTxId, genesisSortKey),
-        new EvalStateResult(job.data.initialState, {}, {})
-      );
-      result = {
-        sortKey: genesisSortKey,
-        cachedValue: {
-          state: job.data.initialState,
-          validity: {},
-          errorMessages: {}
-        }
-      };
-    }
-    storeAndPublish(logger, isTest, contractTxId, result).finally(() => {});
+    const tags = job.data.tags || (await decodeTags(cd.cachedValue.contractTx));
+
+    checkStateSize(result.cachedValue.state);
+
+    await postEvalQueue.add(
+      'sign',
+      {
+        contractTxId,
+        tags,
+        result,
+        requiresPublish: job.data.requiresPublish
+      },
+      { priority: 1 }
+    );
   } catch (e) {
-    logger.error('Exception in update processor', e);
+    logger.error('Exception in register processor', e);
     throw new Error(e);
   }
 };
+
+async function decodeTags(contractTx) {
+  return contractTx ? new TagsParser().decodeTags(new Transaction(contractTx)) : [];
+}

@@ -1,45 +1,72 @@
-const warp = require('../warp');
-const { LoggerFactory } = require('warp-contracts');
-const { storeAndPublish, checkStateSize } = require('./common');
-const { config } = require('../config');
+const { warp } = require("../warp");
+const { LoggerFactory } = require("warp-contracts");
+const { checkStateSize } = require("./common");
+const { config } = require("../config");
+const { postEvalQueue } = require("../bullQueue");
+const { insertContractEvent } = require("../db/nodeDb");
 
-LoggerFactory.INST.logLevel('none');
-LoggerFactory.INST.logLevel('info', 'interactionsProcessor');
-LoggerFactory.INST.logLevel('none', 'DefaultStateEvaluator');
-const logger = LoggerFactory.INST.create('interactionsProcessor');
-LoggerFactory.INST.logLevel('debug', 'EvaluationProgressPlugin');
+LoggerFactory.INST.logLevel("debug", "updateProcessor");
+LoggerFactory.INST.logLevel("info", "EvaluationProgressPlugin");
+LoggerFactory.INST.logLevel("debug", "WarpGatewayInteractionsLoader");
+LoggerFactory.INST.logLevel("debug", "ContractHandler");
+LoggerFactory.INST.logLevel("debug", "HandlerBasedContract");
+LoggerFactory.INST.logLevel("debug", "DefaultStateEvaluator");
+LoggerFactory.INST.logLevel("debug", "SqliteContractCache");
+LoggerFactory.INST.logLevel("debug", "WarpGatewayContractDefinitionLoader");
+LoggerFactory.INST.logLevel("debug", "SqliteContractCache");
+const logger = LoggerFactory.INST.create("updateProcessor");
 
 module.exports = async (job) => {
-  const { contractTxId, isTest, interaction } = job.data;
-
-  // workaround for https://github.com/taskforcesh/bullmq/issues/1557
   try {
-    logger.info('Update Processor', contractTxId);
+    const { contractTxId, isTest, interaction } = job.data;
+
+    logger.info("Update Processor", contractTxId);
 
     const contract = warp.contract(contractTxId).setEvaluationOptions(config.evaluationOptions);
-
-    let lastSortKey = null;
-    let result = null;
-
     const lastCachedKey = (await warp.stateEvaluator.latestAvailableState(contractTxId))?.sortKey;
-    if (lastCachedKey?.localeCompare(interaction.lastSortKey) === 0) {
-      logger.debug('Safe to use latest interaction');
-      lastSortKey = interaction.lastSortKey;
-      result = await contract.readStateFor(lastSortKey, [interaction]);
+    logger.debug("SortKeys:", {
+      lastCachedKey,
+      sortKey: interaction.sortKey,
+      lastSortKey: interaction.lastSortKey
+    });
+
+    if (config.availableFunctions.contractEvents) {
+      logger.info("Adding interactionCompleted listener");
+      warp.eventTarget.addEventListener('interactionCompleted', interactionCompleteHandler);
     }
 
-    if (result == null) {
-      logger.debug('Not safe to use latest interaction, reading via Warp GW.');
-      result = await contract.readState();
+    let result;
+
+    // note: this check will work properly with at most 1 update processor per given contract...
+    if (lastCachedKey && lastCachedKey === interaction.lastSortKey) {
+      result = await contract.readStateFor(lastCachedKey, [interaction]);
+    } else {
+      result = await contract.readState(interaction.sortKey);
     }
 
     logger.info(`Evaluated ${contractTxId} @ ${result.sortKey}`, contract.lastReadStateStats());
-    checkStateSize(result.cachedValue.state);
-    storeAndPublish(logger, isTest, contractTxId, result).finally(() => {});
-    return { lastSortKey };
-  } catch (e) {
-    logger.error('Exception in update processor', e);
 
-    throw new Error(`${contractTxId}|${interaction.id}|${e}`);
+    checkStateSize(result.cachedValue.state);
+    if (!isTest) {
+      await postEvalQueue.add(
+        "sign",
+        { contractTxId, result, interactions: [interaction], requiresPublish: true },
+        { priority: 1 }
+      );
+    }
+
+  } catch (e) {
+    logger.error(e);
+    throw e;
+  } finally {
+    if (config.availableFunctions.contractEvents) {
+      warp.eventTarget.removeEventListener('interactionCompleted', interactionCompleteHandler);
+    }
   }
 };
+
+async function interactionCompleteHandler(event) {
+  const eventData = event.detail;
+  logger.debug("New contract event", eventData);
+  await insertContractEvent(eventData);
+}

@@ -1,8 +1,10 @@
 const { defaultCacheOptions, WarpFactory } = require('warp-contracts');
 const { LmdbCache } = require('warp-contracts-lmdb');
+const { config } = require("../config");
 
 async function readState() {
   const warp = WarpFactory.forMainnet()
+    .useGwUrl(config.gwUrl)
     .useStateCache(
       new LmdbCache({
         ...defaultCacheOptions,
