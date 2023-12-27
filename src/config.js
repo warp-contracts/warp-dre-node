@@ -94,6 +94,7 @@ const config = {
     contractEvents: process.env.PROCESS_CONTRACT_EVENTS === 'true',
     warpyAggreging: process.env.WARPY_AGGREGATING === 'true'
   },
+  viewStateDefaultCaller: process.env.VIEW_STATE_DEFAULT_CALLER,
   workersConfig: {
     register: parseInt(process.env.WORKERS_REGISTER),
     update: parseInt(process.env.WORKERS_UPDATE),
