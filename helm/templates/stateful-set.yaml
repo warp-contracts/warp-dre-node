@@ -29,7 +29,33 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Chart.Name }}
+       {{- if .Values.syncer.enabled }}
+        - name: syncer
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+          - node
+          - src/syncer.js
+          volumeMounts:
+            - name: sqlite-volume
+              mountPath: /app/sqlite
+            - name: cache-volume
+              mountPath: /app/cache
+          env:
+            - name: BULLMQ_HOST
+              value: localhost
+            - name: GW_TLS_CA_CERT
+              valueFrom:
+                secretKeyRef:
+                  key: ca.crt
+                  name: redis-crt
+          envFrom:
+            - secretRef:
+                name: dre
+        {{- end }}
+        - name: listener
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
