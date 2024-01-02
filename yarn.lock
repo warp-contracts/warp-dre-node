@@ -6715,7 +6715,7 @@ warp-contracts-plugin-signature@1.0.12:
 
 warp-contracts-plugin-vm2@1.0.2:
   version "1.0.2"
-  resolved "https://registry.yarnpkg.com/warp-contracts-plugin-vm2/-/warp-contracts-plugin-vm2-1.0.2.tgz#6fa3e66f343a97c0065abfb6d62404fec0b76ff7"
+  resolved "https://registry.npmjs.org/warp-contracts-plugin-vm2/-/warp-contracts-plugin-vm2-1.0.2.tgz"
   integrity sha512-3VAHO7/SLFy6WjjieRANuQSsKQ9Xm1t6JmZXYV73O8yPH0oMe7DqE1Fz52M6oQOd+jXEDiAoRqazmOwrOl1giA==
   dependencies:
     bignumber.js "^9.1.1"
@@ -6729,10 +6729,10 @@ warp-contracts-plugin-vrf@1.0.4:
     "@idena/vrf-js" "^1.0.1"
     elliptic "^6.5.4"
 
-warp-contracts-postgres@1.1.0:
-  version "1.1.0"
-  resolved "https://registry.npmjs.org/warp-contracts-postgres/-/warp-contracts-postgres-1.1.0.tgz"
-  integrity sha512-g+CLx5qYBZIgNgnN3PKcLDX/1y14LLdrWh/7BOe8ZO9AfL5Cu0ByHOrauv7bAsTZG2Rhrb1Z/KD/6Igevrf7mg==
+warp-contracts-postgres@1.1.3:
+  version "1.1.3"
+  resolved "https://registry.npmjs.org/warp-contracts-postgres/-/warp-contracts-postgres-1.1.3.tgz"
+  integrity sha512-vOpXj84D+03j9a4XLqbmQnngrwyWbYj5stjO7taA5bY8yNSSClKlli4MVEe4UAWq+Tz4+1R7zGLrp/jlZlRBbQ==
   dependencies:
     "@types/pg" "^8.10.2"
     pg "^8.11.2"
@@ -6755,10 +6755,10 @@ warp-contracts-sqlite@1.0.2:
     better-sqlite3 "^8.3.0"
     safe-stable-stringify "^2.4.3"
 
-warp-contracts@1.4.25, warp-contracts@^1.0.0:
-  version "1.4.25"
-  resolved "https://registry.npmjs.org/warp-contracts/-/warp-contracts-1.4.25.tgz"
-  integrity sha512-hJ05UbQxD3fW4ZI/6qztXW509tIyT/oRE8y4r7WzKfVu19u0dDjcPEsJC2U2yflke8P1+oi+BrSulT+o7yoPKA==
+warp-contracts@1.4.31, warp-contracts@^1.0.0:
+  version "1.4.31"
+  resolved "https://registry.npmjs.org/warp-contracts/-/warp-contracts-1.4.31.tgz"
+  integrity sha512-ep8LsbKkjvbPnWJUdlItI6fg5NqIQi/EDe4xRJgMFzFv2dvafeF7/7V0jul6kuuiMTcqHt2cXErnZIFL7Ne9Ew==
   dependencies:
     archiver "^5.3.0"
     arweave "1.13.7"
