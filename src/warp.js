@@ -21,8 +21,8 @@ const p5kv = new PgSortKeyCache({
   ...warpDbConfig,
   schemaName: 'kv',
   tableName: 'p5OI99-BaY4QbZts266T7EDwofZqs-wVuYJmMCS0SUU',
-  minEntriesPerKey: 100,
-  maxEntriesPerKey: 1_000,
+  minEntriesPerKey: 10,
+  maxEntriesPerKey: 100,
   application_name: 'kv'
 });
 
@@ -58,8 +58,8 @@ const warp = WarpFactory.forMainnet()
           ...warpDbConfig,
           schemaName: 'kv',
           tableName: contractTxId,
-          minEntriesPerKey: 100,
-          maxEntriesPerKey: 1_000,
+          minEntriesPerKey: 10,
+          maxEntriesPerKey: 100,
           application_name: 'kv'
         })
   )
