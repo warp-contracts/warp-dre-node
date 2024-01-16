@@ -14,6 +14,8 @@ const { interactions } = require('./routes/agg/aggInteractionsByIndex');
 const { taggedNftByOwner } = require('./routes/agg/aggTaggedNftByOwner');
 const alive = require('./routes/alive');
 const syncLog = require('./routes/syncLog');
+const { warpyUserLastRewards } = require('./routes/warpy/warpyUserLastRewards');
+const { warpySeasonRanking } = require('./routes/warpy/warpySeasonRanking');
 
 const router = new Router();
 
@@ -31,6 +33,8 @@ router.get('/sync', scheduleSync);
 router.get('/kv', kv);
 router.get('/validity', validity);
 router.get('/sync-log', syncLog);
+router.get('/warpy/user-last-rewards', warpyUserLastRewards);
+router.get('/warpy/season-ranking', warpySeasonRanking);
 router.delete('/contract/:id', eraseContract);
 
 module.exports = router;

@@ -7,6 +7,9 @@ const { emptyTransfer, LoggerFactory } = require('warp-contracts');
 LoggerFactory.INST.logLevel('debug', 'viewStateRoute');
 const logger = LoggerFactory.INST.create('viewStateRoute');
 
+LoggerFactory.INST.logLevel("warn", "HandlerBasedContract");
+LoggerFactory.INST.logLevel("error", "HandlerExecutorFactory");
+
 module.exports = async (ctx) => {
   logger.info('new view state request');
   if (!config.availableFunctions.viewState) {
@@ -30,7 +33,7 @@ module.exports = async (ctx) => {
     if (!input) {
       ctx.throw(400, 'Invalid input format');
     }
-    const caller = ctx.query.caller;
+    const caller = config.viewStateDefaultCaller || ctx.query.caller;
 
     let output;
     let sortKey = (await warp.stateEvaluator.latestAvailableState(contractId)).sortKey;

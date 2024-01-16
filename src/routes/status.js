@@ -8,24 +8,14 @@ module.exports = async (ctx) => {
     response.node = config.dreName;
     response.lastSyncTimestamp = await getLastSyncTimestamp(nodeDb);
 
-    response.manifest = await config.nodeManifest;
-    response.workersConfig = config.workersConfig;
-
-    const registerActiveJobs = await registerQueue.getJobs(['active']);
-    const registerWaitingJobs = await registerQueue.getJobs(['waiting']);
-
     response.queues_totals = {
       update: await updateQueue.getJobCounts(),
       postEval: await postEvalQueue.getJobCounts(),
       register: await registerQueue.getJobCounts()
     };
 
-    response.queues_details = {
-      register: {
-        active: registerActiveJobs.map(mapJob),
-        waiting: registerWaitingJobs.map(mapJob)
-      }
-    };
+    response.manifest = await config.nodeManifest;
+    response.workersConfig = config.workersConfig;
 
     ctx.body = response;
     ctx.status = 200;

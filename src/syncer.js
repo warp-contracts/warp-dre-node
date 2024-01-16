@@ -107,7 +107,7 @@ async function subscribeToGatewayNotifications() {
 
 async function processGatewayMessage(msgObj) {
   logger.info(`Received message for '${msgObj.contractTxId}'`);
-  logger.info('message object', msgObj);
+  logger.debug('message object', msgObj);
 
   let validationMessage = null;
   if (!isTxIdValid(msgObj.contractTxId)) {

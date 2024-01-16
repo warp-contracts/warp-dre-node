@@ -22,7 +22,9 @@ module.exports = async (job) => {
     if (tags && tags.length > 0) {
       await onContractDeployment(contractTxId, tags);
     }
-    const signed = await sign(contractTxId, result.sortKey, contractState);
+    const signed = config.signState
+      ? await sign(contractTxId, result.sortKey, contractState)
+      : { stateHash: '', sig: '' };
     await onNewState(job.data);
 
     if (interactions) {
@@ -58,7 +60,9 @@ async function publishInternalWritesContracts(interactions) {
 
   for (const iwContract of iwTagsValues) {
     const interactWriteContractResult = await warp.stateEvaluator.latestAvailableState(iwContract);
-    await sign(iwContract, interactWriteContractResult.sortKey, interactWriteContractResult.cachedValue.state);
+    if (config.signState) {
+      await sign(iwContract, interactWriteContractResult.sortKey, interactWriteContractResult.cachedValue.state);
+    }
     await onNewState({ contractTxId: iwContract, result: interactWriteContractResult });
   }
 }
