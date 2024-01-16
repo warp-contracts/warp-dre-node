@@ -6755,7 +6755,27 @@ warp-contracts-sqlite@1.0.2:
     better-sqlite3 "^8.3.0"
     safe-stable-stringify "^2.4.3"
 
-warp-contracts@1.4.31, warp-contracts@^1.0.0:
+warp-contracts@1.4.33-warpy.0:
+  version "1.4.33-warpy.0"
+  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.4.33-warpy.0.tgz#68977a08437b219c8af8db59d8bce3cf646d0c58"
+  integrity sha512-hi33VWTj3OWZh4JiXakiKJUxxMkrtJPZlgno9OuOciiPeLEUzaQmdhAtftj3AzDg6tqOOso144qIZMa2oKV89Q==
+  dependencies:
+    archiver "^5.3.0"
+    arweave "1.13.7"
+    async-mutex "^0.4.0"
+    bignumber.js "9.1.1"
+    events "3.3.0"
+    fast-copy "^3.0.0"
+    level "^8.0.0"
+    memory-level "^1.0.0"
+    safe-stable-stringify "2.4.1"
+    stream-buffers "^3.0.2"
+    unzipit "^1.4.0"
+    warp-arbundles "^1.0.4"
+    warp-isomorphic "^1.0.7"
+    warp-wasm-metering "1.0.1"
+
+warp-contracts@^1.0.0:
   version "1.4.31"
   resolved "https://registry.npmjs.org/warp-contracts/-/warp-contracts-1.4.31.tgz"
   integrity sha512-ep8LsbKkjvbPnWJUdlItI6fg5NqIQi/EDe4xRJgMFzFv2dvafeF7/7V0jul6kuuiMTcqHt2cXErnZIFL7Ne9Ew==
