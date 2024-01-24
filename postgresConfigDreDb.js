@@ -6,6 +6,7 @@ module.exports = {
   user: process.env.PG_USER_DRE,
   password: process.env.PG_USER_DRE_PASSWORD,
   database: process.env.PG_DATABASE.toLowerCase(),
+  idle_in_transaction_session_timeout: 300000,
   port: process.env.PG_PORT,
   ...(process.env.PG_SSL === "true" ? {
     ssl: {
