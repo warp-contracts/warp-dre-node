@@ -373,5 +373,56 @@ module.exports = {
     );
 
     return result.rows;
+  },
+
+  getWarpyUserBalance: async (userId) => {
+    const result = await drePool.query(
+      `
+        WITH max_state AS (
+          SELECT value FROM warp.sort_key_cache ORDER BY sort_key DESC LIMIT 1
+        ),
+        wallet_balance AS (
+          SELECT value -> 'users' -> ? ->> 0  as wallet_address
+          from max_state
+        )
+        SELECT wallet_address, value::jsonb -> 'balances' -> wallet_address AS balance
+        FROM max_state, wallet_balance;
+      `,
+      [userId]
+    );
+
+    return result.rows;
+  },
+
+  getWarpyUserCounter: async (userId) => {
+    const result = await drePool.query(
+      `
+        WITH max_state AS (
+        SELECT value FROM warp.sort_key_cache ORDER BY sort_key DESC LIMIT 1
+        )
+        SELECT value -> 'counter' -> ?  AS counter
+        FROM max_state;
+      `,
+      [userId]
+    );
+
+    return result.rows;
+  },
+
+  getWarpyUserId: async (address) => {
+    const result = await drePool.query(
+      `
+        WITH w1 AS (
+          SELECT value -> 'users' AS users
+          FROM warp.sort_key_cache
+          WHERE sort_key = (SELECT MAX(sort_key) FROM warp.sort_key_cache)
+        )
+        SELECT key FROM w1, jsonb_each(w1.users)
+        WHERE value ->> 0 = ?;
+      `,
+      [address]
+    );
+
+    return result.rows;
   }
 };

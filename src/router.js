@@ -16,6 +16,9 @@ const alive = require('./routes/alive');
 const syncLog = require('./routes/syncLog');
 const { warpyUserLastRewards } = require('./routes/warpy/warpyUserLastRewards');
 const { warpySeasonRanking } = require('./routes/warpy/warpySeasonRanking');
+const warpyUserId = require('./routes/warpy/warpyUserId');
+const warpyUserBalance = require('./routes/warpy/warpyUserBalance');
+const warpyUserCounter = require('./routes/warpy/warpyUserCounter');
 
 const router = new Router();
 
@@ -35,6 +38,9 @@ router.get('/validity', validity);
 router.get('/sync-log', syncLog);
 router.get('/warpy/user-last-rewards', warpyUserLastRewards);
 router.get('/warpy/season-ranking', warpySeasonRanking);
+router.get('/warpy/user-id', warpyUserId);
+router.get('/warpy/user-balance', warpyUserBalance);
+router.get('/warpy/user-counter', warpyUserCounter);
 router.delete('/contract/:id', eraseContract);
 
 module.exports = router;
