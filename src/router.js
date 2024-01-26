@@ -16,9 +16,9 @@ const alive = require('./routes/alive');
 const syncLog = require('./routes/syncLog');
 const { warpyUserLastRewards } = require('./routes/warpy/warpyUserLastRewards');
 const { warpySeasonRanking } = require('./routes/warpy/warpySeasonRanking');
-const warpyUserId = require('./routes/warpy/warpyUserId');
-const warpyUserBalance = require('./routes/warpy/warpyUserBalance');
-const warpyUserCounter = require('./routes/warpy/warpyUserCounter');
+const { warpyUserId } = require('./routes/warpy/warpyUserId');
+const { warpyUserBalance } = require('./routes/warpy/warpyUserBalance');
+const { warpyUserCounter } = require('./routes/warpy/warpyUserCounter');
 
 const router = new Router();
 
