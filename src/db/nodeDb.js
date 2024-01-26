@@ -382,7 +382,7 @@ module.exports = {
           SELECT value FROM warp.sort_key_cache ORDER BY sort_key DESC LIMIT 1
         ),
         wallet_balance AS (
-          SELECT value -> 'users' -> ? ->> 0  as wallet_address
+          SELECT value -> 'users' -> $1 ->> 0  as wallet_address
           from max_state
         )
         SELECT wallet_address, value::jsonb -> 'balances' -> wallet_address AS balance
@@ -400,7 +400,7 @@ module.exports = {
         WITH max_state AS (
         SELECT value FROM warp.sort_key_cache ORDER BY sort_key DESC LIMIT 1
         )
-        SELECT value -> 'counter' -> ?  AS counter
+        SELECT value -> 'counter' -> $1  AS counter
         FROM max_state;
       `,
       [userId]
@@ -418,7 +418,7 @@ module.exports = {
           WHERE sort_key = (SELECT MAX(sort_key) FROM warp.sort_key_cache)
         )
         SELECT key FROM w1, jsonb_each(w1.users)
-        WHERE value ->> 0 = ?;
+        WHERE value ->> 0 = $1;
       `,
       [address]
     );
