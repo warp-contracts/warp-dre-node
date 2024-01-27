@@ -418,7 +418,7 @@ module.exports = {
           WHERE sort_key = (SELECT MAX(sort_key) FROM warp.sort_key_cache)
         )
         SELECT key FROM w1, jsonb_each(w1.users)
-        WHERE value ->> 0 = $1;
+        WHERE LOWER(value) ->> 0 ILIKE $1;
       `,
       [address]
     );
