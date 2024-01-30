@@ -6,8 +6,10 @@ const zlib = require('zlib');
 const router = require('./router');
 const { logConfig, config } = require('./config');
 const { drePool } = require('./db/nodeDb');
+const accessLogMiddleware  = require('./routes/accessLogMiddleware');
 
 const logger = require('./logger')('listener');
+const accessLogger = require('./logger')('access');
 const exitHook = require('async-exit-hook');
 const { pgClient, warp } = require('./warp');
 const { postEvalQueue, registerQueue, updateQueue } = require('./bullQueue');
@@ -21,6 +23,7 @@ async function runListener() {
 
   const app = new Koa();
   app
+    .use(accessLogMiddleware)
     .use(corsConfig())
     .use(compress(compressionSettings))
     .use(bodyParser())
@@ -33,6 +36,7 @@ async function runListener() {
   app.context.registerQueue = registerQueue;
   app.context.updateQueue = updateQueue;
   app.context.postEvalQueue = postEvalQueue;
+  app.context.accessLogger = accessLogger;
 
   app.listen(port);
 }

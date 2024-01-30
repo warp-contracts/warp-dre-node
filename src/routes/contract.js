@@ -34,6 +34,7 @@ module.exports = async (ctx) => {
   const showValidity = ctx.query.validity === 'true';
   const showErrorMessages = ctx.query.errorMessages === 'true';
   const showErrors = ctx.query.errors === 'true';
+  const showValidityCount = ctx.query.validityCount === 'true';
 
   logger.info("New 'contract' request", {
     contractId,
@@ -64,7 +65,9 @@ module.exports = async (ctx) => {
           page: parsedPage
         };
       }
-      response.validityCount = await getContractValidityTotalCount(contractId, result.sortKey);
+      if (showValidityCount) {
+        response.validityCount = await getContractValidityTotalCount(contractId, result.sortKey);
+      }
       if (showErrorMessages) {
         const contractErrorMessages = await getContractErrorMessages(contractId, result.sortKey, parsedLimit, offset);
         response.errorMessages = contractErrorMessages.errorMessages;
