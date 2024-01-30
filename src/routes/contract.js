@@ -76,10 +76,10 @@ module.exports = async (ctx) => {
       if (showErrors) {
         response.errors = await getContractErrors(contractId);
       }
-      const { sig, stateHash } = await signatures(contractId, result.sortKey, result.cachedValue.state);
+      // const { sig, stateHash } = await signatures(contractId, result.sortKey, result.cachedValue.state);
       response.sortKey = result.sortKey;
-      response.signature = sig;
-      response.stateHash = stateHash;
+      // response.signature = sig;
+      // response.stateHash = stateHash;
     } else {
       const contractErrors = await getContractErrors(contractId);
       if (contractErrors.length) {
@@ -99,9 +99,10 @@ module.exports = async (ctx) => {
   }
 };
 
-async function signatures(contractTxId, sortKey, state) {
+async function signatures(contractTxId, sortKey, state, lazySign) {
+  lazySign = lazySign !== false;
   const dbSignatures = await getSignatures(contractTxId, sortKey);
-  if (!dbSignatures || !dbSignatures.sig) {
+  if ((!dbSignatures || !dbSignatures.sig) && lazySign) {
     return await signState(contractTxId, sortKey, state);
   }
   return dbSignatures;
