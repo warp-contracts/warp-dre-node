@@ -3,16 +3,16 @@ const { LoggerFactory } = require("warp-contracts");
 
 const LOG_FORMAT = '%s %s "%s %s HTTP/%s" %d %s %s[ms]';
 
-const logger = LoggerFactory.INST.create('access');
-LoggerFactory.INST.logLevel('debug', 'access');
+// const logger = LoggerFactory.INST.create('access');
+// LoggerFactory.INST.logLevel('debug', 'access');
 
 module.exports = async (ctx, next) => {
-  console.log("access log middleware");
+  // console.log("access log middleware");
   const t0 = performance.now();
   await next();
   const t1 = performance.now();
   try {
-    logger.debug(util.format(
+    console.log(util.format(
         LOG_FORMAT,
         ctx.ip,
         ctx.method,
