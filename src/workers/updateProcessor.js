@@ -14,7 +14,7 @@ LoggerFactory.INST.logLevel("info", "DefaultStateEvaluator");
 LoggerFactory.INST.logLevel("info", "SqliteContractCache");
 LoggerFactory.INST.logLevel("info", "WarpGatewayContractDefinitionLoader");
 LoggerFactory.INST.logLevel("debug", "p5OI99-BaY4QbZts266T7EDwofZqs-wVuYJmMCS0SUU");
-LoggerFactory.INST.logLevel("error", "HandlerExecutorFactory");
+LoggerFactory.INST.logLevel("debug", "HandlerExecutorFactory");
 
 const logger = LoggerFactory.INST.create("updateProcessor");
 
