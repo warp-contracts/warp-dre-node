@@ -4,7 +4,7 @@ const { config } = require('../../config');
 const DEFAULT_RANKING_LIMIT = 15;
 
 module.exports = {
-  warpyUserBalance: async function (ctx) {
+  warpyUserRanking: async function (ctx) {
     if (!config.availableFunctions.warpyAggreging) {
       ctx.body = 'Warpy aggreging functionality is disabled';
       ctx.status = 404;
