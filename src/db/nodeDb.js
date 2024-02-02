@@ -424,5 +424,42 @@ module.exports = {
     );
 
     return result.rows;
+  },
+
+  getWarpyUserRanking: async (limit, address, contractId) => {
+    const result = await drePool.query(
+      `
+        WITH ranked AS (
+          SELECT row_number() OVER (ORDER BY balance::int DESC NULLS LAST ) AS rn, wallet_address, balance
+          FROM dre.balances
+          WHERE contract_tx_id = $1),
+        last_state AS (
+          SELECT value
+          FROM warp.sort_key_cache
+          ORDER BY sort_key DESC
+          LIMIT 1),
+        last_users AS (
+          SELECT TRIM(users.value::text, '"') as value, users.key
+          FROM last_state, jsonb_each(last_state.value -> 'users') users)
+        ${
+          address
+            ? `(SELECT r.rn, 
+          (SELECT key from last_users where value = '${address}') as user_id, 
+          r.wallet_address, 
+          r.balance
+        FROM ranked r
+        WHERE wallet_address = '${address}')
+        UNION ALL`
+            : ''
+        }
+        (SELECT r.rn, lu.key as user_id, r.wallet_address, r.balance
+        FROM ranked r
+        LEFT JOIN last_users lu ON r.wallet_address = lu.value
+        LIMIT $2);
+      `,
+      [contractId, limit]
+    );
+
+    return result.rows;
   }
 };
