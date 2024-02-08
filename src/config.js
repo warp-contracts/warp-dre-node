@@ -29,7 +29,9 @@ const evaluationOptions = {
   internalWrites: process.env.EVALUATION_INTERNALWRITES === 'true',
   cacheEveryNInteractions: 2000,
   whitelistSources: JSON.parse(process.env.EVALUATION_WHITELIST_SOURCES),
-  blacklistedContracts: JSON.parse(process.env.EVALUATION_BLACKLISTED_CONTRACTS)
+  blacklistedContracts: JSON.parse(process.env.EVALUATION_BLACKLISTED_CONTRACTS),
+  strictEvolve: process.env.EVALUATION_STRICT_EVOLVE === 'true',
+  strictSortKey: process.env.EVALUATION_STRICT_SORT_KEY === 'true'
 };
 
 function getGwPubSubConfig() {

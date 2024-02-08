@@ -29,6 +29,10 @@ module.exports = async (job) => {
 
     const contract = warp.contract(contractTxId).setEvaluationOptions(config.evaluationOptions);
     const lastCachedKey = (await warp.stateEvaluator.latestAvailableState(contractTxId))?.sortKey;
+    if (lastCachedKey >= interaction.sortKey) {
+      logger.warn(`Interaction ${interaction.id}:${interaction.sortKey} for contract ${contractTxId} already evaluated`);
+      return;
+    }
     logger.debug("SortKeys:", {
       lastCachedKey,
       sortKey: interaction.sortKey,
