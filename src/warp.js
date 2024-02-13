@@ -67,15 +67,19 @@ const warp = WarpFactory.forMainnet()
   .use(new NlpExtension())
   .use(new EvmSignatureVerificationServerPlugin())
   .use(new EthersExtension())
-  .use(new VM2Plugin())
   .use(new VRFPlugin())
   .use(new JWTVerifyPlugin())
   .use(
     new ContractBlacklistPlugin(async (input) => {
       const blacklistFunction = await getDreBlacklistFunction(getFailures, drePool, config.workersConfig.maxFailures);
-      return await blacklistFunction(input) || config.evaluationOptions.blacklistedContracts.includes(input);
+      return (await blacklistFunction(input)) || config.evaluationOptions.blacklistedContracts.includes(input);
     })
   );
+
+if (config.useVm2) {
+  warp.use(new VM2Plugin());
+}
+
 warp.whoAmI = config.dreName || 'DRE';
 
 module.exports = { warp, pgClient };

@@ -119,7 +119,8 @@ const config = {
   pollForkProcess: process.env.POLL_FORK_PROCESS === 'true',
   signState: process.env.SIGN_STATE === 'true',
   whitelistMode: JSON.parse(process.env.EVALUATION_WHITELIST_SOURCES).length > 0,
-  updateMode: process.env.UPDATE_MODE || 'poll'
+  updateMode: process.env.UPDATE_MODE || 'poll',
+  useVm2: process.env.USE_VM2 !== 'false'
 };
 
 validate(config);
