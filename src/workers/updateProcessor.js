@@ -59,6 +59,8 @@ module.exports = async (job) => {
     }
 
     cachedState = result;
+    cachedState.cachedValue.errorMessages = {};
+    cachedState.cachedValue.validity = {};
 
     logger.info(`Evaluated ${contractTxId} @ ${result.sortKey}`, contract.lastReadStateStats());
 
