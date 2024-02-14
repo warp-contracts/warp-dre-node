@@ -120,7 +120,8 @@ const config = {
   signState: process.env.SIGN_STATE === 'true',
   whitelistMode: JSON.parse(process.env.EVALUATION_WHITELIST_SOURCES).length > 0,
   updateMode: process.env.UPDATE_MODE || 'poll',
-  useVm2: process.env.USE_VM2 !== 'false'
+  useVm2: process.env.USE_VM2 !== 'false',
+  useBlacklist: process.env.USE_BLACKLIST !== 'false'
 };
 
 validate(config);
