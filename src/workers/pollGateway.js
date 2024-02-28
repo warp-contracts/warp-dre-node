@@ -11,12 +11,7 @@ const { init } = require('./pollWorkerRunner');
 const logger = LoggerFactory.INST.create('syncer');
 LoggerFactory.INST.logLevel('info', 'syncer');
 
-function filterInvalidEntries(entries, responseSizeLimit) {
-  if (entries.length >= responseSizeLimit) {
-    logger.warn(`Max entries in response (${responseSizeLimit}), either reduce window size or increase interactions limit in response via the .env.POLL_RESPONSE_LENGTH_LIMIT`);
-    process.exit(0);
-  }
-
+function filterInvalidEntries(entries) {
   const validEntries = entries.filter((entry) => {
     if (!entry.contractTxId || !isTxIdValid(entry.contractTxId)) {
       logger.warn(`No valid 'contractTxId' in entry: ${JSON.stringify(entry)}`);
@@ -89,22 +84,36 @@ module.exports = async function (
         toDate: new Date(endTimestamp)
       });
 
-      let result;
+      let result = {
+        interactions: []
+      };
+      let partialResult;
+      let offset = 0;
       try {
-        result = await loadInteractions(
-          startTimestamp,
-          endTimestamp,
-          whitelistedSources,
-          blacklistedContracts,
-          config.pollResponseLengthLimit
-        );
-        if (!result) {
-          throw new Error('Result is null or undefined');
-        }
-        if (!result.interactions) {
-          throw new Error("Result does not contain 'interactions' field");
-        }
-        result.interactions = filterInvalidEntries(result.interactions, config.pollResponseLengthLimit);
+        do {
+          logger.info(`Loading interactions for`, {
+            startTimestamp,
+            endTimestamp,
+            limit: config.pollResponseLengthLimit,
+            offset
+          });
+          partialResult = await loadInteractions(
+              startTimestamp,
+              endTimestamp,
+              whitelistedSources,
+              blacklistedContracts,
+              config.pollResponseLengthLimit,
+              offset
+          );
+          if (!partialResult) {
+            throw new Error('Result is null or undefined');
+          }
+          if (!partialResult.interactions) {
+            throw new Error("Result does not contain 'interactions' field");
+          }
+          result.interactions.concat(filterInvalidEntries(partialResult.interactions));
+          offset += config.pollResponseLengthLimit;
+        } while (partialResult.interactions.length === config.pollResponseLengthLimit)
       } catch (e) {
         logger.error(
           'Error while loading interactions',

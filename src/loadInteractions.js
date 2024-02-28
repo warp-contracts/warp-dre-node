@@ -1,9 +1,10 @@
 const { config } = require('./config');
-module.exports = async (startTimestamp, endTimestamp, whiteListedSources, blacklistedContracts, limit) => {
+module.exports = async (startTimestamp, endTimestamp, whiteListedSources, blacklistedContracts, limit, offset) => {
   const response = await postData({
     start: startTimestamp,
     end: endTimestamp,
     limit,
+    offset,
     src_ids: whiteListedSources,
     blacklisted_contracts: blacklistedContracts
   });
