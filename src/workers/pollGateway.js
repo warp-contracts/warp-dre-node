@@ -98,12 +98,12 @@ module.exports = async function (
             offset
           });
           partialResult = await loadInteractions(
-              startTimestamp,
-              endTimestamp,
-              whitelistedSources,
-              blacklistedContracts,
-              config.pollResponseLengthLimit,
-              offset
+            startTimestamp,
+            endTimestamp,
+            whitelistedSources,
+            blacklistedContracts,
+            config.pollResponseLengthLimit,
+            offset
           );
           if (!partialResult) {
             throw new Error('Result is null or undefined');
@@ -111,9 +111,9 @@ module.exports = async function (
           if (!partialResult.interactions) {
             throw new Error("Result does not contain 'interactions' field");
           }
-          result.interactions.concat(filterInvalidEntries(partialResult.interactions));
+          result.interactions = result.interactions.concat(filterInvalidEntries(partialResult.interactions));
           offset += config.pollResponseLengthLimit;
-        } while (partialResult.interactions.length === config.pollResponseLengthLimit)
+        } while (partialResult.interactions.length === config.pollResponseLengthLimit);
       } catch (e) {
         logger.error(
           'Error while loading interactions',
