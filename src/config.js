@@ -108,7 +108,7 @@ const config = {
   },
   syncWindowSeconds: JSON.parse(process.env.SYNC_WINDOW_SECONDS),
   firstInteractionTimestamp: parseInt(process.env.FIRST_INTERACTION_TIMESTAMP),
-  pollResponseLengthLimit: process.env.POLL_RESPONSE_LENGTH_LIMIT ? parseInt(process.env.POLL_RESPONSE_LENGTH_LIMIT) : 15000,
+  pollResponseLengthLimit: process.env.POLL_RESPONSE_LENGTH_LIMIT ? parseInt(process.env.POLL_RESPONSE_LENGTH_LIMIT) : 500,
   pollLoadInteractionsUrl: readLoadInteractionsUrl(),
   pollForkProcess: process.env.POLL_FORK_PROCESS === 'true',
   whitelistMode: JSON.parse(process.env.EVALUATION_WHITELIST_SOURCES).length > 0,
