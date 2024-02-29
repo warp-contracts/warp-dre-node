@@ -48,13 +48,13 @@ function sort(entries) {
 
 function logPartitionData(partitioned) {
   logger.info('Partitions length', partitioned.length);
-  if (partitioned.length > 0) {
+  /*if (partitioned.length > 0) {
     const partitionsData = {};
     partitioned.forEach((p, index) => {
       partitionsData[index] = { contract: p[0].contractTxId, length: p.length };
     });
     logger.info('Partitions', partitionsData);
-  }
+  }*/
 }
 
 module.exports = async function (
