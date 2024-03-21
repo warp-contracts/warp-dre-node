@@ -1,7 +1,7 @@
 const { getWarpyUserRanking } = require('../../db/nodeDb');
 const { config } = require('../../config');
 
-const DEFAULT_RANKING_LIMIT = 15;
+export const DEFAULT_RANKING_LIMIT = 15;
 
 module.exports = {
   warpyUserRanking: async function (ctx) {

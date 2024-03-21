@@ -355,21 +355,48 @@ module.exports = {
     return result.rows;
   },
 
-  getSeasonRanking: async (contractId, seasonName, limit, offset) => {
+  getWarpySeasonRanking: async (limit, address, contractId, from) => {
     const result = await drePool.query(
       `
-        WITH season AS 
-          (SELECT (data ->> 'from')::bigint AS fromTimestamp, (data ->> 'to')::bigint AS toTimestamp
-          FROM dre.contract_event
-          WHERE data ->> 'name' = $1 AND contract_tx_id = $2)
-        SELECT data ->> 'userId' as "userId", SUM((data ->> 'points')::bigint) AS points FROM dre.contract_event ce
-        JOIN season s ON true
-        WHERE ce.block_timestamp >= s.fromTimestamp AND ce.block_timestamp <= s.toTimestamp
-        GROUP BY (data ->> 'userId')
-        ORDER BY points DESC nulls LAST
-        LIMIT $3 OFFSET $4;
+      WITH balance_aggregated AS (
+        SELECT data::jsonb ->> 'userId' as user_id, 
+        SUM((data::jsonb ->> 'points')::int) AS balance 
+        FROM dre.contract_event 
+        WHERE contract_tx_id = $1
+        AND block_timestamp >= $2 
+        GROUP BY user_id),
+      last_state AS (
+        SELECT value
+        FROM warp.sort_key_cache
+        ORDER BY sort_key DESC
+        LIMIT 1),
+      last_users AS (
+        SELECT TRIM(users.value::text, '"') as value, users.key
+        FROM last_state, jsonb_each(last_state.value -> 'users') users),
+      ranked AS (
+        SELECT row_number() OVER (ORDER BY ba.balance::int desc nulls last) AS rn, 
+        ba.user_id AS user_id, 
+        lu.value AS wallet_address, 
+        balance 
+        FROM balance_aggregated ba LEFT JOIN last_users lu ON ba.user_id = lu.key)
+      ${
+        address
+          ? `(SELECT r.rn, 
+      r.user_id, 
+      r.wallet_address, 
+      r.balance
+      FROM ranked r
+      WHERE wallet_address = '${address}')
+      UNION ALL`
+          : ''
+      }
+      (SELECT r.rn, 
+      r.user_id, 
+      r.wallet_address, 
+      r.balance 
+      FROM ranked r LIMIT $3;
       `,
-      [seasonName, contractId, limit, offset]
+      [contractId, from, limit]
     );
 
     return result.rows;
