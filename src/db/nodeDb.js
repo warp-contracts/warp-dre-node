@@ -394,7 +394,7 @@ module.exports = {
       r.user_id, 
       r.wallet_address, 
       r.balance 
-      FROM ranked r LIMIT $3;
+      FROM ranked r LIMIT $3);
       `,
       [contractId, from, limit]
     );
