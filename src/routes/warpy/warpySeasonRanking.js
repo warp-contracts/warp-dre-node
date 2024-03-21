@@ -1,6 +1,8 @@
 const { getWarpySeasonRanking } = require('../../db/nodeDb');
 const { config } = require('../../config');
 
+const DEFAULT_RANKING_LIMIT = 15;
+
 module.exports = {
   warpySeasonRanking: async function (ctx) {
     if (!config.availableFunctions.warpyAggreging) {
