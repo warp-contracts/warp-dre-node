@@ -1,4 +1,4 @@
-const { getSeasonRanking } = require('../../db/nodeDb');
+const { getWarpySeasonRanking } = require('../../db/nodeDb');
 const { config } = require('../../config');
 
 module.exports = {
@@ -22,7 +22,7 @@ module.exports = {
     const rankingLimit = limit || DEFAULT_RANKING_LIMIT;
 
     try {
-      const result = await getSeasonRanking(rankingLimit, address, contractId, from);
+      const result = await getWarpySeasonRanking(rankingLimit, address, contractId, from);
       ctx.body = result;
       ctx.status = 200;
     } catch (e) {
