@@ -358,13 +358,24 @@ module.exports = {
   getWarpySeasonRanking: async (limit, address, contractId, from) => {
     const result = await drePool.query(
       `
-      WITH balance_aggregated AS (
-        SELECT data::jsonb ->> 'userId' as user_id, 
-        SUM((data::jsonb ->> 'points')::int) AS balance 
-        FROM dre.contract_event 
-        WHERE contract_tx_id = $1
-        AND block_timestamp >= $2 
-        GROUP BY user_id),
+      WITH users_points AS (
+        SELECT users ->> 'userId' AS user_id, 
+                users::jsonb ->> 'points' AS points 
+                FROM dre.contract_event, 
+                jsonb_array_elements(data -> 'users') AS users 
+        WHERE contract_tx_id = $1 
+        AND block_timestamp >= $2
+        UNION ALL
+        SELECT data::jsonb ->> 'userId' AS user_id, 
+                data::jsonb ->> 'points' AS points 
+                FROM dre.contract_event 
+        WHERE contract_tx_id = $3
+        AND block_timestamp >= $4),
+      balance_aggregated AS (
+        SELECT user_id, 
+                SUM(points::int) AS balance 
+                FROM users_points 
+                GROUP BY user_id),
       last_state AS (
         SELECT value
         FROM warp.sort_key_cache
@@ -394,9 +405,9 @@ module.exports = {
       r.user_id, 
       r.wallet_address, 
       r.balance 
-      FROM ranked r LIMIT $3);
+      FROM ranked r LIMIT $5);
       `,
-      [contractId, from, limit]
+      [contractId, from, contractId, from, limit]
     );
 
     return result.rows;
