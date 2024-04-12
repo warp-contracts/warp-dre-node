@@ -105,6 +105,19 @@ module.exports = {
     );
   },
 
+  queryLastState: async (contractTxId, query) => {
+    const output = await drePool.query(
+      `SELECT sort_key, jsonb_path_query(value, $2) as result
+       FROM warp.sort_key_cache
+       WHERE key = $1 ORDER BY sort_key DESC LIMIT 1;`,
+      [contractTxId, query]
+    );
+    return {
+      sortKey: output?.rows[0]?.sort_key,
+      result: output?.rows[0]?.result
+    };
+  },
+
   getLastSyncTimestamp: async () => {
     const result = await drePool.query('SELECT max(end_timestamp) as "lastTimestamp" from sync_log');
     if (result && result.rows && result.rows.length > 0) {
