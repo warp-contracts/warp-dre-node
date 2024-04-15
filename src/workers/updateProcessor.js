@@ -52,7 +52,9 @@ module.exports = async (job) => {
     let result;
 
     // note: this check will work properly with at most 1 update processor per given contract...
+    logger.info("Cached state?: ", cachedState != null);
     if (lastCachedKey && lastCachedKey === interaction.lastSortKey) {
+      logger.info("Using cached state!");
       result = await contract.readStateFor(lastCachedKey, [interaction], undefined, cachedState);
     } else {
       result = await contract.readState(interaction.sortKey);
