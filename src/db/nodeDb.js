@@ -477,6 +477,23 @@ module.exports = {
     return result.rows;
   },
 
+  getWarpyUserIds: async (addresses) => {
+    const result = await drePool.query(
+      `
+          WITH users as (
+              SELECT users.key as dicord_id, users.value ->> 0 as address
+              FROM warp.sort_key_cache, jsonb_each(value -> 'users') as users
+              WHERE sort_key = (SELECT MAX(sort_key) FROM warp.sort_key_cache)
+          )
+          select address, dicord_id from users
+          where address = ANY($1::text[]);
+      `,
+      [addresses]
+    );
+
+    return result.rows;
+  },
+
   getWarpyUserRanking: async (limit, address, contractId) => {
     const result = await drePool.query(
       `
