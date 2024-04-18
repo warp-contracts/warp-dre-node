@@ -485,13 +485,14 @@ module.exports = {
               FROM warp.sort_key_cache, jsonb_each(value -> 'users') as users
               WHERE sort_key = (SELECT MAX(sort_key) FROM warp.sort_key_cache)
           )
-          select address, dicord_id from users
+          select json_object_agg(address, dicord_id) as wallet_to_id 
+          from users
           where address = ANY($1::text[]);
       `,
       [addresses]
     );
 
-    return result.rows;
+    return result?.rows[0];
   },
 
   getWarpyUserRanking: async (limit, address, contractId) => {

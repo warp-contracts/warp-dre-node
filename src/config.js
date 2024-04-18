@@ -97,6 +97,7 @@ const config = {
   availableFunctions: {
     viewState: process.env.FUNC_VIEW_STATE === 'true',
     contractEvents: process.env.PROCESS_CONTRACT_EVENTS === 'true',
+    warpyCustomized: process.env.WARPY_CUSTOMIZED === 'true',
     warpyAggreging: process.env.WARPY_AGGREGATING === 'true'
   },
   viewStateDefaultCaller: process.env.VIEW_STATE_DEFAULT_CALLER,
