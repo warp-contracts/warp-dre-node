@@ -530,5 +530,23 @@ module.exports = {
     );
 
     return result.rows;
+  },
+
+  getWarpyLastUserAddress: async (id) => {
+    const result = await drePool.query(
+      `WITH last_state AS (
+        SELECT value
+        FROM warp.sort_key_cache
+        ORDER BY sort_key DESC
+        OFFSET 1
+        LIMIT 1),
+      last_users AS (
+        SELECT TRIM(users.value::text, '"') AS value, users.key
+        FROM last_state, jsonb_each(last_state.value -> 'users') users)
+      SELECT value FROM last_users WHERE KEY = $1;`,
+      [id]
+    );
+
+    return result.rows;
   }
 };

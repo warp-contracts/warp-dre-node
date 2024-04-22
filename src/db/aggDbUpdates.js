@@ -82,5 +82,14 @@ module.exports = {
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`,
       queryArgs
     );
+  },
+
+  updateWalletAddress: async function (oldAddress, newAddress) {
+    await drePool.query(
+      `
+      UPDATE dre.balances SET wallet_address = $1 WHERE wallet_address = $2;
+    `,
+      [newAddress, oldAddress]
+    );
   }
 };
