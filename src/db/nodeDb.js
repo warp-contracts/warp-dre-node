@@ -495,6 +495,27 @@ module.exports = {
     return result?.rows[0];
   },
 
+  getWarpyUserIdsFixed: async (addresses) => {
+
+    const lowercasedAddresses = addresses.map(a => a ? a.toLowerCase() : a);
+
+    const result = await drePool.query(
+      `
+          WITH users as ( 
+              SELECT users.key as dicord_id, lower(users.value ->> 0) as address
+              FROM warp.sort_key_cache, jsonb_each(value -> 'users') as users
+              WHERE sort_key = (SELECT MAX(sort_key) FROM warp.sort_key_cache)
+          )
+          select json_object_agg(address, dicord_id) as wallet_to_id 
+          from users
+          where address = ANY($1::text[]);
+      `,
+      [lowercasedAddresses]
+    );
+
+    return result?.rows[0];
+  },
+
   getWarpyUserRanking: async (limit, address, contractId) => {
     const result = await drePool.query(
       `
