@@ -4,6 +4,9 @@
 
 replicaCount: 2
 
+syncer:
+  enabled: true
+
 image:
   repository: warpredstone/dre
   pullPolicy: Always
