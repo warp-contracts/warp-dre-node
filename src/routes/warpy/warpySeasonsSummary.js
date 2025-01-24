@@ -9,18 +9,21 @@ module.exports = {
       return;
     }
 
-    const { id } = ctx.query;
+    const { id, wallet } = ctx.query;
 
-    if (!id) {
-      ctx.throw(422, 'User Id must be provided.');
+    if (!id && !wallet) {
+      ctx.throw(422, 'User Id or wallet address must be provided.');
     }
 
     try {
-      const activity = await getWarpySeasonsSummaryUserActivity(id);
-      const history = await getWarpySeasonsSummaryUserHistory(id);
+      const activity = await getWarpySeasonsSummaryUserActivity({ id, wallet });
+      const seasons = (await getWarpySeasonsSummaryUserHistory({ id, wallet })).reduce(
+        (a, v) => ({ ...a, [v.row_seq]: v.season }),
+        {}
+      );
       ctx.body = {
         ...activity,
-        ...history
+        seasons
       };
       ctx.status = 200;
     } catch (e) {

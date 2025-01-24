@@ -608,23 +608,46 @@ module.exports = {
     return result.rows;
   },
 
-  getWarpySeasonsSummaryUserActivity: async (userId) => {
-    const result = await dreReplicaPool.query(
-      `
+  getWarpySeasonsSummaryUserActivity: async ({ id, wallet }) => {
+    let result = { rows: [] };
+    if (id) {
+      result = await dreReplicaPool.query(
+        `
           select * from dre.sum_user where user_id = $1;`,
-      [userId]
-    );
+        [id]
+      );
+    } else if (wallet) {
+      result = await dreReplicaPool.query(
+        `
+          select * from dre.sum_user where wallet_address = $1;`,
+        [wallet]
+      );
+    }
 
     return result?.rows[0];
   },
 
-  getWarpySeasonsSummaryUserHistory: async (userId) => {
+  getWarpySeasonsSummaryUserHistory: async ({ id, wallet }) => {
     const result = await dreReplicaPool.query(
       `
-          select balance, season, season_points, season_points_multiplied, balance_enhanced 
-          from dre.sum_season_user 
-          where user_id = $1;`,
-      [userId]
+          with user_seasons as (
+              select
+                  sea.row_seq,
+                  sea.season,
+                  sea.label,
+                  u.season_points,
+                  u.season_points_multiplied,
+                  u.balance,
+                  u.balance_enhanced
+              from dre.sum_season_user u
+                       join dre.sum_seasons sea on u.season = sea.season
+              where ($1 is not null and user_id = $1)
+                 or ($2 is not null and wallet_address = $2)
+          )
+          select row_seq, season.season
+          from user_seasons, to_jsonb(user_seasons) season
+          order by row_seq;`,
+      [id, wallet]
     );
 
     return result?.rows;
